@@ -1,0 +1,51 @@
+The Saleae Logic is a low-cost logic analyzer. The unit itself is very small,
+and has a USB 2.0 port connecting it to a PC (and powering the unit) and a
+connector for the 8+1 probe set. It is built around a Cypress EZ-USB FX2LP
+microcontroller - an 8051-compatible chip with built-in USB 2.0 controller.
+It can sample 8 channels up to 24Mhz and sells for $150.
+
+The Logic reports on the USB bus with vendor ID 0x0925, product ID 0x3881.
+It has no firmware on board; this must be uploaded when the unit is powered on.
+The standard procedure for the FX2LP chip is used for this. After the firmware
+is on board, the chip resets and announces itself on the USB bus with the
+same vendor and product IDs, but this time with only two endpoints: endpoint
+1 (out) is used for sending commands to the logic analyzer, endpoint 2 (in)
+is for transfers of sample sets. Both endpoints are of type BULK.
+
+The Logic does no analysis in hardware at all. Processing triggers, protocol
+analysis and so on is all done on the software side; the hardware unit
+merely sends the requested number of samples at a given sample rate. The LA
+has 8 probes, all of which are always probed and sent along. A full sample is
+thus always exactly one byte.
+
+There is only one command the software sends to the Logic on endpoint 1: a
+two-byte command to set the sample rate. The first byte is always 0x01. This
+is likely a command opcode meaning "set sample rate".
+
+The second byte indicates the sample rate. The rate is given in the form of a
+divider based on the FX2LP's clock, which runs at 48Mhz. The following formula
+is used:
+
+    rate = 48 / (1 + divider)
+
+Thus a sample rate of 2 Mhz is selected by using 23 as the divider. The
+following sample rates are supported:
+
+ Rate (Mhz)     Divider
+   0.2           239
+   0.25          191
+   0.5            95
+   1              47
+   2              23
+   4              11
+   8               5
+  12               3
+  16               2
+  24               1
+
+Samples are read off endpoint 2. the Logic receives a read request from the
+host, and responds by sending the requested number of samples. The maximum
+number of samples is 4096, a constraint in the USB protocol. A sample is one
+byte, with each bit representing the state of one of the probes. Probe 1
+(black wire) is in the MSB of the sample, probe 8 (purple wire) is LSB.
+
