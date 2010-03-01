@@ -623,10 +623,11 @@ int main(int argc, char **argv)
 	if(!g_option_context_parse(context, &argc, &argv, &error))
 	{
 		g_warning("invalid option: %s", error->message);
-		exit(1);
+		return 1;
 	}
 
-	sigrok_init();
+	if(sigrok_init() != SIGROK_OK)
+		return 1;
 
 	if(opt_format)
 	{

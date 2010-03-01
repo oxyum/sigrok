@@ -98,7 +98,7 @@ struct device_plugin_io {
 };
 
 
-void load_hwplugins(void);
+int load_hwplugins(void);
 GSList *list_hwplugins(void);
 struct usb_device_instance *usb_device_instance_new(int index, int status, uint8_t bus,
 		uint8_t address, struct libusb_device_handle *hdl);

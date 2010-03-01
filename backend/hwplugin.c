@@ -38,7 +38,7 @@ struct hwcap_option hwcap_options[] = {
 };
 
 
-void load_hwplugins(void)
+int load_hwplugins(void)
 {
 	struct device_plugin *plugin;
 	GModule *module;
@@ -48,9 +48,15 @@ void load_hwplugins(void)
 	gchar *module_path;
 
 	if(!g_module_supported())
-		exit(1);
+		return SIGROK_NOK;
 
 	plugindir = opendir(HWPLUGIN_DIR);
+	if(plugindir == NULL)
+	{
+		g_warning("Hardware plugin directory %s not found.", HWPLUGIN_DIR);
+		return SIGROK_NOK;
+	}
+
 	while( (de = readdir(plugindir)) )
 	{
 		l = strlen(de->d_name);
@@ -79,6 +85,7 @@ void load_hwplugins(void)
 		}
 	}
 
+	return SIGROK_OK;
 }
 
 

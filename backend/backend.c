@@ -24,16 +24,14 @@
 #include "device.h"
 
 
-/* TODO: do I really need this anymore? */
-struct sigrok_global *global = NULL;
 
-
-void sigrok_init(void)
+int sigrok_init(void)
 {
+	int ret;
 
-	global = g_malloc0(sizeof(struct sigrok_global));
-	load_hwplugins();
+	ret = load_hwplugins();
 
+	return ret;
 }
 
 
@@ -41,7 +39,6 @@ void sigrok_cleanup(void)
 {
 
 	device_close_all();
-	global = NULL;
 
 }
 

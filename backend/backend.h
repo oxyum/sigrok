@@ -20,14 +20,8 @@
 #ifndef BACKEND_H_
 #define BACKEND_H_
 
-#include <glib.h>
 
-struct sigrok_global {
-	/* TODO: don't need this */
-	GSList *devices;
-};
-
-void sigrok_init(void);
+int sigrok_init(void);
 void sigrok_cleanup(void);
 
 #endif /* BACKEND_H_ */
