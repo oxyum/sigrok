@@ -54,6 +54,10 @@ struct gsource_fd {
 int capabilities[] = {
 	HWCAP_LOGIC_ANALYZER,
 	HWCAP_SAMPLERATE,
+
+	/* these are really implemented in the driver, not the hardware */
+	HWCAP_LIMIT_SECONDS,
+	HWCAP_LIMIT_SAMPLES,
 	0
 };
 
@@ -70,6 +74,8 @@ GTimeVal firmware_updated = {0};
 libusb_context *usb_context = NULL;
 
 float cur_sample_rate = 0;
+int limit_seconds = 0;
+int limit_samples = 0;
 
 float supported_sample_rates[] = {
 	0.2,
@@ -82,7 +88,7 @@ float supported_sample_rates[] = {
 	12,
 	16,
 	24,
-	-1
+	0
 };
 
 
@@ -457,6 +463,8 @@ char *hw_get_device_info(int device_index, int device_info_id)
 	case DI_NUM_PROBES:
 		info = GINT_TO_POINTER(NUM_PROBES);
 		break;
+	case DI_SAMPLE_RATES:
+		info = (char *) supported_sample_rates;
 	}
 
 	return info;
@@ -482,19 +490,12 @@ int *hw_get_capabilities(void)
 }
 
 
-int hw_set_configuration(int device_index, int capability, gpointer value)
+int set_configuration_samplerate(struct usb_device_instance *udi, float rate)
 {
-	struct usb_device_instance *udi;
-	float rate;
 	uint8_t divider;
 	int ret, result, i;
 	unsigned char buf[2];
 
-	/* this device only supports setting sample rate */
-	if(capability != HWCAP_SAMPLERATE)
-		return SIGROK_NOK;
-
-	rate = *((float *) value);
 	for(i = 0; supported_sample_rates[i]; i++)
 	{
 		if(supported_sample_rates[i] == rate)
@@ -504,9 +505,6 @@ int hw_set_configuration(int device_index, int capability, gpointer value)
 		return SIGROK_ERR_BADVALUE;
 
 	divider = (uint8_t) (48 / rate) - 1;
-
-	if( !(udi = get_usb_device_instance(usb_devices, device_index)) )
-		return SIGROK_NOK;
 
 	g_message("setting sample rate to %.3f Mhz (divider %d)", rate, divider);
 	buf[0] = 0x01;
@@ -520,6 +518,33 @@ int hw_set_configuration(int device_index, int capability, gpointer value)
 	cur_sample_rate = rate;
 
 	return SIGROK_OK;
+}
+
+
+int hw_set_configuration(int device_index, int capability, char *value)
+{
+	struct usb_device_instance *udi;
+	int ret;
+
+	if( !(udi = get_usb_device_instance(usb_devices, device_index)) )
+		return SIGROK_NOK;
+
+	if(capability == HWCAP_SAMPLERATE)
+		ret = set_configuration_samplerate(udi, atof(value));
+	else if(capability == HWCAP_LIMIT_SECONDS)
+	{
+		limit_seconds = atoi(value);
+		ret = SIGROK_OK;
+	}
+	else if(capability == HWCAP_LIMIT_SAMPLES)
+	{
+		limit_samples = atoi(value);
+		ret = SIGROK_OK;
+	}
+	else
+		ret = SIGROK_NOK;
+
+	return ret;
 }
 
 
@@ -574,33 +599,58 @@ GSourceFuncs source_funcs = {
 
 void receive_transfer(struct libusb_transfer *transfer)
 {
-	struct datafeed_packet *packet;
+	static int num_samples = 0;
+	struct datafeed_packet packet;
+	void *user_data;
 	int cur_buflen;
 	unsigned char *cur_buf, *new_buf;
 
-	g_message("receive_transfer(): status %d received %d bytes", transfer->status, transfer->actual_length);
-
-	/* save the incoming transfer before reusing the transfer struct */
-	cur_buf = transfer->buffer;
-	cur_buflen = transfer->actual_length;
-
-	/* fire off a new request */
-	new_buf = g_malloc(4096);
-	transfer->buffer = new_buf;
-	transfer->length = 4096;
-	if(libusb_submit_transfer(transfer) != 0)
+	if(transfer == NULL)
 	{
-		/* TODO: stop session? */
-		g_warning("eek");
+		/* hw_stop_acquisition() telling us to stop */
+		num_samples = -1;
 	}
 
-	/* send the incoming transfer to the session bus */
-	packet = g_malloc(sizeof(struct datafeed_packet));
-	packet->type = DF_LOGIC8;
-	packet->length = cur_buflen;
-	packet->payload = cur_buf;
-	session_bus(transfer->user_data, packet);
-	g_free(cur_buf);
+	if(num_samples == -1)
+	{
+		/* acquisition has already ended, just free any queued up transfer that come in */
+		libusb_free_transfer(transfer);
+	}
+	else
+	{
+		g_message("receive_transfer(): status %d received %d bytes", transfer->status, transfer->actual_length);
+
+		/* save the incoming transfer before reusing the transfer struct */
+		cur_buf = transfer->buffer;
+		cur_buflen = transfer->actual_length;
+		user_data = transfer->user_data;
+
+		/* fire off a new request */
+		new_buf = g_malloc(4096);
+		transfer->buffer = new_buf;
+		transfer->length = 4096;
+		if(libusb_submit_transfer(transfer) != 0)
+		{
+			/* TODO: stop session? */
+			g_warning("eek");
+		}
+
+		/* send the incoming transfer to the session bus */
+		packet.type = DF_LOGIC8;
+		packet.length = cur_buflen;
+		packet.payload = cur_buf;
+		session_bus(user_data, &packet);
+		g_free(cur_buf);
+
+		num_samples += cur_buflen;
+		if(num_samples > limit_samples)
+		{
+			/* end the acquisition */
+			packet.type = DF_END;
+			session_bus(user_data, &packet);
+			num_samples = -1;
+		}
+	}
 
 }
 
@@ -615,14 +665,27 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	struct gsource_fd *source;
 	int ret, size, i;
 	unsigned char *buf;
+	char tmp[16];
 
 	if( !(udi = get_usb_device_instance(usb_devices, device_index)))
 		return SIGROK_NOK;
+
+	if(cur_sample_rate == 0)
+	{
+		/* sample rate hasn't been set; default to the slowest it has */
+		snprintf(tmp, 15, "%15f", supported_sample_rates[0]);
+		if(hw_set_configuration(device_index, HWCAP_SAMPLERATE, tmp) == SIGROK_NOK)
+			return SIGROK_NOK;
+	}
 
 	packet = g_malloc(sizeof(struct datafeed_packet));
 	header = g_malloc(sizeof(struct datafeed_header));
 	if(!packet || !header)
 		return SIGROK_NOK;
+
+	if(limit_samples == 0 && limit_seconds > 0)
+		/* no need to bother with a timer, just convert to samples instead */
+		limit_samples = cur_sample_rate * 1000000 * limit_seconds;
 
 	/* start with 2K transfer, subsequently increased to 4K */
 	size = 2048;
@@ -660,7 +723,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 
 	packet->type = DF_HEADER;
 	packet->length = sizeof(struct datafeed_header);
-	packet->payload = header;
+	packet->payload = (unsigned char *) header;
 	header->feed_version = 1;
 	gettimeofday(&header->starttime, NULL);
 	header->rate = cur_sample_rate;
@@ -674,8 +737,17 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 }
 
 
-void hw_stop_acquisition(int device_index)
+/* this stops acquisition on ALL devices, ignoring device_index */
+void hw_stop_acquisition(int device_index, gpointer session_device_id)
 {
+	struct datafeed_packet packet;
+
+	packet.type = DF_END;
+	session_bus(session_device_id, &packet);
+
+	receive_transfer(NULL);
+
+	/* TODO: need to cancel and free any queued up transfers */
 
 }
 
