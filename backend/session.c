@@ -142,10 +142,10 @@ int session_start(void)
 	GSList *l;
 	int ret;
 
+	g_message("starting acquisition");
 	for(l = session->devices; l; l = l->next)
 	{
 		device = l->data;
-		g_message("starting acquisition");
 		if( (ret = device->plugin->start_acquisition(device->plugin_index, device)) != SIGROK_OK)
 			break;
 	}
@@ -156,13 +156,18 @@ int session_start(void)
 
 void session_stop(void)
 {
+	struct device *device;
+	GSList *l;
 
 	if(session->output_file)
 		fclose(session->output_file);
 
-	/* TODO: send stop packet to frontend */
-
-	/* TODO: device plugin stop, if applicable */
+	g_message("stopping acquisition");
+	for(l = session->devices; l; l = l->next)
+	{
+		device = l->data;
+		device->plugin->stop_acquisition(device->plugin_index, device);
+	}
 
 }
 
