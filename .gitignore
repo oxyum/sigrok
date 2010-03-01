@@ -1,0 +1,38 @@
+# autotools cruft
+AUTHORS
+INSTALL
+NEWS
+README
+ChangeLog
+aclocal.m4
+autom4te.cache
+autoscan.log
+compile
+config.guess
+config.h
+config.h.in
+config.log
+config.status
+config.sub
+configure
+depcomp
+libtool
+ltmain.sh
+install-sh
+map
+missing
+stamp-h1
+m4/
+
+# recursive autoconf leftovers
+.deps
+Makefile
+Makefile.in
+
+# build leftovers
+*~
+*.o
+*.a
+*.lo
+*.la
+.libs/
