@@ -551,6 +551,8 @@ void run_session(void)
 		return;
 	}
 
+	gmaincontext = g_main_context_default();
+
 	if(!opt_seconds && !opt_samples)
 	{
 		/* monitor stdin along with the device's I/O */
@@ -608,21 +610,19 @@ int main(int argc, char **argv)
 {
 	GOptionContext *context;
 	GError *error;
-	int cli_status, val, i;
+	int val, i;
 
 	printf("Sigrok version %s\n", PACKAGE_VERSION);
-	cli_status = 0;
-	error = NULL;
-	gmaincontext = g_main_context_default();
 	g_log_set_default_handler(logger, NULL);
 	if(getenv("SIGROK_DEBUG"))
 		debug = TRUE;
 
+	error = NULL;
 	context = g_option_context_new(NULL);
 	g_option_context_add_main_entries(context, optargs, NULL);
 	if(!g_option_context_parse(context, &argc, &argv, &error))
 	{
-		g_warning("invalid option: %s", error->message);
+		g_warning("%s", error->message);
 		return 1;
 	}
 
@@ -657,7 +657,7 @@ int main(int argc, char **argv)
 
 	sigrok_cleanup();
 
-	return cli_status;
+	return 0;
 }
 
 
