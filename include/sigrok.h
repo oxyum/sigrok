@@ -55,7 +55,7 @@ enum {
 struct datafeed_packet {
 	uint16_t type;
 	uint16_t length;
-	void *payload;
+	unsigned char *payload;
 };
 
 struct datafeed_header {
