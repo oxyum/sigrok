@@ -37,6 +37,7 @@ struct device {
 
 struct probe {
 	int index;
+	gboolean enabled;
 	char *name;
 	char *trigger;
 };

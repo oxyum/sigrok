@@ -91,7 +91,7 @@ struct device *device_new(struct device_plugin *plugin, int plugin_index)
 	num_probes = (int) device->plugin->get_device_info(device->plugin_index, DI_NUM_PROBES);
 	for(i = 0; i < num_probes; i++)
 	{
-		snprintf(probename, 16, "Probe %d", i+1);
+		snprintf(probename, 16, "%d", i+1);
 		device_probe_add(device, probename);
 	}
 
@@ -159,6 +159,7 @@ void device_probe_add(struct device *device, char *name)
 
 	p = g_malloc0(sizeof(struct probe));
 	p->index = g_slist_length(device->probes) + 1;
+	p->enabled = TRUE;
 	p->name = g_strdup(name);
 	p->trigger = NULL;
 	device->probes = g_slist_append(device->probes, p);
