@@ -32,11 +32,9 @@
 
 GSList *plugins;
 
-struct hwcap hwcaps[] = {
-	{ HWCAP_DUMMY, "" },
-	{ HWCAP_LOGIC_ANALYZER, "Logic analyzer" },
-	{ HWCAP_SAMPLERATE, "Sample rate" },
-	{ 0, NULL }
+struct hwcap_option hwcap_options[] = {
+	{ HWCAP_SAMPLERATE, "Sample rate", "samplerate" },
+	{ 0, NULL, NULL }
 };
 
 
@@ -123,5 +121,26 @@ struct usb_device_instance *get_usb_device_instance(GSList *usb_devices, int dev
 
 	return NULL;
 }
+
+
+struct hwcap_option *find_hwcap_option(int hwcap)
+{
+	struct hwcap_option *hwo;
+	int i;
+
+	hwo = NULL;
+	for(i = 0; hwcap_options[i].capability; i++)
+	{
+		if(hwcap_options[i].capability == hwcap)
+		{
+			hwo = &hwcap_options[i];
+			break;
+		}
+	}
+
+	return hwo;
+}
+
+
 
 

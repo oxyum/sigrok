@@ -25,18 +25,21 @@
 #include "device.h"
 
 
-struct hwcap {
-	int capability;
-	char *description;
-};
-
 /* hardware plugin capabilities */
 enum {
 	HWCAP_DUMMY,
 	HWCAP_LOGIC_ANALYZER,
 	HWCAP_SAMPLERATE,
+	HWCAP_LIMIT_SECONDS,
+	HWCAP_LIMIT_SAMPLES
 };
 
+
+struct hwcap_option {
+	int capability;
+	char *description;
+	char *shortname;
+};
 
 struct usb_device_instance {
 	int index;
@@ -64,6 +67,8 @@ enum {
 	DI_IDENTIFIER,
 	/* the number of probes connected to this device */
 	DI_NUM_PROBES,
+	/* the samples rates this device supports, as a 0-terminated array of float */
+	DI_SAMPLE_RATES,
 };
 
 struct device_plugin {
@@ -79,9 +84,9 @@ struct device_plugin {
 	char *(*get_device_info) (int device_index, int device_info_id);
 	int (*get_status) (int device_index);
 	int *(*get_capabilities) (void);
-	int (*set_configuration) (int device_index, int capability, gpointer value);
+	int (*set_configuration) (int device_index, int capability, char *value);
 	int (*start_acquisition) (int device_index, gpointer session_device_id);
-	void (*stop_acquisition) (int device_index);
+	void (*stop_acquisition) (int device_index, gpointer session_device_id);
 };
 
 
@@ -98,6 +103,7 @@ GSList *list_hwplugins(void);
 struct usb_device_instance *usb_device_instance_new(int index, int status, uint8_t bus,
 		uint8_t address, struct libusb_device_handle *hdl);
 struct usb_device_instance *get_usb_device_instance(GSList *usb_devices, int device_index);
+struct hwcap_option *find_hwcap_option(int hwcap);
 
 
 #endif /* HWPLUGIN_H_ */
