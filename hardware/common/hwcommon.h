@@ -1,5 +1,5 @@
 /*
- *   sigrok - ezusb.h
+ *   sigrok - hwcommon.h
  *
  *   Copyright (C) 2010 Bert Vermeulen <bert@biot.com>
  *
@@ -22,4 +22,6 @@
 
 int ezusb_reset(struct libusb_device_handle *hdl, int set_clear);
 int ezusb_install_firmware(libusb_device_handle *hdl, char *filename);
+
+char **list_serial_ports(void);
 

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "sigrok.h"
-#include "ezusb.h"
+#include "hwcommon.h"
 #include "hwplugin.h"
 #include "session.h"
 
