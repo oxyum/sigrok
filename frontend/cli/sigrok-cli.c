@@ -107,14 +107,25 @@ void show_hwplugin_list(void)
 }
 
 
-void show_device_list()
+void print_device_line(struct device *device)
+{
+	char *idstring;
+
+	idstring = device->plugin->get_device_info(device->plugin_index, DI_IDENTIFIER);
+	printf("%s %s", device->plugin->name, idstring);
+	g_free(idstring);
+	if(device->probes)
+		printf(" with %d probes", g_slist_length(device->probes));
+	printf("\n");
+
+}
+
+
+void show_device_list(void)
 {
 	struct device *device;
-	struct hwcap_option *hwo;
 	GSList *devices, *l;
-	int devcnt, *capabilities, cap, i;
-	float *sample_rates;
-	char *idstring, *title;
+	int devcnt;
 
 	devcnt = 0;
 	device_scan();
@@ -125,46 +136,63 @@ void show_device_list()
 		for(l = devices; l; l = l->next)
 		{
 			device = l->data;
+			printf("%-3d ", devcnt);
+			print_device_line(device);
+			devcnt++;
+		}
+	}
 
-			/* device and probes */
-			idstring = device->plugin->get_device_info(device->plugin_index, DI_IDENTIFIER);
-			printf("%-3d %s %s", devcnt, device->plugin->name, idstring);
-			g_free(idstring);
-			if(device->probes)
-				printf(" with %d probes", g_slist_length(device->probes));
-			printf("\n");
+}
 
-			/* supported options */
-			title = "    Supported options:\n";
-			capabilities = device->plugin->get_capabilities();
-			for(cap = 0; capabilities[cap]; cap++)
+
+void show_device_detail(void)
+{
+	struct device *device;
+	struct hwcap_option *hwo;
+	GSList *devices;
+	float *sample_rates;
+	int cap, *capabilities, i;
+	char *title;
+
+	device_scan();
+	devices = device_list();
+	device = g_slist_nth_data(devices, opt_device);
+	if(device == NULL)
+	{
+		printf("No such device. Use -D to list all devices.\n");
+		return;
+	}
+
+	print_device_line(device);
+
+	title = "Supported options:\n";
+	capabilities = device->plugin->get_capabilities();
+	for(cap = 0; capabilities[cap]; cap++)
+	{
+		hwo = find_hwcap_option(capabilities[cap]);
+		if(hwo)
+		{
+			if(title)
 			{
-				hwo = find_hwcap_option(capabilities[cap]);
-				if(hwo)
-				{
-					if(title)
-					{
-						printf("%s", title);
-						title = NULL;
-					}
-					if(hwo->capability == HWCAP_SAMPLERATE)
-					{
-						printf("      %s", hwo->shortname);
-						/* supported sample rates */
-						sample_rates = (float *) device->plugin->get_device_info(device->plugin_index, DI_SAMPLE_RATES);
-						if(sample_rates)
-						{
-							printf(" - supported sample rates:\n");
-							for(i = 0; sample_rates[i]; i++)
-								printf("        %7.3f\n", sample_rates[i]);
-						}
-						else
-							printf("\n");
-					}
-					else
-						printf("      %s\n", hwo->shortname);
-				}
+				printf("%s", title);
+				title = NULL;
 			}
+			if(hwo->capability == HWCAP_SAMPLERATE)
+			{
+				printf("    %s", hwo->shortname);
+				/* supported sample rates */
+				sample_rates = (float *) device->plugin->get_device_info(device->plugin_index, DI_SAMPLE_RATES);
+				if(sample_rates)
+				{
+					printf(" - supported sample rates:\n");
+					for(i = 0; sample_rates[i]; i++)
+						printf("        %7.3f\n", sample_rates[i]);
+				}
+				else
+					printf("\n");
+			}
+			else
+				printf("      %s\n", hwo->shortname);
 		}
 	}
 
@@ -652,6 +680,8 @@ int main(int argc, char **argv)
 		show_analyzer_list();
 	else if(opt_samples || opt_seconds)
 		run_session();
+	else if(opt_device != -1)
+		show_device_detail();
 	else
 		printf("%s", g_option_context_get_help(context, TRUE, NULL));
 
