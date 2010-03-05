@@ -438,17 +438,6 @@ void hw_cleanup(void)
 }
 
 
-char *hw_get_identifier(int device_index)
-{
-	char *idstring;
-
-	idstring = g_malloc(16);
-	snprintf(idstring, 16, "idx %d", device_index);
-
-	return idstring;
-}
-
-
 char *hw_get_device_info(int device_index, int device_info_id)
 {
 	char *info;
