@@ -56,7 +56,7 @@ struct probe *probe_find(struct device *device, int probenum);
 void device_probe_name(struct device *device, int probenum, char *name);
 
 void device_trigger_clear(struct device *device);
-void device_trigger_add(struct device *device, int probenum, char *trigger);
+void device_trigger_set(struct device *device, int probenum, char *trigger);
 
 
 #endif

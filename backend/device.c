@@ -209,17 +209,19 @@ void device_trigger_clear(struct device *device)
 
 	if(device->probes)
 		for(probenum = 1; probenum <= g_slist_length(device->probes); probenum++)
+		{
 			p = probe_find(device, probenum);
 			if(p && p->trigger)
 			{
 				g_free(p->trigger);
 				p->trigger = NULL;
 			}
+		}
 
 }
 
 
-void device_trigger_add(struct device *device, int probenum, char *trigger)
+void device_trigger_set(struct device *device, int probenum, char *trigger)
 {
 	struct probe *p;
 
@@ -230,7 +232,6 @@ void device_trigger_add(struct device *device, int probenum, char *trigger)
 	if(p->trigger)
 		g_free(p->trigger);
 
-	/* TODO: add to triggers, don't just replace it */
 	p->trigger = g_strdup(trigger);
 
 }
