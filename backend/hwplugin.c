@@ -130,6 +130,24 @@ struct usb_device_instance *get_usb_device_instance(GSList *usb_devices, int dev
 }
 
 
+struct serial_device_instance *get_serial_device_instance(GSList *serial_devices, int device_index)
+{
+	struct serial_device_instance *sdi;
+	GSList *l;
+
+	sdi = NULL;
+	for(l = serial_devices; l; l = l->next)
+	{
+		sdi = (struct serial_device_instance *) (l->data);
+		if(sdi->index == device_index)
+			return sdi;
+	}
+	g_warning("could not find device index %d instance", device_index);
+
+	return NULL;
+}
+
+
 struct hwcap_option *find_hwcap_option(int hwcap)
 {
 	struct hwcap_option *hwo;

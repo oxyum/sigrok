@@ -30,6 +30,7 @@ enum {
 	HWCAP_DUMMY,
 	HWCAP_LOGIC_ANALYZER,
 	HWCAP_SAMPLERATE,
+	HWCAP_CAPTURE_RATIO,
 	HWCAP_LIMIT_SECONDS,
 	HWCAP_LIMIT_SAMPLES
 };
@@ -49,6 +50,14 @@ struct usb_device_instance {
 	struct libusb_device_handle *devhdl;
 };
 
+struct serial_device_instance {
+	int index;
+	int status;
+	char *model;
+	char *port;
+	int fd;
+};
+
 /* device instance status */
 enum {
 	ST_NOT_FOUND,
@@ -60,15 +69,17 @@ enum {
 	ST_ACTIVE
 };
 
+/* TODO: this sucks, you just kinda have to "know" the returned type */
 /* device info IDs */
 enum {
-	/* TODO: this sucks, you just kinda have to "know" the returned type */
 	/* string identifying this specific device in the system */
 	DI_IDENTIFIER,
 	/* the number of probes connected to this device */
 	DI_NUM_PROBES,
 	/* the samples rates this device supports, as a 0-terminated array of float */
 	DI_SAMPLE_RATES,
+	/* types of trigger supported, out of "01crf" */
+	DI_TRIGGER_TYPES,
 };
 
 struct device_plugin {
@@ -103,6 +114,7 @@ GSList *list_hwplugins(void);
 struct usb_device_instance *usb_device_instance_new(int index, int status, uint8_t bus,
 		uint8_t address, struct libusb_device_handle *hdl);
 struct usb_device_instance *get_usb_device_instance(GSList *usb_devices, int device_index);
+struct serial_device_instance *get_serial_device_instance(GSList *serial_devices, int device_index);
 struct hwcap_option *find_hwcap_option(int hwcap);
 
 
