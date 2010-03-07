@@ -567,17 +567,6 @@ gboolean gsource_dispatch(GSource *source, GSourceFunc callback, gpointer data)
 }
 
 
-gboolean gsource_timeout(gpointer data)
-{
-	struct timeval tv;
-
-	tv.tv_sec = tv.tv_usec = 0;
-	libusb_handle_events_timeout(usb_context, &tv);
-
-	return FALSE;
-}
-
-
 GSourceFuncs source_funcs = {
 	gsource_prepare,
 	gsource_check,
