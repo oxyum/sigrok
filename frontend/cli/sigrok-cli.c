@@ -56,6 +56,7 @@ static gchar *load_session_filename = NULL;
 static gchar *save_session_filename = NULL;
 static int opt_device = -1;
 static gchar *opt_probes = NULL;
+static gchar *opt_triggers = NULL;
 static gchar **opt_devoption = NULL;
 static gchar *opt_analyzers = NULL;
 static gchar *opt_format = NULL;
@@ -72,6 +73,7 @@ static GOptionEntry optargs[] =
 	{ "save-session-file", 'S', 0, G_OPTION_ARG_FILENAME, &save_session_filename, "Save session to file", NULL },
 	{ "device", 'd', 0, G_OPTION_ARG_INT, &opt_device, "Use device id", NULL },
 	{ "probes", 'p', 0, G_OPTION_ARG_STRING, &opt_probes, "Probes to use", NULL },
+	{ "triggers", 't', 0, G_OPTION_ARG_STRING, &opt_triggers, "Trigger configuration", NULL },
 	{ "device-option", 'o', 0, G_OPTION_ARG_STRING_ARRAY, &opt_devoption, "Device-specific option", NULL },
 	{ "analyzers", 'a', 0, G_OPTION_ARG_STRING, &opt_analyzers, "Protocol analyzer sequence", NULL },
 	{ "format", 'f', 0, G_OPTION_ARG_STRING, &opt_format, "Output format", NULL },
@@ -152,7 +154,7 @@ void show_device_detail(void)
 	GSList *devices;
 	float *sample_rates;
 	int cap, *capabilities, i;
-	char *title;
+	char *title, *triggers;
 
 	device_scan();
 	devices = device_list();
@@ -164,6 +166,17 @@ void show_device_detail(void)
 	}
 
 	print_device_line(device);
+
+	if( (triggers = (char *) device->plugin->get_device_info(device->plugin_index, DI_TRIGGER_TYPES)) )
+	{
+		printf("Supported triggers: ");
+		while(*triggers)
+		{
+			printf("%c ", *triggers);
+			triggers++;
+		}
+		printf("\n");
+	}
 
 	title = "Supported options:\n";
 	capabilities = device->plugin->get_capabilities();
@@ -455,6 +468,78 @@ char **parse_probestring(int max_probes, char *probestring)
 }
 
 
+char **parse_triggerstring(struct device *device, char *triggerstring)
+{
+	GSList *l;
+	struct probe *probe;
+	int max_probes, probenum, i;
+	char **tokens, **triggerlist, *trigger, *tc, *trigger_types;
+	gboolean error;
+
+	max_probes = g_slist_length(device->probes);
+	error = FALSE;
+	triggerlist = g_malloc0(max_probes * sizeof(char *));
+	tokens = g_strsplit(triggerstring, ",", max_probes);
+	trigger_types = device->plugin->get_device_info(0, DI_TRIGGER_TYPES);
+	if(trigger_types == NULL)
+		return NULL;
+
+	for(i = 0; tokens[i]; i++)
+	{
+		if(tokens[i][0] < '0' || tokens[i][0] > '9')
+		{
+			/* named probe */
+			probenum = 0;
+			for(l = device->probes; l; l = l->next)
+			{
+				probe = (struct probe *) l->data;
+				if(probe->enabled && !strncmp(probe->name, tokens[i], strlen(probe->name)))
+				{
+					probenum = probe->index;
+					break;
+				}
+			}
+		}
+		else
+			probenum = atoi(tokens[i]);
+
+		if(probenum < 1 || probenum > max_probes)
+		{
+			printf("Invalid probe.\n");
+			error = TRUE;
+			break;
+		}
+
+		if( (trigger=strchr(tokens[i], '=')) )
+		{
+			for(tc = ++trigger; *tc; tc++)
+			{
+				if(strchr(trigger_types, *tc) == NULL)
+				{
+					printf("Unsupported trigger type '%c'\n", *tc);
+					error = TRUE;
+					break;
+				}
+			}
+			if(!error)
+				triggerlist[probenum-1] = g_strdup(trigger);
+		}
+	}
+	g_strfreev(tokens);
+
+	if(error)
+	{
+		for(i = 0; i < max_probes; i++)
+			if(triggerlist[i])
+				g_free(triggerlist[i]);
+		g_free(triggerlist);
+		triggerlist = NULL;
+	}
+
+	return triggerlist;
+}
+
+
 void run_session(void)
 {
 	struct device *device;
@@ -463,7 +548,7 @@ void run_session(void)
 	GSource *stdin_source;
 	GPollFD stdin_pfd;
 	GSList *devices;
-	int num_devices, max_probes, ret, i, j;
+	int num_devices, max_probes, ret, value, i, j;
 	char **probelist, *val;
 
 	device_scan();
@@ -530,6 +615,40 @@ void run_session(void)
 			}
 		}
 		g_free(probelist);
+	}
+
+	if(opt_triggers)
+	{
+		probelist = parse_triggerstring(device, opt_triggers);
+		if(!probelist)
+		{
+			session_destroy();
+			return;
+		}
+
+		max_probes = g_slist_length(device->probes);
+		for(i = 0; i < max_probes; i++)
+		{
+			if(probelist[i])
+			{
+				device_trigger_set(device, i+1, probelist[i]);
+				g_free(probelist[i]);
+			}
+		}
+		g_free(probelist);
+	}
+
+	if(opt_format)
+	{
+		value = atoi(opt_format);
+		if(value > 0)
+			format_bpl = value;
+		for(i = 0; opt_format[i]; i++)
+			if(opt_format[i] == 'b' || opt_format[i] == 'h')
+			{
+				format_base = opt_format[i];
+				break;
+			}
 	}
 
 	if(opt_seconds)
@@ -638,7 +757,6 @@ int main(int argc, char **argv)
 {
 	GOptionContext *context;
 	GError *error;
-	int val, i;
 
 	printf("Sigrok version %s\n", PACKAGE_VERSION);
 	g_log_set_default_handler(logger, NULL);
@@ -657,19 +775,6 @@ int main(int argc, char **argv)
 	if(sigrok_init() != SIGROK_OK)
 		return 1;
 
-	if(opt_format)
-	{
-		val = atoi(opt_format);
-		if(val > 0)
-			format_bpl = val;
-		for(i = 0; opt_format[i]; i++)
-			if(opt_format[i] == 'b' || opt_format[i] == 'h')
-			{
-				format_base = opt_format[i];
-				break;
-			}
-	}
-
 	if(opt_version)
 		show_version();
 	else if(opt_list_hwplugins)
@@ -685,6 +790,7 @@ int main(int argc, char **argv)
 	else
 		printf("%s", g_option_context_get_help(context, TRUE, NULL));
 
+	g_option_context_free(context);
 	sigrok_cleanup();
 
 	return 0;
