@@ -35,6 +35,7 @@ AC_CONFIG_FILES([Makefile
 				 hardware/Makefile
 				 hardware/common/Makefile
 				 hardware/saleae-logic/Makefile
+				 hardware/openbench-logic-sniffer/Makefile
 				 frontend/Makefile
 				 frontend/cli/Makefile
                  ])

@@ -1,1 +1,1 @@
-SUBDIRS = common saleae-logic
+SUBDIRS = common saleae-logic openbench-logic-sniffer
