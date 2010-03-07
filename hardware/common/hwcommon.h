@@ -18,10 +18,11 @@
  */
 
 #include <libusb.h>
+#include <glib.h>
 
 
 int ezusb_reset(struct libusb_device_handle *hdl, int set_clear);
 int ezusb_install_firmware(libusb_device_handle *hdl, char *filename);
 
-char **list_serial_ports(void);
+GSList *list_serial_ports(void);
 

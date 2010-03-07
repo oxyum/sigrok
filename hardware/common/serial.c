@@ -22,32 +22,29 @@
 
 
 char *serial_port_glob[] = {
-#ifdef __LINUX__
+	/* Linux */
 	"/dev/ttyS*",
 	"/dev/ttyUSB*",
-#endif
-#ifdef __MACOS__
+	/* MacOS X */
 	"/dev/ttys*",
-#endif
 	NULL
 };
 
 
-char **list_serial_ports(void)
+GSList *list_serial_ports(void)
 {
-	glob_t *g;
+	glob_t g;
 	GSList *ports;
 	int i, j;
-	char *pattern;
 
 	ports = NULL;
 	for(i = 0; serial_port_glob[i]; i++)
 	{
-		if(!glob(serial_port_glob[i], 0, NULL, g))
+		if(!glob(serial_port_glob[i], 0, NULL, &g))
 		{
-			for(j = 0; j < g->gl_pathc; j++)
-				ports = g_slist_append(ports, g_strdup(g->gl_pathv[j]));
-			globfree(g);
+			for(j = 0; j < g.gl_pathc; j++)
+				ports = g_slist_append(ports, g_strdup(g.gl_pathv[j]));
+			globfree(&g);
 		}
 	}
 
