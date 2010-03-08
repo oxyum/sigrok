@@ -36,6 +36,8 @@
 #define USB_INTERFACE			0
 #define USB_CONFIGURATION		1
 #define NUM_PROBES				8
+#define NUM_TRIGGER_STAGES		4
+#define TRIGGER_TYPES			"01"
 #define FIRMWARE FIRMWARE_DIR	"/saleae-logic.firmware"
 /* delay in ms */
 #define FIRMWARE_RENUM_DELAY	3000
@@ -76,6 +78,7 @@ libusb_context *usb_context = NULL;
 float cur_sample_rate = 0;
 int limit_seconds = 0;
 int limit_samples = 0;
+uint8_t probe_mask = 0, trigger_mask[NUM_TRIGGER_STAGES] = {0}, trigger_value[NUM_TRIGGER_STAGES] = {0};
 
 float supported_sample_rates[] = {
 	0.2,
@@ -309,6 +312,46 @@ void close_device(struct usb_device_instance *udi)
 }
 
 
+int configure_probes(GSList *probes)
+{
+	struct probe *probe;
+	GSList *l;
+	int probe_bit, stage, i;
+	char *tc;
+
+	probe_mask = 0;
+	for(i = 0; i < NUM_TRIGGER_STAGES; i++)
+	{
+		trigger_mask[i] = 0;
+		trigger_value[i] = 0;
+	}
+
+	for(l = probes; l; l = l->next)
+	{
+		probe = (struct probe *) l->data;
+		if(probe->enabled == FALSE)
+			continue;
+		probe_bit = 1 << (probe->index - 1);
+		probe_mask |= probe_bit;
+		if(probe->trigger)
+		{
+			stage = 0;
+			for(tc = probe->trigger; *tc; tc++)
+			{
+				trigger_mask[stage] |= probe_bit;
+				if(*tc == '1')
+					trigger_value[stage] |= probe_bit;
+				stage++;
+				if(stage > NUM_TRIGGER_STAGES)
+					return SIGROK_NOK;
+			}
+		}
+	}
+
+	return SIGROK_OK;
+}
+
+
 
 /*
  * API callbacks
@@ -454,6 +497,9 @@ char *hw_get_device_info(int device_index, int device_info_id)
 		break;
 	case DI_SAMPLE_RATES:
 		info = (char *) supported_sample_rates;
+	case DI_TRIGGER_TYPES:
+		info = (char *) TRIGGER_TYPES;
+		break;
 	}
 
 	return info;
@@ -520,6 +566,8 @@ int hw_set_configuration(int device_index, int capability, char *value)
 
 	if(capability == HWCAP_SAMPLERATE)
 		ret = set_configuration_samplerate(udi, atof(value));
+	else if(capability == HWCAP_PROBECONFIG)
+		ret = configure_probes( (GSList *) value);
 	else if(capability == HWCAP_LIMIT_SECONDS)
 	{
 		limit_seconds = atoi(value);
