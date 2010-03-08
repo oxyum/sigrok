@@ -457,13 +457,6 @@ char **parse_probestring(int max_probes, char *probestring)
 	if(range)
 		g_strfreev(range);
 
-	if(debug && probelist)
-		for(i = 0; i < max_probes; i++)
-		{
-			if(probelist[i])
-				g_message("Probe %d: '%s'", i+1, probelist[i]);
-		}
-
 	return probelist;
 }
 
