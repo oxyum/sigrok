@@ -30,6 +30,7 @@ enum {
 	HWCAP_DUMMY,
 	HWCAP_LOGIC_ANALYZER,
 	HWCAP_SAMPLERATE,
+	HWCAP_PROBECONFIG,
 	HWCAP_CAPTURE_RATIO,
 	HWCAP_LIMIT_SECONDS,
 	HWCAP_LIMIT_SAMPLES
@@ -70,6 +71,7 @@ enum {
 };
 
 /* TODO: this sucks, you just kinda have to "know" the returned type */
+/* TODO: need a DI to return the number of trigger stages supported */
 /* device info IDs */
 enum {
 	/* string identifying this specific device in the system */

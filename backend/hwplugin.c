@@ -32,6 +32,7 @@
 
 GSList *plugins;
 
+/* this enumerates which plugin capabilities correspond to user-settable options */
 struct hwcap_option hwcap_options[] = {
 	{ HWCAP_SAMPLERATE, "Sample rate", "samplerate" },
 	{ 0, NULL, NULL }
