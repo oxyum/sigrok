@@ -26,26 +26,42 @@
 #include <termios.h>
 #include <string.h>
 #include <poll.h>
+#include <sys/time.h>
+
 #include <glib.h>
-#include <errno.h>
 
 #include "sigrok.h"
 #include "hwplugin.h"
 #include "hwcommon.h"
+#include "session.h"
 
 #define NUM_PROBES				32
+#define NUM_TRIGGER_STAGES		4
+#define TRIGGER_TYPES			"01"
 #define SERIAL_SPEED			B115200
 /* TODO: SERIAL_ bits, parity, stop bit */
 #define CLOCK_RATE				100
 
 
 /* command opcodes */
-#define CMD_RESET				0x00
-#define CMD_ID					0x02
-#define CMD_SET_FLAGS			0x82
-#define CMD_SET_DIVIDER		0x80
-#define CMD_RUN				0x01
-#define CMD_CAPTURE_SIZE		0x81
+#define CMD_RESET					0x00
+#define CMD_ID						0x02
+#define CMD_SET_FLAGS				0x82
+#define CMD_SET_DIVIDER			0x80
+#define CMD_RUN					0x01
+#define CMD_CAPTURE_SIZE			0x81
+#define CMD_SET_TRIGGER_MASK_0		0xc0
+#define CMD_SET_TRIGGER_MASK_1		0xc4
+#define CMD_SET_TRIGGER_MASK_2		0xc8
+#define CMD_SET_TRIGGER_MASK_3		0xcc
+#define CMD_SET_TRIGGER_VALUE_0	0xc1
+#define CMD_SET_TRIGGER_VALUE_1	0xc5
+#define CMD_SET_TRIGGER_VALUE_2	0xc9
+#define CMD_SET_TRIGGER_VALUE_3	0xcd
+#define CMD_SET_TRIGGER_CONFIG_0	0xc2
+#define CMD_SET_TRIGGER_CONFIG_1	0xc6
+#define CMD_SET_TRIGGER_CONFIG_2	0xca
+#define CMD_SET_TRIGGER_CONFIG_3	0xce
 
 /* bitmasks for CMD_FLAGS */
 #define FLAG_DEMUX				0x01
@@ -95,18 +111,76 @@ int limit_seconds = 0;
 int limit_samples = 0;
 /* pre/post trigger capture ratio, in percentage. 0 means no pre-trigger data. */
 int capture_ratio = 0;
+uint32_t probe_mask = 0, trigger_mask[4] = {0}, trigger_value[4] = {0};
 
 
 
-void encode_longcommand(uint8_t command, uint32_t data, char *buf)
+int send_longcommand(int fd, uint8_t command, uint32_t data)
 {
+	char buf[5];
 
 	buf[0] = command;
 	buf[1] = data & 0xff;
 	buf[2] = data & 0xff00 >> 8;
 	buf[3] = data & 0xff0000 >> 16;
 	buf[4] = data & 0xff000000 >> 24;
+	if(write(fd, buf, 5) != 5)
+		return SIGROK_NOK;
 
+	return SIGROK_OK;
+}
+
+int configure_probes(GSList *probes)
+{
+	struct probe *probe;
+	GSList *l;
+	int probe_bit, changrp_mask, stage, i;
+	char *tc;
+
+	probe_mask = 0;
+	for(i = 0; i < NUM_TRIGGER_STAGES; i++)
+	{
+		trigger_mask[i] = 0;
+		trigger_value[i] = 0;
+	}
+
+	for(l = probes; l; l = l->next)
+	{
+		probe = (struct probe *) l->data;
+		probe_bit = 1 << (probe->index - 1);
+		probe_mask |= probe_bit;
+		if(probe->trigger)
+		{
+			stage = 0;
+			for(tc = probe->trigger; *tc; tc++)
+			{
+				trigger_mask[stage] |= probe_bit;
+				if(*tc == '1')
+					trigger_value[stage] |= probe_bit;
+				stage++;
+				if(stage > 3)
+				{
+					/* only supporting parallel mode, with up to 4 stages */
+					return SIGROK_NOK;
+				}
+			}
+		}
+	}
+
+	/* enable/disable channel groups in the flag register according
+	 * to the probe mask we just made. The register stores them backwards,
+	 * hence shift right from 1000.
+	 */
+	changrp_mask = 0;
+	for(i = 0; i < 4; i++)
+	{
+		if(probe_mask & (0xff << i))
+			changrp_mask |= 8 >> i;
+	}
+	/* but the flag register wants them here */
+	flag_reg |= changrp_mask << 2;
+
+	return SIGROK_OK;
 }
 
 
@@ -277,7 +351,7 @@ char *hw_get_device_info(int device_index, int device_info_id)
 		info = (char *) supported_sample_rates;
 		break;
 	case DI_TRIGGER_TYPES:
-		info = (char *) "01";
+		info = (char *) TRIGGER_TYPES;
 		break;
 	}
 
@@ -306,7 +380,6 @@ int *hw_get_capabilities(void)
 int set_configuration_samplerate(struct serial_device_instance *sdi, float rate)
 {
 	uint32_t divider;
-	char buf[5];
 
 	if(rate < 0.00001 || rate > 200)
 		return SIGROK_ERR_BADVALUE;
@@ -324,13 +397,8 @@ int set_configuration_samplerate(struct serial_device_instance *sdi, float rate)
 
 	g_message("setting sample rate to %.3f Mhz (divider %d, demux %s)", rate, divider,
 			flag_reg & FLAG_DEMUX ? "on" : "off");
-	encode_longcommand(CMD_SET_DIVIDER, divider, buf);
-
-	if(write(sdi->fd, buf, 5) != 5)
-	{
-		g_warning("failed to set rate");
+	if(send_longcommand(sdi->fd, CMD_SET_DIVIDER, divider) != SIGROK_OK)
 		return SIGROK_NOK;
-	}
 	cur_sample_rate = rate;
 
 	return SIGROK_OK;
@@ -350,6 +418,8 @@ int hw_set_configuration(int device_index, int capability, char *value)
 
 	if(capability == HWCAP_SAMPLERATE)
 		ret = set_configuration_samplerate(sdi, atof(value));
+	else if(capability == HWCAP_PROBECONFIG)
+		ret = configure_probes( (GSList *) value);
 	else if(capability == HWCAP_LIMIT_SECONDS)
 	{
 		limit_seconds = atoi(value);
@@ -380,9 +450,11 @@ int hw_set_configuration(int device_index, int capability, char *value)
 
 int hw_start_acquisition(int device_index, gpointer session_device_id)
 {
+	struct datafeed_packet *packet;
+	struct datafeed_header *header;
 	struct serial_device_instance *sdi;
 	char buf[5];
-	uint32_t rdc;
+	uint32_t data;
 
 	if(!(sdi = get_serial_device_instance(serial_devices, device_index)))
 		return SIGROK_NOK;
@@ -391,19 +463,67 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 		return SIGROK_NOK;
 
 	/* send flag register */
-	buf[0] = flag_reg;
-	if(write(sdi->fd, buf, 1) != 1)
+	data = flag_reg << 24;
+	if(send_longcommand(sdi->fd, CMD_SET_FLAGS, data) != SIGROK_OK)
 		return SIGROK_NOK;
 
 	/* send sample limit and pre/post-trigger capture ratio */
-	rdc = limit_samples / 4 << 16;
+	data = limit_samples / 4 << 16;
 	if(capture_ratio)
-		rdc |= (limit_samples - (limit_samples / 100 * capture_ratio)) / 4;
-	encode_longcommand(CMD_CAPTURE_SIZE, rdc, buf);
-	if(write(sdi->fd, buf, 5) != 5)
+		data |= (limit_samples - (limit_samples / 100 * capture_ratio)) / 4;
+	if(send_longcommand(sdi->fd, CMD_CAPTURE_SIZE, data) != SIGROK_OK)
 		return SIGROK_NOK;
 
-	/* TODO: send trigger configuration */
+	/* trigger masks */
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_MASK_0, trigger_mask[0]) != SIGROK_OK)
+		return SIGROK_NOK;
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_MASK_1, trigger_mask[1]) != SIGROK_OK)
+		return SIGROK_NOK;
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_MASK_2, trigger_mask[2]) != SIGROK_OK)
+		return SIGROK_NOK;
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_MASK_3, trigger_mask[3]) != SIGROK_OK)
+		return SIGROK_NOK;
+
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_VALUE_0, trigger_value[0]) != SIGROK_OK)
+		return SIGROK_NOK;
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_VALUE_1, trigger_value[1]) != SIGROK_OK)
+		return SIGROK_NOK;
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_VALUE_2, trigger_value[2]) != SIGROK_OK)
+		return SIGROK_NOK;
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_VALUE_3, trigger_value[3]) != SIGROK_OK)
+		return SIGROK_NOK;
+
+	/* trigger configuration */
+	/* TODO: the start flag should only be on the last used stage I think... */
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_CONFIG_0, 0x00000001) != SIGROK_OK)
+		return SIGROK_NOK;
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_CONFIG_1, 0x00000001) != SIGROK_OK)
+		return SIGROK_NOK;
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_CONFIG_2, 0x00000001) != SIGROK_OK)
+		return SIGROK_NOK;
+	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_CONFIG_3, 0x00000001) != SIGROK_OK)
+		return SIGROK_NOK;
+
+	buf[0] = CMD_RUN;
+	if(write(sdi->fd, buf, 1) != 1)
+		return SIGROK_NOK;
+
+	packet = g_malloc(sizeof(struct datafeed_packet));
+	header = g_malloc(sizeof(struct datafeed_header));
+	if(!packet || !header)
+		return SIGROK_NOK;
+
+	packet->type = DF_HEADER;
+	packet->length = sizeof(struct datafeed_header);
+	packet->payload = (unsigned char *) header;
+	header->feed_version = 1;
+	gettimeofday(&header->starttime, NULL);
+	header->rate = cur_sample_rate;
+	header->protocol_id = PROTO_RAW;
+	header->num_probes = NUM_PROBES;
+	session_bus(session_device_id, packet);
+	g_free(header);
+	g_free(packet);
 
 	return SIGROK_OK;
 }
@@ -411,6 +531,10 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 
 void hw_stop_acquisition(int device_index, gpointer session_device_id)
 {
+	struct datafeed_packet packet;
+
+	packet.type = DF_END;
+	session_bus(session_device_id, &packet);
 
 }
 
