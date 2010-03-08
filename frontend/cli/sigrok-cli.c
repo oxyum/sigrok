@@ -691,6 +691,13 @@ void run_session(void)
 		}
 	}
 
+	if(device->plugin->set_configuration(device->plugin_index, HWCAP_PROBECONFIG, (char *) device->probes) != SIGROK_OK)
+	{
+		printf("Failed to configure probes.\n");
+		session_destroy();
+		return;
+	}
+
 	if(session_start() != SIGROK_OK)
 	{
 		printf("Failed to start session.\n");
