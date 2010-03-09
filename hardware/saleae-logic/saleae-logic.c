@@ -579,26 +579,7 @@ int hw_set_configuration(int device_index, int capability, char *value)
 }
 
 
-gboolean gsource_prepare(GSource *source, int *timeout)
-{
-
-	return FALSE;
-}
-
-
-gboolean gsource_check(GSource *source)
-{
-	struct gsource_fd *sfd;
-
-	sfd = (struct gsource_fd *) source;
-	if(sfd->gpfd.revents)
-		return TRUE;
-
-	return FALSE;
-}
-
-
-gboolean gsource_dispatch(GSource *source, GSourceFunc callback, gpointer data)
+int receive_data(GSource *source, gpointer data)
 {
 	struct timeval tv;
 
@@ -607,14 +588,6 @@ gboolean gsource_dispatch(GSource *source, GSourceFunc callback, gpointer data)
 
 	return TRUE;
 }
-
-
-GSourceFuncs source_funcs = {
-	gsource_prepare,
-	gsource_check,
-	gsource_dispatch,
-	NULL
-};
 
 
 void receive_transfer(struct libusb_transfer *transfer)
@@ -682,8 +655,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	struct datafeed_header *header;
 	struct libusb_transfer *transfer;
 	const struct libusb_pollfd **lupfd;
-	struct gsource_fd *source;
-	int ret, size, i;
+	int size, i;
 	unsigned char *buf;
 	char tmp[16];
 
@@ -727,18 +699,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 
 	lupfd = libusb_get_pollfds(usb_context);
 	for(i = 0; lupfd[i]; i++)
-	{
-		/* new input source to monitor */
-		source = (struct gsource_fd *) g_source_new(&source_funcs, sizeof(struct gsource_fd));
-		g_source_set_callback((GSource *) source, NULL, transfer, NULL);
-		source->gpfd.fd = lupfd[i]->fd;
-		/* libusb uses the poll.h flags, and glib guarantees G_IO_IN and friends
-		 * to be identical to the same poll.h flags	*/
-		source->gpfd.events =  lupfd[i]->events;
-		g_source_add_poll((GSource *) source, &(source->gpfd));
-
-		ret = g_source_attach((GSource *) source, gmaincontext);
-	}
+		add_source_fd(lupfd[i]->fd, lupfd[i]->events, receive_data);
 	free(lupfd);
 
 	packet->type = DF_HEADER;
