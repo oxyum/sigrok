@@ -46,12 +46,6 @@
 extern GMainContext *gmaincontext;
 
 
-struct gsource_fd {
-	GSource source;
-	GPollFD gpfd;
-	GSource *timeout_source;
-};
-
 /* there is only one model Saleae Logic, and this is what it supports */
 int capabilities[] = {
 	HWCAP_LOGIC_ANALYZER,
