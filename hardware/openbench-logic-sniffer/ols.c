@@ -448,6 +448,15 @@ int hw_set_configuration(int device_index, int capability, char *value)
 }
 
 
+int receive_data(GSource *source, gpointer data)
+{
+
+	/* TODO: how do I get a timeout in here? */
+
+	return TRUE;
+}
+
+
 int hw_start_acquisition(int device_index, gpointer session_device_id)
 {
 	struct datafeed_packet *packet;
@@ -504,15 +513,18 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_CONFIG_3, 0x00000001) != SIGROK_OK)
 		return SIGROK_NOK;
 
+	/* start acquisition on the device */
 	buf[0] = CMD_RUN;
 	if(write(sdi->fd, buf, 1) != 1)
 		return SIGROK_NOK;
 
+	add_source_fd(sdi->fd, POLLIN, receive_data);
+
+	/* send header packet to the session bus */
 	packet = g_malloc(sizeof(struct datafeed_packet));
 	header = g_malloc(sizeof(struct datafeed_header));
 	if(!packet || !header)
 		return SIGROK_NOK;
-
 	packet->type = DF_HEADER;
 	packet->length = sizeof(struct datafeed_header);
 	packet->payload = (unsigned char *) header;
