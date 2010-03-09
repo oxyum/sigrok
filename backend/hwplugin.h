@@ -21,6 +21,7 @@
 #define HWPLUGIN_H_
 
 #include <stdint.h>
+#include <glib.h>
 
 #include "device.h"
 
@@ -103,13 +104,15 @@ struct device_plugin {
 };
 
 
-struct device_plugin_io {
-	int fd;
-	GFunc callback;
-	gpointer data;
-	unsigned int timeout_ms;
+struct gsource_fd {
+	GSource source;
+	GPollFD gpfd;
+	/* not really using this */
+	GSource *timeout_source;
 };
 
+
+typedef int (*receive_data_callback) (GSource *source, gpointer data);
 
 int load_hwplugins(void);
 GSList *list_hwplugins(void);
@@ -118,6 +121,6 @@ struct usb_device_instance *usb_device_instance_new(int index, int status, uint8
 struct usb_device_instance *get_usb_device_instance(GSList *usb_devices, int device_index);
 struct serial_device_instance *get_serial_device_instance(GSList *serial_devices, int device_index);
 struct hwcap_option *find_hwcap_option(int hwcap);
-
+void add_source_fd(int fd, int events, receive_data_callback callback);
 
 #endif /* HWPLUGIN_H_ */

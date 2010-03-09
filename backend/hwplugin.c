@@ -29,6 +29,8 @@
 #include "sigrok.h"
 #include "hwplugin.h"
 
+extern GMainContext *gmaincontext;
+
 
 GSList *plugins;
 
@@ -167,6 +169,56 @@ struct hwcap_option *find_hwcap_option(int hwcap)
 	return hwo;
 }
 
+
+gboolean gsource_fd_prepare(GSource *source, int *timeout)
+{
+
+	return FALSE;
+}
+
+
+gboolean gsource_fd_check(GSource *source)
+{
+	struct gsource_fd *sfd;
+
+	sfd = (struct gsource_fd *) source;
+	if(sfd->gpfd.revents)
+		return TRUE;
+
+	return FALSE;
+}
+
+
+gboolean gsource_fd_dispatch(GSource *source, GSourceFunc callback, gpointer data)
+{
+	int ret;
+
+	ret = ( (receive_data_callback) callback)(source, data);
+
+	return ret;
+}
+
+
+GSourceFuncs gsource_fd_funcs = {
+	gsource_fd_prepare,
+	gsource_fd_check,
+	gsource_fd_dispatch,
+	NULL
+};
+
+
+void add_source_fd(int fd, int events, receive_data_callback callback)
+{
+	struct gsource_fd *source;
+
+	source = (struct gsource_fd *) g_source_new(&gsource_fd_funcs, sizeof(struct gsource_fd));
+	g_source_set_callback((GSource *) source, (GSourceFunc) callback, NULL, NULL);
+	source->gpfd.fd = fd;
+	source->gpfd.events = events;
+	g_source_add_poll((GSource *) source, &(source->gpfd));
+	g_source_attach((GSource *) source, gmaincontext);
+
+}
 
 
 
