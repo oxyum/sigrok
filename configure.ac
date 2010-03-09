@@ -42,7 +42,8 @@ AC_CONFIG_FILES([Makefile
 
 AC_SUBST(HWPLUGIN_DIR,'$(libdir)/sigrok')
 AC_SUBST(FIRMWARE_DIR,'$(datadir)/sigrok')
-AC_SUBST(MAKEFLAGS, '--no-print-directory')
+AC_SUBST(MAKEFLAGS, '--no-print-directory --silent')
+AC_SUBST(AM_LIBTOOLFLAGS, '--silent')
 
 AC_OUTPUT
 
