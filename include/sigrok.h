@@ -46,6 +46,7 @@ struct protocol {
 enum {
 	DF_HEADER,
 	DF_END,
+	DF_TRIGGER,
 	DF_LOGIC8,
 	DF_LOGIC16,
 	DF_LOGIC24,

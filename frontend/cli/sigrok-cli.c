@@ -297,6 +297,12 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 		flush_linebufs(device->probes, linebuf, linebuf_len);
 		g_main_loop_quit(gmainloop);
 	}
+	else if(packet->type == DF_TRIGGER)
+	{
+		/* TODO: if pre-trigger capture is set, display ! here. otherwise, the capture
+		 * just always begins with the trigger, which is fine, no need to mark the trigger.
+		 */
+	}
 	else if(packet->type == DF_LOGIC8)
 	{
 		/* every byte represents a complete sample set, with num_probes being the
