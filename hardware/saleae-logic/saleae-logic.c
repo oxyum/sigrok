@@ -43,6 +43,10 @@
 #define FIRMWARE_RENUM_DELAY	3000
 #define NUM_SIMUL_TRANSFERS	10
 
+/* software trigger implementation: positive values indicate trigger stage */
+#define TRIGGER_FIRED			-1
+
+
 extern GMainContext *gmaincontext;
 
 
@@ -69,11 +73,6 @@ GTimeVal firmware_updated = {0};
 
 libusb_context *usb_context = NULL;
 
-float cur_sample_rate = 0;
-int limit_seconds = 0;
-int limit_samples = 0;
-uint8_t probe_mask = 0, trigger_mask[NUM_TRIGGER_STAGES] = {0}, trigger_value[NUM_TRIGGER_STAGES] = {0};
-
 float supported_sample_rates[] = {
 	0.2,
 	0.25,
@@ -87,6 +86,16 @@ float supported_sample_rates[] = {
 	24,
 	0
 };
+
+/* TODO: all of these should go in a device-specific struct */
+float cur_sample_rate = 0;
+int limit_seconds = 0;
+int limit_samples = 0;
+uint8_t probe_mask = 0, \
+		trigger_mask[NUM_TRIGGER_STAGES] = {0}, \
+		trigger_value[NUM_TRIGGER_STAGES] = {0}, \
+		trigger_buffer[NUM_TRIGGER_STAGES] = {0};;
+int trigger_stage = TRIGGER_FIRED;
 
 
 
@@ -320,6 +329,7 @@ int configure_probes(GSList *probes)
 		trigger_value[i] = 0;
 	}
 
+	stage = -1;
 	for(l = probes; l; l = l->next)
 	{
 		probe = (struct probe *) l->data;
@@ -341,6 +351,12 @@ int configure_probes(GSList *probes)
 			}
 		}
 	}
+
+	if(stage == -1)
+		/* we didn't configure any triggers, make sure acquisition doesn't wait for any */
+		trigger_stage = TRIGGER_FIRED;
+	else
+		trigger_stage = 0;
 
 	return SIGROK_OK;
 }
@@ -595,7 +611,7 @@ void receive_transfer(struct libusb_transfer *transfer)
 	static int num_samples = 0;
 	struct datafeed_packet packet;
 	void *user_data;
-	int cur_buflen;
+	int cur_buflen, trigger_offset, i;
 	unsigned char *cur_buf, *new_buf;
 
 	if(transfer == NULL)
@@ -628,20 +644,77 @@ void receive_transfer(struct libusb_transfer *transfer)
 			g_warning("eek");
 		}
 
-		/* send the incoming transfer to the session bus */
-		packet.type = DF_LOGIC8;
-		packet.length = cur_buflen;
-		packet.payload = cur_buf;
-		session_bus(user_data, &packet);
-		g_free(cur_buf);
-
-		num_samples += cur_buflen;
-		if(num_samples > limit_samples)
+		trigger_offset = 0;
+		if(trigger_stage >= 0)
 		{
-			/* end the acquisition */
-			packet.type = DF_END;
+			for(i = 0; i < cur_buflen; i++)
+			{
+				if((cur_buf[i] & trigger_mask[trigger_stage]) == trigger_value[trigger_stage])
+				{
+					/* match on this trigger stage */
+					trigger_buffer[trigger_stage] = cur_buf[i];
+					trigger_stage++;
+					if(trigger_stage == NUM_TRIGGER_STAGES || trigger_mask[trigger_stage] == 0)
+					{
+						trigger_offset = i+1;
+						/* match on all trigger stages, we're done */
+						trigger_stage = TRIGGER_FIRED;
+
+						/* TODO: send pre-trigger buffer to session bus */
+
+						/* tell the frontend we hit the trigger here */
+						packet.type = DF_TRIGGER;
+						packet.length = 0;
+						session_bus(user_data, &packet);
+
+						/* send the samples that triggered it, since we're skipping past them */
+						packet.type = DF_LOGIC8;
+						packet.length = trigger_stage;
+						packet.payload = trigger_buffer;
+						session_bus(user_data, &packet);
+						break;
+					}
+				}
+				else if(trigger_stage > 0)
+				{
+					/* we had a match before, but not in the next sample. however, we may
+					 * have a match on this stage in the next bit -- trigger on 0001 will
+					 * fail on seeing 00001, so we need to go back to stage 0 -- but at
+					 * the next sample from the one that matched originally, which the
+					 * counter increment at the end of the loop takes care of.
+					 */
+					i -= trigger_stage;
+					if(i < -1)
+						/* oops, went back past this buffer */
+						i = -1;
+					/* reset trigger stage */
+					trigger_stage = 0;
+				}
+			}
+		}
+
+		if(trigger_stage == TRIGGER_FIRED)
+		{
+			/* send the incoming transfer to the session bus */
+			packet.type = DF_LOGIC8;
+			packet.length = cur_buflen - trigger_offset;
+			packet.payload = cur_buf + trigger_offset;
 			session_bus(user_data, &packet);
-			num_samples = -1;
+			g_free(cur_buf);
+
+			num_samples += cur_buflen;
+			if(num_samples > limit_samples)
+			{
+				/* end the acquisition */
+				packet.type = DF_END;
+				session_bus(user_data, &packet);
+				num_samples = -1;
+			}
+		}
+		else
+		{
+			/* TODO: buffer pre-trigger data in capture ratio-sized buffer */
+
 		}
 	}
 
