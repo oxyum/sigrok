@@ -121,6 +121,6 @@ struct usb_device_instance *usb_device_instance_new(int index, int status, uint8
 struct usb_device_instance *get_usb_device_instance(GSList *usb_devices, int device_index);
 struct serial_device_instance *get_serial_device_instance(GSList *serial_devices, int device_index);
 struct hwcap_option *find_hwcap_option(int hwcap);
-void add_source_fd(int fd, int events, receive_data_callback callback);
+void add_source_fd(int fd, int events, receive_data_callback callback, gpointer user_data);
 
 #endif /* HWPLUGIN_H_ */

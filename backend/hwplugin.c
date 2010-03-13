@@ -207,12 +207,12 @@ GSourceFuncs gsource_fd_funcs = {
 };
 
 
-void add_source_fd(int fd, int events, receive_data_callback callback)
+void add_source_fd(int fd, int events, receive_data_callback callback, gpointer user_data)
 {
 	struct gsource_fd *source;
 
 	source = (struct gsource_fd *) g_source_new(&gsource_fd_funcs, sizeof(struct gsource_fd));
-	g_source_set_callback((GSource *) source, (GSourceFunc) callback, NULL, NULL);
+	g_source_set_callback((GSource *) source, (GSourceFunc) callback, user_data, NULL);
 	source->gpfd.fd = fd;
 	source->gpfd.events = events;
 	g_source_add_poll((GSource *) source, &(source->gpfd));

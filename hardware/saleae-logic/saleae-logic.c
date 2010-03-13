@@ -772,7 +772,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 
 	lupfd = libusb_get_pollfds(usb_context);
 	for(i = 0; lupfd[i]; i++)
-		add_source_fd(lupfd[i]->fd, lupfd[i]->events, receive_data);
+		add_source_fd(lupfd[i]->fd, lupfd[i]->events, receive_data, NULL);
 	free(lupfd);
 
 	packet->type = DF_HEADER;
