@@ -72,6 +72,7 @@
 #define FLAG_CHANNELGROUP_4	0x20
 #define FLAG_CLOCK_EXTERNAL	0x40
 #define FLAG_CLOCK_INVERTED	0x80
+#define FLAG_RLE				0x0100
 
 
 int capabilities[] = {
@@ -104,7 +105,7 @@ float supported_sample_rates[] = {
 GSList *serial_devices = NULL;
 
 /* current state of the flag register */
-uint8_t flag_reg = 0;
+uint32_t flag_reg = 0;
 
 float cur_sample_rate = 0;
 int limit_seconds = 0;
@@ -448,10 +449,69 @@ int hw_set_configuration(int device_index, int capability, char *value)
 }
 
 
-int receive_data(GSource *source, gpointer data)
+int receive_data(GSource *source, gpointer user_data)
 {
+	static char last_sample[4] = {0xff};
+	static int num_bytes = 0;
+	static unsigned char sample[4];
+	int fd, count, buflen, i;
+	struct datafeed_packet packet;
+	unsigned char byte, *buffer;
 
-	/* TODO: how do I get a timeout in here? */
+	/* TODO: need to get a timeout in here -- can the GSource be changed in place? */
+
+	fd = ((struct gsource_fd *) source)->gpfd.fd;
+	if(read(fd, &byte, 1) != 1)
+		return FALSE;
+
+	sample[num_bytes++] = byte;
+	if(num_bytes == 4)
+	{
+		/* got a full sample */
+		if(flag_reg & FLAG_RLE)
+		{
+			/* in RLE mode -1 should never come in as a sample, because
+			 * bit 31 is the "count" flag */
+			/* TODO: endianness may be wrong here, could be sample[3] */
+			if(sample[0] & 0x80 && !(last_sample[0] & 0x80))
+			{
+				count = (int) (*sample) & 0x7fffffff;
+				buffer = g_malloc(count);
+				buflen = 0;
+				for(i = 0; i < count; i++)
+				{
+					memcpy(buffer + buflen , last_sample, 4);
+					buflen += 4;
+				}
+			}
+			else
+			{
+				/* just a single sample, next sample will probably be a count
+				 * referring to this -- but this one is still a part of the stream
+				 */
+				buffer = sample;
+				buflen = 4;
+			}
+		}
+		else
+		{
+			/* no compression */
+			buffer = sample;
+			buflen = 4;
+		}
+
+		/* send it all to the session bus */
+		packet.type = DF_LOGIC32;
+		packet.length = buflen;
+		packet.payload = buffer;
+		session_bus(user_data, &packet);
+		if(buffer == sample)
+			memcpy(last_sample, buffer, 4);
+		else
+			g_free(buffer);
+
+		num_bytes = 0;
+	}
 
 	return TRUE;
 }
@@ -472,7 +532,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 		return SIGROK_NOK;
 
 	/* send flag register */
-	data = flag_reg << 24;
+	data = flag_reg;
 	if(send_longcommand(sdi->fd, CMD_SET_FLAGS, data) != SIGROK_OK)
 		return SIGROK_NOK;
 
@@ -518,7 +578,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	if(write(sdi->fd, buf, 1) != 1)
 		return SIGROK_NOK;
 
-	add_source_fd(sdi->fd, POLLIN, receive_data);
+	add_source_fd(sdi->fd, POLLIN, receive_data, session_device_id);
 
 	/* send header packet to the session bus */
 	packet = g_malloc(sizeof(struct datafeed_packet));
