@@ -299,8 +299,8 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 	}
 	else if(packet->type == DF_TRIGGER)
 	{
-		/* TODO: if pre-trigger capture is set, display ! here. otherwise, the capture
-		 * just always begins with the trigger, which is fine, no need to mark the trigger.
+		/* TODO: if pre-trigger capture is set, display ! here. Otherwise the capture
+		 * just always begins with the trigger, which is fine: no need to mark the trigger.
 		 */
 	}
 	else if(packet->type == DF_LOGIC8)
