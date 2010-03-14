@@ -1,0 +1,36 @@
+##
+## This file is part of the sigrok project.
+##
+## Copyright (C) 2010 Uwe Hermann <uwe@hermann-uwe.de>
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+##
+
+ACTION!="add|change", GOTO="sigrok_rules_end"
+SUBSYSTEM!="usb|usb_device", GOTO="sigrok_rules_end"
+
+# CWAV USBee SX
+# http://www.usbee.com/sx.html
+ATTRS{idVendor}=="08a9", ATTRS{idProduct}=="0009", MODE="664", GROUP="plugdev"
+
+# Braintechnology USB-LPS
+# http://www.braintechnology.de/braintechnology/usb_lps.html
+ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0498", MODE="664", GROUP="plugdev"
+
+# Saleae Logic
+# http://www.saleae.com/logic/
+ATTRS{idVendor}=="0925", ATTRS{idProduct}=="3881", MODE="664", GROUP="plugdev"
+
+LABEL="sigrok_rules_end"
