@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "generating build system..."
-touch NEWS README AUTHORS ChangeLog
+touch NEWS AUTHORS ChangeLog
 libtoolize --install --copy --quiet
 aclocal
 autoheader

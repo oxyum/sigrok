@@ -1,0 +1,48 @@
+-------------------------------------------------------------------------------
+README
+-------------------------------------------------------------------------------
+
+The sigrok project aims at creating a portable, cross-platform,
+Free/Libre/Open-Source logic analyzer software that supports various
+(usually USB-based) logic analyzer hardware products.
+
+There will be a shared library with common code, a command line utility for
+basic usage and easy scriptability, as well as an intuitive GUI.
+
+
+Status and API
+--------------
+
+The sigrok project is currently work in progress.
+
+IMPORTANT: The API of the library is NOT yet considered stable! Please do
+           not rely on it, yet! Changes to function names, macro names etc.
+           can happen at any time without prior notice!
+
+
+Requirements
+------------
+
+ - libusb 1.0
+ - libglib
+ - QT 4 (only required for the GUI)
+
+
+Building
+--------
+
+ $ ./autogen.sh
+ $ make
+
+
+Installation
+------------
+
+ $ make install
+
+
+Website
+-------
+
+http://sigrok.org
+
