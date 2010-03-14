@@ -1,7 +1,7 @@
 #!/bin/sh
 
 OS=`uname`
-if [ "x$OS" == "xDarwin" ]; then
+if [ "x$OS" = "xDarwin" ]; then
     LIBTOOLIZE=glibtoolize
 else
     LIBTOOLIZE=libtoolize
