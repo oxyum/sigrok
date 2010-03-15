@@ -1,0 +1,16 @@
+-------------------------------------------------------------------------------
+HACKING
+-------------------------------------------------------------------------------
+
+Coding style
+------------
+
+This project is programmed using the Linux kernel coding style, see
+http://lxr.linux.no/linux/Documentation/CodingStyle for details.
+
+Please use the same style for any code contributions, thanks!
+
+As an exception, the GUI application uses the usual Qt / C++ conventions of
+mixed-case variable names, capitel letters for class names etc. However,
+please do use an indention of one tab here too, just as with the other code.
+
