@@ -17,20 +17,18 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIGROK_H_
-#define SIGROK_H_
+#ifndef SIGROK_SIGROK_H
+#define SIGROK_SIGROK_H
 
 #include <glib.h>
 #include <sys/time.h>
 #include <stdint.h>
 
-
 /* returned status/error codes */
 #define SIGROK_STATUS_DISABLED		0
-#define SIGROK_OK					1
-#define SIGROK_NOK					2
+#define SIGROK_OK			1
+#define SIGROK_NOK			2
 #define SIGROK_ERR_BADVALUE		20
-
 
 enum {
 	PROTO_RAW,
@@ -41,7 +39,6 @@ struct protocol {
 	int id;
 	int stackindex;
 };
-
 
 enum {
 	DF_HEADER,
@@ -67,9 +64,7 @@ struct datafeed_header {
 	int num_probes;
 };
 
-
 void feed_data_header(int sessionid, struct datafeed_header);
 void feed_data(int sessionid, int packet_type, char *datafeed);
 
-
-#endif /* SIGROK_H_ */
+#endif

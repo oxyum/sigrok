@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef SIGROK_MAINWINDOW_H
+#define SIGROK_MAINWINDOW_H
 
 #include <QtGui/QMainWindow>
 #include <QLineEdit>
@@ -88,4 +88,4 @@ private slots:
 
 extern MainWindow *w;
 
-#endif // MAINWINDOW_H
+#endif

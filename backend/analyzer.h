@@ -17,8 +17,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ANALYZER_H
-#define ANALYZER_H
+#ifndef SIGROK_ANALYZER_H
+#define SIGROK_ANALYZER_H
 
 struct analyzer {
 	char *name;
@@ -26,6 +26,5 @@ struct analyzer {
 	/* TODO: parameters? if so, configured plugins will need another struct
 	 * TODO: input and output format? */
 };
-
 
 #endif

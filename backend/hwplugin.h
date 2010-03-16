@@ -17,14 +17,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HWPLUGIN_H_
-#define HWPLUGIN_H_
+#ifndef SIGROK_HWPLUGIN_H
+#define SIGROK_HWPLUGIN_H
 
 #include <stdint.h>
 #include <glib.h>
-
 #include "device.h"
-
 
 /* hardware plugin capabilities */
 enum {
@@ -36,7 +34,6 @@ enum {
 	HWCAP_LIMIT_SECONDS,
 	HWCAP_LIMIT_SAMPLES
 };
-
 
 struct hwcap_option {
 	int capability;
@@ -103,14 +100,12 @@ struct device_plugin {
 	void (*stop_acquisition) (int device_index, gpointer session_device_id);
 };
 
-
 struct gsource_fd {
 	GSource source;
 	GPollFD gpfd;
 	/* not really using this */
 	GSource *timeout_source;
 };
-
 
 typedef int (*receive_data_callback) (GSource *source, gpointer data);
 
@@ -123,4 +118,4 @@ struct serial_device_instance *get_serial_device_instance(GSList *serial_devices
 struct hwcap_option *find_hwcap_option(int hwcap);
 void add_source_fd(int fd, int events, receive_data_callback callback, gpointer user_data);
 
-#endif /* HWPLUGIN_H_ */
+#endif

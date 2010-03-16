@@ -17,8 +17,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DATASTORE_H
-#define DATASTORE_H
+#ifndef SIGROK_DATASTORE_H
+#define SIGROK_DATASTORE_H
 
 #include <glib.h>
 
@@ -31,7 +31,6 @@ struct datastore {
 	unsigned int num_units;
 	GSList *chunklist;
 };
-
 
 struct datastore *datastore_new(int unitsize);
 void datastore_destroy(struct datastore *ds);

@@ -17,9 +17,11 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <glib.h>
+#ifndef SIGROK_DEBUG_H
+#define SIGROK_DEBUG_H
 
+#include <glib.h>
 
 void hexdump(gpointer address, int length);
 
-
+#endif

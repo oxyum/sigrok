@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef CHANNELRENDERAREA_H
-#define CHANNELRENDERAREA_H
+#ifndef SIGROK_CHANNELRENDERAREA_H
+#define SIGROK_CHANNELRENDERAREA_H
 
 #include <QWidget>
 #include <QSize>
@@ -78,4 +78,4 @@ private:
 
 };
 
-#endif // CHANNELRENDERAREA_H
+#endif

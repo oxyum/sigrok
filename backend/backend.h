@@ -17,11 +17,10 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BACKEND_H_
-#define BACKEND_H_
-
+#ifndef SIGROK_BACKEND_H
+#define SIGROK_BACKEND_H
 
 int sigrok_init(void);
 void sigrok_cleanup(void);
 
-#endif /* BACKEND_H_ */
+#endif

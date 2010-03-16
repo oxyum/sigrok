@@ -17,12 +17,15 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SIGROK_HWCOMMON_H
+#define SIGROK_HWCOMMON_H
+
 #include <libusb.h>
 #include <glib.h>
-
 
 int ezusb_reset(struct libusb_device_handle *hdl, int set_clear);
 int ezusb_install_firmware(libusb_device_handle *hdl, char *filename);
 
 GSList *list_serial_ports(void);
 
+#endif

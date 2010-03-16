@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef CONFIGFORM_H
-#define CONFIGFORM_H
+#ifndef SIGROK_CONFIGFORM_H
+#define SIGROK_CONFIGFORM_H
 
 #include <QtGui/QWidget>
 #include <QListWidgetItem>
@@ -47,4 +47,4 @@ private slots:
 	void on_closeButton_clicked();
 };
 
-#endif // CONFIGFORM_H
+#endif

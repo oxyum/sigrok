@@ -17,14 +17,11 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#ifndef DEVICE_H
-#define DEVICE_H
+#ifndef SIGROK_DEVICE_H
+#define SIGROK_DEVICE_H
 
 #include <glib.h>
-
 #include "hwplugin.h"
-
 
 struct device {
 	/* which plugin handles this device */
@@ -58,6 +55,5 @@ void device_probe_name(struct device *device, int probenum, char *name);
 
 void device_trigger_clear(struct device *device);
 void device_trigger_set(struct device *device, int probenum, char *trigger);
-
 
 #endif

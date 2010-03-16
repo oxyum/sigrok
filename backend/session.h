@@ -17,11 +17,10 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SESSION_H
-#define SESSION_H
+#ifndef SIGROK_SESSION_H
+#define SIGROK_SESSION_H
 
 #include <stdio.h>
-
 #include "sigrok.h"
 #include "datastore.h"
 #include "device.h"
@@ -68,4 +67,3 @@ void session_bus(struct device *device, struct datafeed_packet *packet);
 void session_save(char *filename);
 
 #endif
-
