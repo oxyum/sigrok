@@ -42,6 +42,7 @@ struct probe {
 	char *trigger;
 };
 
+extern GSList *devices;
 
 void device_scan(void);
 void device_close_all(void);
