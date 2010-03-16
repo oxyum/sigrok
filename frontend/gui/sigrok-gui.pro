@@ -33,7 +33,8 @@ HEADERS   += mainwindow.h \
 FORMS     += mainwindow.ui \
 	     configform.ui
 
-LIBS      += -L../../backend -lbackend -lgmodule-2.0 -lglib-2.0 -lusb-1.0
+LIBS      += -L../../backend -lbackend -lgmodule-2.0 -lglib-2.0 -lusb-1.0 \
+	     -Wl,--export-dynamic
 
 INCLUDEPATH += /usr/include/glib-2.0 /usr/lib/glib-2.0/include \
 	       /usr/include/libusb-1.0 ../../include ../../backend
