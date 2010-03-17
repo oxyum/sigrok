@@ -39,7 +39,6 @@ struct session {
 	GTimeVal starttime;
 	/* sample frequency expressed as 1s / freqdiv */
 	unsigned int freqdiv;
-	struct datastore *datastore;
 };
 
 typedef void (*output_callback) (struct device *device, struct datafeed_packet *packet);
@@ -64,6 +63,7 @@ void session_output_add_callback(output_callback callback);
 int session_start(void);
 void session_stop(void);
 void session_bus(struct device *device, struct datafeed_packet *packet);
-void session_save(char *filename);
+void make_metadata(char *filename);
+int session_save(char *filename);
 
 #endif

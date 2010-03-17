@@ -18,11 +18,16 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
 #include "sigrok.h"
 #include "device.h"
 #include "session.h"
 #include "analyzer.h"
+
+#include <zip.h>
 
 /* there can only be one session at a time */
 struct session *session;
@@ -54,10 +59,6 @@ void session_destroy(void)
 	g_slist_free(session->devices);
 
 	/* TODO: loop over protocols and free them */
-//	g_slist_foreach(session->protocols, (GFunc) xxxxxdevice_destroy, NULL);
-
-	if(session->datastore)
-		datastore_destroy(session->datastore);
 
 	g_free(session);
 
@@ -187,15 +188,121 @@ void session_bus(struct device *device, struct datafeed_packet *packet)
 		cb(device, packet);
 	}
 
-
 }
 
 
-void session_save(char *filename)
+void make_metadata(char *filename)
 {
+	GSList *l, *p;
+	struct device *device;
+	struct probe *probe;
+	FILE *f;
+	int devcnt;
 
-	/* TODO: implement */
+	f = fopen(filename, "wb");
+
+	/* general */
+
+	/* devices */
+	devcnt = 1;
+	for(l = session->devices; l; l = l->next) {
+		device = l->data;
+		fprintf(f, "[device]\n");
+		fprintf(f, "driver = %s\n", device->plugin->name);
+		if(device->datastore)
+			fprintf(f, "capturefile = raw-%d\n", devcnt);
+		for(p = device->probes; p; p = p->next)	{
+			probe = p->data;
+			if(probe->enabled)
+			{
+				fprintf(f, "probe %d", probe->index);
+				if(probe->name)
+					fprintf(f, " name \"%s\"", probe->name);
+				if(probe->trigger)
+					fprintf(f, " trigger \"%s\"", probe->trigger);
+				fprintf(f, "\n");
+			}
+		}
+		devcnt++;
+	}
+
+	/* TODO: protocol analyzers */
+
+	fclose(f);
 
 }
+
+
+int session_save(char *filename)
+{
+	GSList *l, *d;
+	struct device *device;
+	struct datastore *ds;
+	struct zip *zipfile;
+	struct zip_source *src;
+	int bufcnt, devcnt, tmpfile, ret, error;
+	char version[1], rawname[16], metafile[32], *buf;
+
+	/* quietly delete it first, libzip wants replace ops otherwise */
+	unlink(filename);
+
+	if( !(zipfile = zip_open(filename, ZIP_CREATE, &error)) )
+		return SIGROK_NOK;
+
+	/* version */
+	version[0] = '1';
+	if( !(src = zip_source_buffer(zipfile, version, 1, 0)) )
+		return SIGROK_NOK;
+	if(zip_add(zipfile, "version", src) == -1) {
+		g_message("error saving version into zipfile: %s", zip_strerror(zipfile));
+		return SIGROK_NOK;
+	}
+
+	/* metadata */
+	strcpy(metafile, "sigrok-meta-XXXXXX");
+	if( (tmpfile = mkstemp(metafile)) == -1)
+		return SIGROK_NOK;
+	close(tmpfile);
+	make_metadata(metafile);
+	if( !(src = zip_source_file(zipfile, metafile, 0, -1)) )
+		return SIGROK_NOK;
+	if(zip_add(zipfile, "metadata", src) == -1)
+		return SIGROK_NOK;
+	unlink(metafile);
+
+	/* raw */
+	devcnt = 1;
+	for(l = session->devices; l; l = l->next) {
+		device = l->data;
+		ds = device->datastore;
+		if(ds) {
+			buf = malloc(ds->num_units * ds->ds_unitsize + DATASTORE_CHUNKSIZE);
+			bufcnt = 0;
+			for(d = ds->chunklist; d; d = d->next) {
+				memcpy(buf + bufcnt, d->data, DATASTORE_CHUNKSIZE);
+				bufcnt += DATASTORE_CHUNKSIZE;
+			}
+			if( !(src = zip_source_buffer(zipfile, buf, ds->num_units * ds->ds_unitsize, TRUE)) )
+				return SIGROK_NOK;
+			snprintf(rawname, 15, "raw-%d", devcnt);
+			if(zip_add(zipfile, rawname, src) == -1)
+				return SIGROK_NOK;
+		}
+		devcnt++;
+	}
+
+	if( (ret = zip_close(zipfile)) == -1) {
+		g_message("error saving zipfile: %s", zip_strerror(zipfile));
+		return SIGROK_NOK;
+	}
+
+	return SIGROK_OK;
+}
+
+
+
+
+
+
 
 
