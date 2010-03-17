@@ -296,7 +296,8 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 
 		/* saving session will need a datastore to dump into the session file */
 		if(opt_save_session_filename) {
-			unitsize = (num_enabled_probes >> 3) + (num_enabled_probes & 3) ? 1 : 0;
+			/* work out how many bytes are needed to store num_enabled_probes bits */
+			unitsize = (num_enabled_probes + 7) / 8;
 			device->datastore = datastore_new(unitsize);
 		}
 
