@@ -808,7 +808,7 @@ void hw_stop_acquisition(int device_index, gpointer session_device_id)
 
 
 struct device_plugin plugin_info = {
-	"Saleae Logic",
+	"saleae-logic",
 	1,
 	hw_init,
 	hw_cleanup,
