@@ -295,7 +295,6 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 		num_probes = header->num_probes;
 
 		/* saving session will need a datastore to dump into the session file */
-		/* TODO: this cannot work with multiple devices */
 		if(opt_save_session_filename) {
 			unitsize = (num_enabled_probes >> 3) + (num_enabled_probes & 3) ? 1 : 0;
 			device->datastore = datastore_new(unitsize);
@@ -306,6 +305,9 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 		break;
 	case DF_END:
 		flush_linebufs(device->probes, linebuf, linebuf_len);
+		/* not detecting short sample count for seconds limit here */
+		if(limit_samples && received_samples < limit_samples)
+			printf("Device only sent %d samples.\n", received_samples);
 		g_main_loop_quit(gmainloop);
 		break;
 	case DF_TRIGGER:
@@ -334,51 +336,53 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 	}
 
 	if(sample_size > 0) {
-		if(format_base == 'b')
-		{
-			/* we're handling all probes here, not checking whether they're
-			 * enabled or not. flush_linebufs() will skip them.
-			 */
-			bpl_offset = bpl_cnt = 0;
-			for(offset = 0; received_samples < limit_samples && offset < packet->length; offset += sample_size)
-			{
-				memcpy(&sample, packet->payload+offset, sample_size);
-				for(p = 0; p < num_probes; p++)
-				{
-					if(sample & (1 << p))
-						linebuf[p * linebuf_len + bpl_offset] = '1';
-					else
-						linebuf[p * linebuf_len + bpl_offset] = '0';
-				}
-				bpl_offset++;
-				bpl_cnt++;
-
-				/* space every 8th bit */
-				if((bpl_cnt & 7) == 0)
-				{
-					for(p = 0; p < num_probes; p++)
-						linebuf[p * linebuf_len + bpl_offset] = ' ';
-					bpl_offset++;
-				}
-
-				/* end of line */
-				if(bpl_cnt >= format_bpl)
-				{
-					flush_linebufs(device->probes, linebuf, linebuf_len);
-					bpl_offset = bpl_cnt = 0;
-				}
-				received_samples++;
-			}
-		}
-		else
-		{
-			/* TODO: implement hex output mode */
-		}
-
 		if(device->datastore) {
 			datastore_put(device->datastore, packet->payload, packet->length, sample_size, probelist);
 		}
 
+		if(!opt_save_session_filename) {
+			/* don't dump samples on stdout when also saving the session */
+			if(format_base == 'b')
+			{
+				/* we're handling all probes here, not checking whether they're
+				 * enabled or not. flush_linebufs() will skip them.
+				 */
+				bpl_offset = bpl_cnt = 0;
+				for(offset = 0; received_samples < limit_samples && offset < packet->length; offset += sample_size)
+				{
+					memcpy(&sample, packet->payload+offset, sample_size);
+					for(p = 0; p < num_probes; p++)
+					{
+						if(sample & (1 << p))
+							linebuf[p * linebuf_len + bpl_offset] = '1';
+						else
+							linebuf[p * linebuf_len + bpl_offset] = '0';
+					}
+					bpl_offset++;
+					bpl_cnt++;
+
+					/* space every 8th bit */
+					if((bpl_cnt & 7) == 0)
+					{
+						for(p = 0; p < num_probes; p++)
+							linebuf[p * linebuf_len + bpl_offset] = ' ';
+						bpl_offset++;
+					}
+
+					/* end of line */
+					if(bpl_cnt >= format_bpl)
+					{
+						flush_linebufs(device->probes, linebuf, linebuf_len);
+						bpl_offset = bpl_cnt = 0;
+					}
+				}
+			}
+			else
+			{
+				/* TODO: implement hex output mode */
+			}
+		}
+		received_samples += packet->length / sample_size;
 	}
 
 }
