@@ -40,8 +40,9 @@
 #define TRIGGER_TYPES			"01"
 #define FIRMWARE FIRMWARE_DIR	"/saleae-logic.firmware"
 /* delay in ms */
-#define FIRMWARE_RENUM_DELAY	3000
+#define FIRMWARE_RENUM_DELAY	2000
 #define NUM_SIMUL_TRANSFERS	10
+#define MAX_EMPTY_TRANSFERS	NUM_SIMUL_TRANSFERS * 2
 
 /* software trigger implementation: positive values indicate trigger stage */
 #define TRIGGER_FIRED			-1
@@ -609,24 +610,23 @@ int receive_data(GSource *source, gpointer data)
 void receive_transfer(struct libusb_transfer *transfer)
 {
 	static int num_samples = 0;
+	static int empty_transfer_count = 0;
+
 	struct datafeed_packet packet;
 	void *user_data;
 	int cur_buflen, trigger_offset, i;
 	unsigned char *cur_buf, *new_buf;
 
-	if(transfer == NULL)
-	{
+	if(transfer == NULL) {
 		/* hw_stop_acquisition() telling us to stop */
 		num_samples = -1;
 	}
 
-	if(num_samples == -1)
-	{
+	if(num_samples == -1) {
 		/* acquisition has already ended, just free any queued up transfer that come in */
 		libusb_free_transfer(transfer);
 	}
-	else
-	{
+	else {
 		g_message("receive_transfer(): status %d received %d bytes", transfer->status, transfer->actual_length);
 
 		/* save the incoming transfer before reusing the transfer struct */
@@ -638,11 +638,25 @@ void receive_transfer(struct libusb_transfer *transfer)
 		new_buf = g_malloc(4096);
 		transfer->buffer = new_buf;
 		transfer->length = 4096;
-		if(libusb_submit_transfer(transfer) != 0)
-		{
+		if(libusb_submit_transfer(transfer) != 0) {
 			/* TODO: stop session? */
 			g_warning("eek");
 		}
+
+		if(cur_buflen == 0) {
+			empty_transfer_count++;
+			if(empty_transfer_count > MAX_EMPTY_TRANSFERS) {
+				/* the FX2 gave up... end the acquisition, the frontend will work
+				 * out that the samplecount is short
+				 */
+				packet.type = DF_END;
+				session_bus(user_data, &packet);
+				num_samples = -1;
+			}
+			return;
+		}
+		else
+			empty_transfer_count = 0;
 
 		trigger_offset = 0;
 		if(trigger_stage >= 0)
