@@ -52,8 +52,8 @@ static gboolean opt_version = FALSE;
 static gboolean opt_list_hwplugins = FALSE;
 static gboolean opt_list_devices = FALSE;
 static gboolean opt_list_analyzers = FALSE;
-static gchar *load_session_filename = NULL;
-static gchar *save_session_filename = NULL;
+static gchar *opt_load_session_filename = NULL;
+static gchar *opt_save_session_filename = NULL;
 static int opt_device = -1;
 static gchar *opt_probes = NULL;
 static gchar *opt_triggers = NULL;
@@ -69,8 +69,8 @@ static GOptionEntry optargs[] =
 	{ "list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL },
 	{ "list-analyzer-plugins", 'A', 0, G_OPTION_ARG_NONE, &opt_list_analyzers, "List analyzer plugins", NULL },
 
-	{ "load-session-file", 'L', 0, G_OPTION_ARG_FILENAME, &load_session_filename, "Load session from file", NULL },
-	{ "save-session-file", 'S', 0, G_OPTION_ARG_FILENAME, &save_session_filename, "Save session to file", NULL },
+	{ "load-session-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_session_filename, "Load session from file", NULL },
+	{ "save-session-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_session_filename, "Save session to file", NULL },
 	{ "device", 'd', 0, G_OPTION_ARG_INT, &opt_device, "Use device id", NULL },
 	{ "probes", 'p', 0, G_OPTION_ARG_STRING, &opt_probes, "Probes to use", NULL },
 	{ "triggers", 't', 0, G_OPTION_ARG_STRING, &opt_triggers, "Trigger configuration", NULL },
@@ -263,89 +263,122 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 	static int num_probes = 0;
 	static int received_samples = 0;
 	static int linebuf_len = 0;
+	static int probelist[65] = {0};
 	static char *linebuf = NULL;
 
 	struct probe *probe;
 	struct datafeed_header *header;
-	int num_enabled_probes, offset, p, buf_offset, bpl_cnt, i;
-	unsigned int sample;
+	int num_enabled_probes, offset, sample_size, unitsize, p, bpl_offset, bpl_cnt, i;
+	uint64_t sample;
 
 	/* if the first packet to come in isn't a header, don't even try */
 	if(packet->type != DF_HEADER && linebuf == NULL)
 		return;
 
-	if(packet->type == DF_HEADER)
+	sample_size = 0;
+
+	switch(packet->type)
 	{
+	case DF_HEADER:
 		header = (struct datafeed_header *) packet->payload;
 		num_enabled_probes = 0;
 		for(i = 0; i < header->num_probes; i++)
 		{
 			probe = g_slist_nth_data(device->probes, i);
 			if(probe->enabled)
-				num_enabled_probes++;
+				probelist[num_enabled_probes++] = probe->index;
 		}
+		probelist[num_enabled_probes] = 0;
 		printf("Acquisition with %d/%d probes at %.3f Mhz starting at %s",
 				num_enabled_probes, header->num_probes, header->rate,
 				ctime(&header->starttime.tv_sec));
 		num_probes = header->num_probes;
 
+		/* saving session will need a datastore to dump into the session file */
+		/* TODO: this cannot work with multiple devices */
+		if(opt_save_session_filename) {
+			unitsize = (num_enabled_probes >> 3) + (num_enabled_probes & 3) ? 1 : 0;
+			device->datastore = datastore_new(unitsize);
+		}
+
 		linebuf_len = format_bpl * 2;
 		linebuf = g_malloc0(num_probes * linebuf_len);
-	}
-	else if(packet->type == DF_END)
-	{
+		break;
+	case DF_END:
 		flush_linebufs(device->probes, linebuf, linebuf_len);
 		g_main_loop_quit(gmainloop);
-	}
-	else if(packet->type == DF_TRIGGER)
-	{
+		break;
+	case DF_TRIGGER:
 		/* TODO: if pre-trigger capture is set, display ! here. Otherwise the capture
 		 * just always begins with the trigger, which is fine: no need to mark the trigger.
 		 */
+		break;
+	case DF_LOGIC8:
+		sample_size = 1;
+		break;
+	case DF_LOGIC16:
+		sample_size = 2;
+		break;
+	case DF_LOGIC24:
+		sample_size = 3;
+		break;
+	case DF_LOGIC32:
+		sample_size = 4;
+		break;
+	case DF_LOGIC48:
+		sample_size = 6;
+		break;
+	case DF_LOGIC64:
+		sample_size = 8;
+		break;
 	}
-	else if(packet->type == DF_LOGIC8)
-	{
-		/* every byte represents a complete sample set, with num_probes being the
-		 * number of bits that are relevant. we're handling all probes here, not
-		 * checking whether they're enabled or not. flush_linebufs() will skip them.
-		 */
+
+	if(sample_size > 0) {
 		if(format_base == 'b')
 		{
-			buf_offset = bpl_cnt = 0;
-			for(offset = 0; received_samples < limit_samples && offset < packet->length; offset++)
+			/* we're handling all probes here, not checking whether they're
+			 * enabled or not. flush_linebufs() will skip them.
+			 */
+			bpl_offset = bpl_cnt = 0;
+			for(offset = 0; received_samples < limit_samples && offset < packet->length; offset += sample_size)
 			{
-				sample = packet->payload[offset];
+				memcpy(&sample, packet->payload+offset, sample_size);
 				for(p = 0; p < num_probes; p++)
 				{
 					if(sample & (1 << p))
-						linebuf[p * linebuf_len + buf_offset] = '1';
+						linebuf[p * linebuf_len + bpl_offset] = '1';
 					else
-						linebuf[p * linebuf_len + buf_offset] = '0';
+						linebuf[p * linebuf_len + bpl_offset] = '0';
 				}
-				buf_offset++;
+				bpl_offset++;
 				bpl_cnt++;
 
 				/* space every 8th bit */
 				if((bpl_cnt & 7) == 0)
 				{
 					for(p = 0; p < num_probes; p++)
-						linebuf[p * linebuf_len + buf_offset] = ' ';
-					buf_offset++;
+						linebuf[p * linebuf_len + bpl_offset] = ' ';
+					bpl_offset++;
 				}
 
 				/* end of line */
 				if(bpl_cnt >= format_bpl)
 				{
 					flush_linebufs(device->probes, linebuf, linebuf_len);
-					buf_offset = bpl_cnt = 0;
+					bpl_offset = bpl_cnt = 0;
 				}
 				received_samples++;
 			}
 		}
 		else
 		{
-			/* TODO: implement */
+			/* TODO: implement hex output mode */
 		}
+
+		if(device->datastore) {
+			datastore_put(device->datastore, packet->payload, packet->length, sample_size, probelist);
+		}
+
 	}
 
 }
@@ -733,7 +766,9 @@ void run_session(void)
 		tcsetattr(STDIN_FILENO, TCSANOW, &term_orig);
 	}
 	session_stop();
-
+	if(opt_save_session_filename)
+		if(session_save(opt_save_session_filename) != SIGROK_OK)
+			printf("Failed to save session.\n");
 	session_destroy();
 
 }

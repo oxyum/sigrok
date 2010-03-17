@@ -47,7 +47,9 @@ enum {
 	DF_LOGIC8,
 	DF_LOGIC16,
 	DF_LOGIC24,
-	DF_LOGIC32
+	DF_LOGIC32,
+	DF_LOGIC48,
+	DF_LOGIC64
 };
 
 struct datafeed_packet {
