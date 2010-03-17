@@ -33,8 +33,7 @@ HEADERS   += mainwindow.h \
 FORMS     += mainwindow.ui \
 	     configform.ui
 
-LIBS      += -L../../backend -lbackend -lgmodule-2.0 -lglib-2.0 -lusb-1.0 \
-	     -Wl,--export-dynamic
+LIBS      += -L../../backend -lbackend -lgmodule-2.0 -lglib-2.0 -lusb-1.0
 
 INCLUDEPATH += /usr/include/glib-2.0 /usr/lib/glib-2.0/include \
 	       /usr/include/libusb-1.0 ../../include ../../backend
@@ -43,9 +42,11 @@ RESOURCES += sigrok-gui.qrc
 
 # TODO: This may need fixes.
 macx {
-	LIBS += -L/opt/local/lib
-	INCLUDEPATH += /opt/local/include
-	FILETYPES.files = ../lib/libsigrok.dylib
-	FILETYPES.path = Contents/Frameworks
-	QMAKE_BUNDLE_DATA += FILETYPES
+	LIBS += -L/opt/local/lib -L/opt/local/lib/glib-2.0 -lgmodule-2.0 -lglib-2.0
+	INCLUDEPATH += /opt/local/lib/glib-2.0/include /opt/local/include/glib-2.0
+	#FILETYPES.files = ../lib/libsigrok.dylib
+	#FILETYPES.path = Contents/Frameworks
+	#QMAKE_BUNDLE_DATA += FILETYPES
+}else{
+	LIBS += -Wl,--export-dynamic
 }
