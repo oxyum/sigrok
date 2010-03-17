@@ -27,13 +27,13 @@
 
 struct datastore {
 	/* size in bytes of the number of units stored in this datastore */
-	int unitsize;
+	int ds_unitsize;
 	unsigned int num_units;
 	GSList *chunklist;
 };
 
 struct datastore *datastore_new(int unitsize);
 void datastore_destroy(struct datastore *ds);
-void datastore_put(struct datastore *ds, unsigned int num_units, int unitsize, gpointer data);
+void datastore_put(struct datastore *ds, void *data, unsigned int length, int in_unitsize, int *probelist);
 
 #endif
