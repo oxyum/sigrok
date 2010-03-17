@@ -33,6 +33,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <glib.h>
+#include <gmodule.h>
 #include "sigrok.h"
 #include "backend.h"
 #include "device.h"
@@ -41,6 +42,11 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+GMainContext *gmaincontext = NULL;
+GMainLoop *gmainloop = NULL;
+
+uint64_t limit_samples = 0; /* FIXME */
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow)
@@ -189,12 +195,14 @@ void MainWindow::on_actionScan_triggered()
 	int ret;
 	QString s;
 	int num_devices;
+	struct device *device;
 
 	statusBar()->showMessage(tr("Scanning for logic analyzers..."));
 
 	device_scan();
 	devices = device_list();
 	num_devices = g_slist_length(devices);
+	device = (struct device *)g_slist_nth_data(devices, 0 /* opt_device */);
 
 	if (num_devices == 0) {
 		s = tr("No supported logic analyzer found.");
@@ -202,19 +210,18 @@ void MainWindow::on_actionScan_triggered()
 		return;
 	} else {
 		s = tr("Found supported logic analyzer: ");
-		// s.append(sigrok_logic_analyzers[ret].shortname);
+		s.append(device->plugin->name);
 		statusBar()->showMessage(s);
 	}
 
-	setCurrentLA(ret);
+	setCurrentLA(0 /* TODO */);
 	setNumChannels(8); /* FIXME */
-	// setNumChannels(sigrok_logic_analyzers[ret].numchannels);
 
 	ui->comboBoxLA->clear();
 	/* FIXME */
-	// ui->comboBoxLA->addItem(sigrok_logic_analyzers[ret].shortname);
-	// ui->labelChannels->setText(s.sprintf("Channels: %d",
-	// 		sigrok_logic_analyzers[ret].numchannels));
+	ui->comboBoxLA->addItem(device->plugin->name);
+	ui->labelChannels->setText(s.sprintf("Channels: %d",
+			getNumChannels()));
 
 	// FIXME
 	// i = 0;
@@ -226,9 +233,11 @@ void MainWindow::on_actionScan_triggered()
 	// }
 
 	/* FIXME */
+	ui->comboBoxNumSamples->addItem("100", 100); /* For testing... */
 	ui->comboBoxNumSamples->addItem("3000000", 3000000);
 	ui->comboBoxNumSamples->addItem("2000000", 2000000);
 	ui->comboBoxNumSamples->addItem("1000000", 1000000);
+
 	ui->comboBoxNumSamples->setEditable(true);
 
 	/// ret = sigrok_hw_init(getCurrentLA(), &ctx);
@@ -338,6 +347,69 @@ void MainWindow::on_action_Save_as_triggered()
 	file.close();
 }
 
+void datafeed_callback(struct device *device, struct datafeed_packet *packet)
+{
+	static int num_probes = 0;
+	static int received_samples = 0;
+	static int probelist[65] = {0};
+
+	struct probe *probe;
+	struct datafeed_header *header;
+	int num_enabled_probes, offset, sample_size, unitsize, p;
+	int bpl_offset, bpl_cnt;
+	uint64_t sample;
+
+	sample_size = -1;
+
+	// if(packet->type != DF_HEADER && linebuf == NULL)
+	//	return;
+
+	switch (packet->type) {
+	case DF_HEADER:
+		printf("DF_HEADER\n");
+		header = (struct datafeed_header *) packet->payload;
+		num_probes = header->num_probes;
+		num_enabled_probes = 0;
+		for (int i = 0; i < header->num_probes; ++i) {
+			probe = (struct probe *)g_slist_nth_data(device->probes, i);
+			if (probe->enabled)
+				probelist[num_enabled_probes++] = probe->index;
+		}
+
+		printf("Acquisition with %d/%d probes at %.3fMHz starting "
+		       "at %s (%llu samples)\n", num_enabled_probes, num_probes,
+		       header->rate, ctime(&header->starttime.tv_sec),
+		       limit_samples);
+
+		// linebuf = g_malloc0(num_probes * linebuf_len);
+		break;
+	case DF_END:
+		printf("DF_END\n");
+		g_main_loop_quit(gmainloop);
+		break;
+	case DF_TRIGGER:
+		/* TODO */
+		break;
+	case DF_LOGIC8:
+		sample_size = 1;
+		printf("DF_LOGIC8\n");
+		break;
+	/* TODO: DF_LOGIC16 etc. */
+	}
+
+	if (sample_size < 0)
+		return;
+
+	for (uint64_t i = 0; received_samples < limit_samples
+			     && i < packet->length; i += sample_size) {
+		sample = 0;
+		memcpy(&sample, packet->payload + offset, sample_size);
+		sample_buffer[i] = (uint8_t)(sample & 0xff); /* FIXME */
+		printf("Sample %d: 0x%x\n", i, sample);
+		received_samples++;
+	}
+}
+
 void MainWindow::on_action_Get_samples_triggered()
 {
 	uint8_t *buf;
@@ -348,20 +420,50 @@ void MainWindow::on_action_Get_samples_triggered()
 	QString s;
 	int opt_device;
 	struct device *device;
+	char numBuf[16];
 
 	opt_device = 0; /* FIXME */
 
-	session_new();
-	// session_output_add_callback(datafeed_callback);
+	limit_samples = numSamplesLocal;
 
+	sample_buffer = (uint8_t *)malloc(limit_samples);
+	if (sample_buffer == NULL) {
+		/* TODO: Error handling. */
+		return;
+	}
+
+	session_new();
+	session_output_add_callback(datafeed_callback);
 	device = (struct device *)g_slist_nth_data(devices, opt_device);
+
+	snprintf(numBuf, 16, "%llu", limit_samples);
+	device->plugin->set_configuration(device->plugin_index,
+		HWCAP_LIMIT_SAMPLES, (char *)numBuf);
+
+
 	if (session_device_add(device) != SIGROK_OK) {
 		printf("Failed to use device.\n");
 		session_destroy();
 		return;
 	}
 
+	if (session_start() != SIGROK_OK) {
+		printf("Failed to start session.\n");
+		session_destroy();
+		return;
+	}
 
+	gmaincontext = g_main_context_default();
+	gmainloop = g_main_loop_new(gmaincontext, FALSE);
+	g_main_loop_run(gmainloop);
+
+	session_stop();
+	session_destroy();
+
+	// FIXME
+	setNumChannels(8);
+
+#if 0
 	// if (getCurrentLA() < 0) {
 	// 	/* TODO */
 	// 	return;
@@ -394,6 +496,8 @@ void MainWindow::on_action_Get_samples_triggered()
 	progress.setValue(numSamplesLocal);
 
 	sample_buffer = buf;
+#endif
+
 	for (int i = 0; i < getNumChannels(); ++i) {
 		channelRenderAreas[i]->setChannelNumber(i);
 		channelRenderAreas[i]->setNumSamples(numSamplesLocal);

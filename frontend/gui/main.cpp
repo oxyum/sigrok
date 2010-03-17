@@ -35,9 +35,6 @@ extern "C" {
 }
 #endif
 
-/* TODO: Should be removed later. */
-GMainContext *gmaincontext = NULL;
-
 uint8_t *sample_buffer;
 
 MainWindow *w;
