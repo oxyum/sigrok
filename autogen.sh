@@ -25,13 +25,13 @@ else
     LIBTOOLIZE=libtoolize
 fi
 
-echo "generating build system..."
+echo "Generating build system..."
 touch NEWS AUTHORS ChangeLog
-${LIBTOOLIZE} --install --copy --quiet
-aclocal
-autoheader
-automake --add-missing --copy --gnu
-autoconf
+${LIBTOOLIZE} --install --copy --quiet || exit 1
+aclocal || exit 1
+autoheader || exit 1
+automake --add-missing --copy --gnu || exit 1
+autoconf || exit 1
 
 ./configure "$@" && echo "Type 'make' to compile."
 
