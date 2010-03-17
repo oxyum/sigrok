@@ -73,7 +73,7 @@ void datastore_put(struct datastore *ds, void *data, unsigned int length, int in
 		 */
 		buf = malloc(length);
 		in_offset = out_offset = 0;
-		while(in_offset < length) {
+		while(in_offset < length - in_unitsize) {
 			memcpy(&sample_in, data + in_offset, in_unitsize);
 			sample_out = 0;
 			out_bit = 0;
@@ -115,6 +115,7 @@ void datastore_put(struct datastore *ds, void *data, unsigned int length, int in
 			/* last part, won't fill up this chunk */
 			size = out_offset - stored;
 		memcpy(chunk + chunk_offset, buf + stored, size);
+		chunk_bytes_free -= size;
 		stored += size;
 	}
 	ds->num_units += stored / ds->ds_unitsize;
