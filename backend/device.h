@@ -22,7 +22,14 @@
 
 #include <glib.h>
 #include "hwplugin.h"
+#include "datastore.h"
 
+
+/* this represents a generic device connected to the system. For device-specific
+ * information, ask the plugin. The plugin_index refers the device index within
+ * thgat plugin; it may be handling more than one device. All relevant plugin calls
+ * take a device_index parameter for this.
+ */
 struct device {
 	/* which plugin handles this device */
 	struct device_plugin *plugin;
@@ -30,6 +37,8 @@ struct device {
 	int plugin_index;
 	/* list of struct probe* */
 	GSList *probes;
+	/* data acquired by this device, if any */
+	struct datastore *datastore;
 };
 
 struct probe {
