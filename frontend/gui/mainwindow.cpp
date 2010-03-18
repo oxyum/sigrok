@@ -196,6 +196,7 @@ void MainWindow::on_actionScan_triggered()
 	int num_devices;
 	struct device *device;
 	char *di_num_probes;
+	uint64_t *di_samplerates;
 
 	statusBar()->showMessage(tr("Scanning for logic analyzers..."));
 
@@ -230,14 +231,19 @@ void MainWindow::on_actionScan_triggered()
 	ui->labelChannels->setText(s.sprintf("Channels: %d",
 			getNumChannels()));
 
-	// FIXME
-	// i = 0;
-	// la = sigrok_logic_analyzers[getCurrentLA()];
-	// while (la.samplerates[i].string != NULL) {
-	// 	ui->comboBoxSampleRate->addItem(la.samplerates[i].string,
-	// 		la.samplerates[i].samplerate);
-	// 	i++;
-	// }
+	di_samplerates = (uint64_t *)device->plugin->get_device_info(
+			device->plugin_index, DI_SAMPLE_RATES);
+	if (!di_samplerates) {
+		/* TODO: Error handling. */
+	}
+
+	for (int i = 0; di_samplerates[i]; ++i) {
+		if (di_samplerates[i] < 1000000)
+			s.sprintf("%llu kHz", di_samplerates[i] / 1000);
+		else
+			s.sprintf("%llu MHz", di_samplerates[i] / 1000000);
+		ui->comboBoxSampleRate->addItem(s, di_samplerates[i]);
+	}
 
 	/* FIXME */
 	ui->comboBoxNumSamples->addItem("100", 100); /* For testing... */
