@@ -196,6 +196,7 @@ void MainWindow::on_actionScan_triggered()
 	QString s;
 	int num_devices;
 	struct device *device;
+	char *di_num_probes;
 
 	statusBar()->showMessage(tr("Scanning for logic analyzers..."));
 
@@ -215,7 +216,14 @@ void MainWindow::on_actionScan_triggered()
 	}
 
 	setCurrentLA(0 /* TODO */);
-	setNumChannels(8); /* FIXME */
+
+	di_num_probes = device->plugin->get_device_info(device->plugin_index,
+							DI_NUM_PROBES);
+	if (di_num_probes != NULL) {
+		setNumChannels(GPOINTER_TO_INT(di_num_probes));
+	} else {
+		setNumChannels(8); /* FIXME: Error handling. */
+	}
 
 	ui->comboBoxLA->clear();
 	/* FIXME */
@@ -459,9 +467,6 @@ void MainWindow::on_action_Get_samples_triggered()
 
 	session_stop();
 	session_destroy();
-
-	// FIXME
-	setNumChannels(8);
 
 #if 0
 	// if (getCurrentLA() < 0) {
