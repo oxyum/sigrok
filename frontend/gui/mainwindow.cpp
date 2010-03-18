@@ -249,6 +249,7 @@ void MainWindow::on_actionScan_triggered()
 	}
 
 	/* FIXME */
+	ui->comboBoxNumSamples->clear();
 	ui->comboBoxNumSamples->addItem("100", 100); /* For testing... */
 	ui->comboBoxNumSamples->addItem("3000000", 3000000);
 	ui->comboBoxNumSamples->addItem("2000000", 2000000);
