@@ -44,6 +44,7 @@ RESOURCES += sigrok-gui.qrc
 macx {
 	LIBS += -L/opt/local/lib -L/opt/local/lib/glib-2.0 -lgmodule-2.0 -lglib-2.0
 	INCLUDEPATH += /opt/local/lib/glib-2.0/include /opt/local/include/glib-2.0
+	ICON = icons/sigrok-gui.icns
 	#FILETYPES.files = ../lib/libsigrok.dylib
 	#FILETYPES.path = Contents/Frameworks
 	#QMAKE_BUNDLE_DATA += FILETYPES
