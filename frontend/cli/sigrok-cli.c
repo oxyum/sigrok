@@ -24,6 +24,7 @@
 #include <string.h>
 #include <poll.h>
 #include <time.h>
+#include <inttypes.h>
 #include <glib.h>
 
 #include "config.h"
@@ -152,7 +153,7 @@ void show_device_detail(void)
 	struct device *device;
 	struct hwcap_option *hwo;
 	GSList *devices;
-	float *sample_rates;
+	uint64_t *sample_rates;
 	int cap, *capabilities, i;
 	char *title, *triggers;
 
@@ -194,12 +195,21 @@ void show_device_detail(void)
 			{
 				printf("    %s", hwo->shortname);
 				/* supported sample rates */
-				sample_rates = (float *) device->plugin->get_device_info(device->plugin_index, DI_SAMPLE_RATES);
+				sample_rates = (uint64_t *) device->plugin->get_device_info(device->plugin_index, DI_SAMPLE_RATES);
 				if(sample_rates)
 				{
 					printf(" - supported sample rates:\n");
-					for(i = 0; sample_rates[i]; i++)
-						printf("        %7.3f\n", sample_rates[i]);
+					for(i = 0; sample_rates[i]; i++) {
+						printf("    ");
+						if(sample_rates[i] >= GHZ(1))
+							printf("%6"PRId64" GHz\n", sample_rates[i] / 1000000000);
+						else if(sample_rates[i] >= MHZ(1))
+							printf("%6"PRId64" MHz\n", sample_rates[i] / 1000000);
+						else if(sample_rates[i] >= KHZ(1))
+							printf("%6"PRId64" KHz\n", sample_rates[i] / 1000);
+						else
+							printf("%6"PRId64" Hz\n", sample_rates[i]);
+					}
 				}
 				else
 					printf("\n");
@@ -289,10 +299,17 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 				probelist[num_enabled_probes++] = probe->index;
 		}
 		probelist[num_enabled_probes] = 0;
-		printf("Acquisition with %d/%d probes at %.3f Mhz starting at %s",
-				num_enabled_probes, header->num_probes, header->rate,
-				ctime(&header->starttime.tv_sec));
 		num_probes = header->num_probes;
+		printf("Acquisition with %d/%d probes at ", num_enabled_probes, num_probes);
+		if(header->rate >= GHZ(1))
+			printf("%"PRId64" GHz", header->rate / 1000000000);
+		else if(header->rate >= MHZ(1))
+			printf("%"PRId64" MHz", header->rate / 1000000);
+		else if(header->rate >= KHZ(1))
+			printf("%"PRId64" KHz", header->rate / 1000);
+		else
+			printf("%"PRId64" Hz", header->rate);
+		printf(" starting at %s", ctime(&header->starttime.tv_sec));
 
 		/* saving session will need a datastore to dump into the session file */
 		if(opt_save_session_filename) {
@@ -341,20 +358,20 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 			datastore_put(device->datastore, packet->payload, packet->length, sample_size, probelist);
 		}
 
+		/* don't dump samples on stdout when also saving the session */
 		if(!opt_save_session_filename) {
-			/* don't dump samples on stdout when also saving the session */
+			/* we're handling all probes here, not checking whether they're
+			 * enabled or not. flush_linebufs() will skip them.
+			 */
 			if(format_base == 'b')
 			{
-				/* we're handling all probes here, not checking whether they're
-				 * enabled or not. flush_linebufs() will skip them.
-				 */
 				bpl_offset = bpl_cnt = 0;
 				for(offset = 0; received_samples < limit_samples && offset < packet->length; offset += sample_size)
 				{
 					memcpy(&sample, packet->payload+offset, sample_size);
 					for(p = 0; p < num_probes; p++)
 					{
-						if(sample & (1 << p))
+						if(sample & ((uint64_t) 1 << p))
 							linebuf[p * linebuf_len + bpl_offset] = '1';
 						else
 							linebuf[p * linebuf_len + bpl_offset] = '0';
@@ -376,14 +393,13 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 						flush_linebufs(device->probes, linebuf, linebuf_len);
 						bpl_offset = bpl_cnt = 0;
 					}
+					received_samples++;
 				}
 			}
-			else
+			else if(format_base == 'h')
 			{
-				/* TODO: implement hex output mode */
 			}
 		}
-		received_samples += packet->length / sample_size;
 	}
 
 }

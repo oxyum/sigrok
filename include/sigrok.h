@@ -23,12 +23,17 @@
 #include <glib.h>
 #include <sys/time.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 /* returned status/error codes */
 #define SIGROK_STATUS_DISABLED		0
-#define SIGROK_OK			1
-#define SIGROK_NOK			2
+#define SIGROK_OK					1
+#define SIGROK_NOK					2
 #define SIGROK_ERR_BADVALUE		20
+
+#define KHZ(n) (n*1000)
+#define MHZ(n) (n*1000000)
+#define GHZ(n) (n*1000000000)
 
 enum {
 	PROTO_RAW,
@@ -61,7 +66,7 @@ struct datafeed_packet {
 struct datafeed_header {
 	int feed_version;
 	struct timeval starttime;
-	float rate;
+	uint64_t rate;
 	int protocol_id;
 	int num_probes;
 };

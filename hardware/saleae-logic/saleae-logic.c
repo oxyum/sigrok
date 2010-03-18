@@ -17,6 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <poll.h>
+#include <sys/time.h>
+#include <inttypes.h>
+
 #include "config.h"
 #include "sigrok.h"
 #include "hwcommon.h"
@@ -25,11 +31,6 @@
 
 #include <libusb.h>
 #include <glib.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <poll.h>
-#include <sys/time.h>
 
 #define USB_VENDOR				0x0925
 #define USB_PRODUCT			0x3881
@@ -74,22 +75,22 @@ GTimeVal firmware_updated = {0};
 
 libusb_context *usb_context = NULL;
 
-float supported_sample_rates[] = {
-	0.2,
-	0.25,
-	0.50,
-	1,
-	2,
-	4,
-	8,
-	12,
-	16,
-	24,
+uint64_t supported_sample_rates[] = {
+	KHZ(200),
+	KHZ(250),
+	KHZ(500),
+	MHZ(1),
+	MHZ(2),
+	MHZ(4),
+	MHZ(8),
+	MHZ(12),
+	MHZ(16),
+	MHZ(24),
 	0
 };
 
 /* TODO: all of these should go in a device-specific struct */
-float cur_sample_rate = 0;
+uint64_t cur_sample_rate = 0;
 int limit_seconds = 0;
 int limit_samples = 0;
 uint8_t probe_mask = 0, \
@@ -494,7 +495,7 @@ void hw_cleanup(void)
 
 char *hw_get_device_info(int device_index, int device_info_id)
 {
-	char *info;
+	void *info;
 
 	info = NULL;
 	switch(device_info_id)
@@ -507,9 +508,10 @@ char *hw_get_device_info(int device_index, int device_info_id)
 		info = GINT_TO_POINTER(NUM_PROBES);
 		break;
 	case DI_SAMPLE_RATES:
-		info = (char *) supported_sample_rates;
+		info = supported_sample_rates;
+		break;
 	case DI_TRIGGER_TYPES:
-		info = (char *) TRIGGER_TYPES;
+		info = TRIGGER_TYPES;
 		break;
 	}
 
@@ -536,7 +538,7 @@ int *hw_get_capabilities(void)
 }
 
 
-int set_configuration_samplerate(struct usb_device_instance *udi, float rate)
+int set_configuration_samplerate(struct usb_device_instance *udi, uint64_t rate)
 {
 	uint8_t divider;
 	int ret, result, i;
@@ -552,7 +554,7 @@ int set_configuration_samplerate(struct usb_device_instance *udi, float rate)
 
 	divider = (uint8_t) (48 / rate) - 1;
 
-	g_message("setting sample rate to %.3f Mhz (divider %d)", rate, divider);
+	g_message("setting sample rate to %"PRId64" Hz (divider %d)", rate, divider);
 	buf[0] = 0x01;
 	buf[1] = divider;
 	ret = libusb_bulk_transfer(udi->devhdl, 1 | LIBUSB_ENDPOINT_OUT, buf, 2, &result, 500);
@@ -576,7 +578,7 @@ int hw_set_configuration(int device_index, int capability, char *value)
 		return SIGROK_NOK;
 
 	if(capability == HWCAP_SAMPLERATE)
-		ret = set_configuration_samplerate(udi, atof(value));
+		ret = set_configuration_samplerate(udi, strtoul(value, NULL, 10));
 	else if(capability == HWCAP_PROBECONFIG)
 		ret = configure_probes( (GSList *) value);
 	else if(capability == HWCAP_LIMIT_SECONDS)
@@ -744,7 +746,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	const struct libusb_pollfd **lupfd;
 	int size, i;
 	unsigned char *buf;
-	char tmp[16];
+	char tmp[32];
 
 	if( !(udi = get_usb_device_instance(usb_devices, device_index)))
 		return SIGROK_NOK;
@@ -752,7 +754,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	if(cur_sample_rate == 0)
 	{
 		/* sample rate hasn't been set; default to the slowest it has */
-		snprintf(tmp, 15, "%15f", supported_sample_rates[0]);
+		snprintf(tmp, 31, "%"PRId64, supported_sample_rates[0]);
 		if(hw_set_configuration(device_index, HWCAP_SAMPLERATE, tmp) == SIGROK_NOK)
 			return SIGROK_NOK;
 	}
