@@ -171,12 +171,11 @@ int MainWindow::getNumChannels(void)
 void MainWindow::on_actionAbout_triggered()
 {
 	QMessageBox::about(this, tr("About"),
-		tr("<center>sigrok-gui 0.1</center><br />\n"
-		"<center>Copyright (C) 2010 "
-		"Uwe Hermann &lt;uwe@hermann-uwe.de&gt;</center>\n"
-		"<center>GNU GPL, version 2 or later</center><br />\n"
-		"<center><a href=\"http://www.sigrok.org\">"
-		"http://www.sigrok.org</a></center>"));
+		tr("sigrok-gui 0.1<br />\nCopyright (C) 2010 "
+		"Uwe Hermann &lt;uwe@hermann-uwe.de&gt;<br />\n"
+		"GNU GPL, version 2 or later<br />\n"
+		"<a href=\"http://www.sigrok.org\">"
+		"http://www.sigrok.org</a>"));
 }
 
 void MainWindow::on_actionAbout_Qt_triggered()

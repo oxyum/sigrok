@@ -8,5 +8,6 @@
         <file>icons/view-refresh.png</file>
         <file>icons/media-record.png</file>
         <file>icons/sigrok_logo.png</file>
+        <file>icons/sigrok-logo-notext.png</file>
     </qresource>
 </RCC>

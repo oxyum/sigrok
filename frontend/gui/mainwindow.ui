@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="sigrok-gui.qrc">
-    <normaloff>:/icons/sigrok_logo.png</normaloff>:/icons/sigrok_logo.png</iconset>
+    <normaloff>:/icons/sigrok-logo-notext.png</normaloff>:/icons/sigrok-logo-notext.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QWidget" name="mainWidget" native="true">
