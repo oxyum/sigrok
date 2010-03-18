@@ -21,11 +21,22 @@
 #include <QPainter>
 #include <QPen>
 #include <QColor>
-#include <sigrok.h>
 #include "channelrenderarea.h"
 #include "mainwindow.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include <stdint.h>
+#include <sigrok.h>
+
+#ifdef __cplusplus
+}
+#endif
 
 /* TODO: Should move elsewhere. */
 int getbit(uint8_t *buf, int numbyte, int chan)
@@ -216,7 +227,7 @@ void ChannelRenderArea::setSampleStart(uint64_t s)
 	sampleStart = s;
 
 	emit(sampleStartChanged(sampleStart));
-	emit(sampleStartChanged(str.sprintf("%llu", sampleStart)));
+	emit(sampleStartChanged(str.sprintf("%"PRIu64"", sampleStart)));
 }
 
 uint64_t ChannelRenderArea::getSampleStart(void)
@@ -231,7 +242,7 @@ void ChannelRenderArea::setSampleEnd(uint64_t e)
 	sampleEnd = e;
 
 	emit(sampleEndChanged(sampleEnd));
-	emit(sampleEndChanged(str.sprintf("%llu", sampleEnd)));
+	emit(sampleEndChanged(str.sprintf("%"PRIu64"", sampleEnd)));
 }
 
 uint64_t ChannelRenderArea::getSampleEnd(void)

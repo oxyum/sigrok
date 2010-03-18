@@ -31,6 +31,9 @@
 extern "C" {
 #endif
 
+/* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include <stdint.h>
 #include <glib.h>
 #include <gmodule.h>
@@ -75,7 +78,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupDockWidgets(void)
 {
-	int i;
 	QString s;
 	QColor color;
 
@@ -83,7 +85,7 @@ void MainWindow::setupDockWidgets(void)
 
 	/* TODO: Kill any old dockWidgets before creating new ones? */
 
-	for (i = 0; i < getNumChannels(); ++i) {
+	for (int i = 0; i < getNumChannels(); ++i) {
 		widgets[i] = new QWidget(this);
 		gridLayouts[i] = new QGridLayout(widgets[i]);
 
@@ -240,9 +242,9 @@ void MainWindow::on_actionScan_triggered()
 	ui->comboBoxSampleRate->clear();
 	for (int i = 0; di_samplerates[i]; ++i) {
 		if (di_samplerates[i] < 1000000)
-			s.sprintf("%llu kHz", di_samplerates[i] / 1000);
+			s.sprintf("%"PRIu64" kHz", di_samplerates[i] / 1000);
 		else
-			s.sprintf("%llu MHz", di_samplerates[i] / 1000000);
+			s.sprintf("%"PRIu64" MHz", di_samplerates[i] / 1000000);
 		ui->comboBoxSampleRate->addItem(s, di_samplerates[i]);
 	}
 
@@ -314,7 +316,7 @@ void MainWindow::on_action_Open_triggered()
 	ui->comboBoxSampleRate->setEnabled(false); /* FIXME */
 
 	ui->comboBoxNumSamples->clear();
-	ui->comboBoxNumSamples->addItem(s.sprintf("%llu", getNumSamples()),
+	ui->comboBoxNumSamples->addItem(s.sprintf("%"PRIu64, getNumSamples()),
 					getNumSamples());
 	ui->comboBoxNumSamples->setEnabled(true);
 
@@ -390,16 +392,17 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 				probelist[num_enabled_probes++] = probe->index;
 		}
 
-		printf("Acquisition with %d/%d probes at %.3fMHz starting "
-		       "at %s (%llu samples)\n", num_enabled_probes, num_probes,
-		       header->rate, ctime(&header->starttime.tv_sec),
-		       limit_samples);
+		printf("Acquisition with %d/%d probes at %"PRIu64"MHz "
+		       "starting at %s (%"PRIu64" samples)\n",
+		       num_enabled_probes, num_probes, header->rate,
+		       ctime(&header->starttime.tv_sec), limit_samples);
 
 		// linebuf = g_malloc0(num_probes * linebuf_len);
 		break;
 	case DF_END:
 		printf("DF_END\n");
 		g_main_loop_quit(gmainloop);
+		return;
 		break;
 	case DF_TRIGGER:
 		/* TODO */
@@ -450,7 +453,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	session_output_add_callback(datafeed_callback);
 	device = (struct device *)g_slist_nth_data(devices, opt_device);
 
-	snprintf(numBuf, 16, "%llu", limit_samples);
+	snprintf(numBuf, 16, "%"PRIu64"", limit_samples);
 	device->plugin->set_configuration(device->plugin_index,
 		HWCAP_LIMIT_SAMPLES, (char *)numBuf);
 
@@ -519,12 +522,12 @@ void MainWindow::on_action_Get_samples_triggered()
 
 #if 0
 	/* FIXME */
-	s.sprintf("%d", (int)channelRenderAreas[0]->getSampleStart());
+	s.sprintf("%"PRIu64"", (int)channelRenderAreas[0]->getSampleStart());
 	s.prepend(tr("Start sample: "));
 	ui->labelSampleStart->setText(s);
 
 	/* FIXME */
-	s.sprintf("%d", (int)channelRenderAreas[0]->getSampleEnd());
+	s.sprintf("%"PRIu64"", (int)channelRenderAreas[0]->getSampleEnd());
 	s.prepend(tr("End sample: "));
 	ui->labelSampleEnd->setText(s);
 #endif
