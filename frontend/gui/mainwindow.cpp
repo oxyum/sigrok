@@ -226,8 +226,8 @@ void MainWindow::on_actionScan_triggered()
 	}
 
 	ui->comboBoxLA->clear();
-	/* FIXME */
-	ui->comboBoxLA->addItem(device->plugin->name);
+	ui->comboBoxLA->addItem(device->plugin->name); /* TODO: Full name */
+
 	ui->labelChannels->setText(s.sprintf("Channels: %d",
 			getNumChannels()));
 
@@ -237,6 +237,7 @@ void MainWindow::on_actionScan_triggered()
 		/* TODO: Error handling. */
 	}
 
+	ui->comboBoxSampleRate->clear();
 	for (int i = 0; di_samplerates[i]; ++i) {
 		if (di_samplerates[i] < 1000000)
 			s.sprintf("%llu kHz", di_samplerates[i] / 1000);
