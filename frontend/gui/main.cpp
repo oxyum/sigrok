@@ -45,8 +45,6 @@ int main(int argc, char *argv[])
 
 	w = new MainWindow;
 
-	w->setWindowTitle("sigrok");
-
 	if (sigrok_init() != SIGROK_OK) {
 		std::cerr << "ERROR: Failed to init sigrok." << std::endl;
 		return 1;
