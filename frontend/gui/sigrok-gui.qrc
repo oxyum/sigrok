@@ -7,5 +7,6 @@
         <file>icons/document-save-as.png</file>
         <file>icons/view-refresh.png</file>
         <file>icons/media-record.png</file>
+        <file>icons/sigrok_logo.png</file>
     </qresource>
 </RCC>

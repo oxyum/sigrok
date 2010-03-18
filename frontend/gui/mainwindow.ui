@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="sigrok-gui.qrc">
+    <normaloff>:/icons/sigrok_logo.png</normaloff>:/icons/sigrok_logo.png</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QWidget" name="mainWidget" native="true">
     <property name="geometry">
@@ -188,7 +192,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionQuit">
    <property name="icon">
-    <iconset>
+    <iconset resource="sigrok-gui.qrc">
      <normaloff>:/icons/system-log-out.png</normaloff>:/icons/system-log-out.png</iconset>
    </property>
    <property name="text">
@@ -213,7 +217,7 @@
   </action>
   <action name="actionPreferences">
    <property name="icon">
-    <iconset>
+    <iconset resource="sigrok-gui.qrc">
      <normaloff>:/icons/preferences-system.png</normaloff>:/icons/preferences-system.png</iconset>
    </property>
    <property name="text">
@@ -222,7 +226,7 @@
   </action>
   <action name="actionScan">
    <property name="icon">
-    <iconset>
+    <iconset resource="sigrok-gui.qrc">
      <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
    </property>
    <property name="text">
@@ -234,7 +238,7 @@
   </action>
   <action name="action_Open">
    <property name="icon">
-    <iconset>
+    <iconset resource="sigrok-gui.qrc">
      <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
    </property>
    <property name="text">
@@ -243,7 +247,7 @@
   </action>
   <action name="action_New">
    <property name="icon">
-    <iconset>
+    <iconset resource="sigrok-gui.qrc">
      <normaloff>:/icons/document-new.png</normaloff>:/icons/document-new.png</iconset>
    </property>
    <property name="text">
@@ -255,7 +259,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="sigrok-gui.qrc">
      <normaloff>:/icons/document-save-as.png</normaloff>:/icons/document-save-as.png</iconset>
    </property>
    <property name="text">
@@ -267,7 +271,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="sigrok-gui.qrc">
      <normaloff>:/icons/media-record.png</normaloff>:/icons/media-record.png</iconset>
    </property>
    <property name="text">
@@ -276,7 +280,9 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="sigrok-gui.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionQuit</sender>
