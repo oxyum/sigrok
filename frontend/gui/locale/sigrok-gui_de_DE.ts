@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0">
+<TS version="2.0" language="de_DE">
 <context>
     <name>ConfigForm</name>
     <message>
@@ -169,27 +169,27 @@ GNU GPL, version 2 or later&lt;br /&gt;
     <message>
         <location filename="../mainwindow.ui" line="143"/>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Datei</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="152"/>
         <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Hilfe</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="159"/>
         <source>&amp;Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Bearbeiten</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="165"/>
         <source>Device</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Gerät</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="199"/>
         <source>E&amp;xit</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Beenden</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="202"/>
@@ -199,7 +199,7 @@ GNU GPL, version 2 or later&lt;br /&gt;
     <message>
         <location filename="../mainwindow.ui" line="207"/>
         <source>&amp;About...</source>
-        <translation type="unfinished"></translation>
+        <translation>Über sigrok...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="210"/>
@@ -209,12 +209,12 @@ GNU GPL, version 2 or later&lt;br /&gt;
     <message>
         <location filename="../mainwindow.ui" line="215"/>
         <source>About &amp;Qt...</source>
-        <translation type="unfinished"></translation>
+        <translation>Über Qt...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="224"/>
         <source>&amp;Preferences</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Einstellungen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="233"/>
@@ -229,22 +229,22 @@ GNU GPL, version 2 or later&lt;br /&gt;
     <message>
         <location filename="../mainwindow.ui" line="245"/>
         <source>&amp;Open...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Öffnen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="254"/>
         <source>&amp;New...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Neu</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="266"/>
         <source>&amp;Save as...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Speichern unter...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="278"/>
         <source>&amp;Get samples...</source>
-        <translation type="unfinished"></translation>
+        <translation>Messung starten</translation>
     </message>
 </context>
 </TS>
