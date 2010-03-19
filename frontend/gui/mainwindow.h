@@ -25,6 +25,7 @@
 #include <QLineEdit>
 #include <QDockWidget>
 #include <QGridLayout>
+#include <QScrollBar>
 #include "channelrenderarea.h"
 
 extern uint8_t *sample_buffer;
@@ -60,6 +61,7 @@ public:
 	QDockWidget *dockWidgets[NUMCHANNELS];
 	QGridLayout *gridLayouts[NUMCHANNELS];
 	QWidget *widgets[NUMCHANNELS];
+	QScrollBar *channelScrollBars[NUMCHANNELS];
 
 	void setupDockWidgets(void);
 	uint8_t *getDemoSampleBuffer(void);

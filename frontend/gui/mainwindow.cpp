@@ -22,6 +22,7 @@
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QDockWidget>
+#include <QScrollBar>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "configform.h"
@@ -105,6 +106,11 @@ void MainWindow::setupDockWidgets(void)
 		channelRenderAreas[i]->setChannelNumber(i);
 		channelRenderAreas[i]->setChannelColor(color);
 		gridLayouts[i]->addWidget(channelRenderAreas[i], i, 2);
+
+		channelScrollBars[i] = new QScrollBar(Qt::Horizontal);
+		channelScrollBars[i]->setMinimum(0);
+		channelScrollBars[i]->setMaximum(0);
+		gridLayouts[i]->addWidget(channelScrollBars[i], i + 1, 2);
 
 		dockWidgets[i] = new QDockWidget(this);
 		dockWidgets[i]->setAllowedAreas(Qt::RightDockWidgetArea);
