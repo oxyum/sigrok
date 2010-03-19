@@ -33,6 +33,8 @@ HEADERS   += mainwindow.h \
 FORMS     += mainwindow.ui \
 	     configform.ui
 
+TRANSLATIONS = locale/sigrok-gui_de_DE.ts
+
 LIBS      += -L../../backend -lbackend -lgmodule-2.0 -lglib-2.0 -lusb-1.0 -lzip
 
 INCLUDEPATH += /usr/include/glib-2.0 /usr/lib/glib-2.0/include \

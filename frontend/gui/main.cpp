@@ -20,6 +20,8 @@
 
 #include <iostream>
 #include <QtGui/QApplication>
+#include <QTranslator>
+#include <QLocale>
 #include "mainwindow.h"
 
 #ifdef __cplusplus
@@ -41,7 +43,12 @@ MainWindow *w;
 
 int main(int argc, char *argv[])
 {
+	QString locale = QLocale::system().name();
 	QApplication a(argc, argv);
+	QTranslator translator;
+
+	translator.load(QString("locale/sigrok-gui_") + locale);
+	a.installTranslator(&translator);
 
 	w = new MainWindow;
 
