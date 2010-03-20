@@ -552,7 +552,7 @@ int set_configuration_samplerate(struct usb_device_instance *udi, uint64_t rate)
 	if(supported_sample_rates[i] == 0)
 		return SIGROK_ERR_BADVALUE;
 
-	divider = (uint8_t) (48 / rate) - 1;
+	divider = (uint8_t) (48 / (rate/1000000)) - 1;
 
 	g_message("setting sample rate to %"PRId64" Hz (divider %d)", rate, divider);
 	buf[0] = 0x01;
