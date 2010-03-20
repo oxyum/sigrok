@@ -38,6 +38,8 @@
 #include <sys/time.h>
 
 #define SIGROK_CLI_VERSION "0.1"
+#define DEFAULT_BPL_BIN 64
+#define DEFAULT_BPL_HEX 256
 
 extern struct hwcap_option hwcap_options[];
 
@@ -45,7 +47,7 @@ gboolean debug = FALSE;
 GMainContext *gmaincontext = NULL;
 GMainLoop *gmainloop = NULL;
 struct termios term_orig = {0};
-int format_bpl = 64;
+int format_bpl = DEFAULT_BPL_BIN;
 char format_base = 'b';
 int limit_samples = 0;
 
@@ -85,6 +87,7 @@ static GOptionEntry optargs[] =
 	{ NULL }
 
 };
+
 
 void show_version(void)
 {
@@ -274,6 +277,7 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 	static int received_samples = 0;
 	static int linebuf_len = 0;
 	static int probelist[65] = {0};
+	static uint8_t *linevalues = NULL;
 	static char *linebuf = NULL;
 
 	struct probe *probe;
@@ -320,6 +324,7 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 
 		linebuf_len = format_bpl * 2;
 		linebuf = g_malloc0(num_probes * linebuf_len);
+		linevalues = g_malloc0(num_probes);
 		break;
 	case DF_END:
 		flush_linebufs(device->probes, linebuf, linebuf_len);
@@ -398,6 +403,36 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 			}
 			else if(format_base == 'h')
 			{
+				bpl_offset = bpl_cnt = 0;
+				for(offset = 0; received_samples < limit_samples && offset < packet->length; offset += sample_size)
+				{
+					memcpy(&sample, packet->payload+offset, sample_size);
+					for(p = 0; p < num_probes; p++)
+					{
+						linevalues[p] <<= 1;
+						if(sample & ((uint64_t) 1 << p))
+							linevalues[p] |= 1;
+						sprintf(linebuf + (p * linebuf_len) + bpl_offset, "%.2x", linevalues[p]);
+					}
+					bpl_cnt++;
+
+					/* space after every complete hex byte */
+					if((bpl_cnt & 7) == 0)
+					{
+						for(p = 0; p < num_probes; p++)
+							linebuf[p * linebuf_len + bpl_offset + 2] = ' ';
+						bpl_offset += 3;
+					}
+
+					/* end of line */
+					if(bpl_cnt >= format_bpl)
+					{
+						flush_linebufs(device->probes, linebuf, linebuf_len);
+						memset(linevalues, 0, num_probes);
+						bpl_offset = bpl_cnt = 0;
+					}
+					received_samples++;
+				}
 			}
 		}
 	}
@@ -700,6 +735,12 @@ void run_session(void)
 			if(opt_format[i] == 'b' || opt_format[i] == 'h')
 			{
 				format_base = opt_format[i];
+				if(value == 0) {
+					if(format_base == 'b')
+						format_bpl = DEFAULT_BPL_BIN;
+					else
+						format_bpl = DEFAULT_BPL_HEX;
+				}
 				break;
 			}
 	}
