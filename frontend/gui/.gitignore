@@ -1,0 +1,4 @@
+sigrok-gui
+moc_*
+ui_*
+qrc_*
