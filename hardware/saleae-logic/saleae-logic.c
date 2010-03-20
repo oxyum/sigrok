@@ -58,7 +58,6 @@ int capabilities[] = {
 	HWCAP_SAMPLERATE,
 
 	/* these are really implemented in the driver, not the hardware */
-	HWCAP_LIMIT_SECONDS,
 	HWCAP_LIMIT_SAMPLES,
 	0
 };
@@ -91,8 +90,7 @@ uint64_t supported_sample_rates[] = {
 
 /* TODO: all of these should go in a device-specific struct */
 uint64_t cur_sample_rate = 0;
-int limit_seconds = 0;
-int limit_samples = 0;
+uint64_t limit_samples = 0;
 uint8_t probe_mask = 0, \
 		trigger_mask[NUM_TRIGGER_STAGES] = {0}, \
 		trigger_value[NUM_TRIGGER_STAGES] = {0}, \
@@ -552,7 +550,7 @@ int set_configuration_samplerate(struct usb_device_instance *udi, uint64_t rate)
 	if(supported_sample_rates[i] == 0)
 		return SIGROK_ERR_BADVALUE;
 
-	divider = (uint8_t) (48 / (rate/1000000)) - 1;
+	divider = (uint8_t) (48 / (float) (rate/1000000)) - 1;
 
 	g_message("setting sample rate to %"PRId64" Hz (divider %d)", rate, divider);
 	buf[0] = 0x01;
@@ -581,14 +579,9 @@ int hw_set_configuration(int device_index, int capability, char *value)
 		ret = set_configuration_samplerate(udi, strtoul(value, NULL, 10));
 	else if(capability == HWCAP_PROBECONFIG)
 		ret = configure_probes( (GSList *) value);
-	else if(capability == HWCAP_LIMIT_SECONDS)
-	{
-		limit_seconds = atoi(value);
-		ret = SIGROK_OK;
-	}
 	else if(capability == HWCAP_LIMIT_SAMPLES)
 	{
-		limit_samples = atoi(value);
+		limit_samples = strtoull(value, NULL, 10);
 		ret = SIGROK_OK;
 	}
 	else
@@ -763,10 +756,6 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	header = g_malloc(sizeof(struct datafeed_header));
 	if(!packet || !header)
 		return SIGROK_NOK;
-
-	if(limit_samples == 0 && limit_seconds > 0)
-		/* no need to bother with a timer, just convert to samples instead */
-		limit_samples = cur_sample_rate * 1000000 * limit_seconds;
 
 	/* start with 2K transfer, subsequently increased to 4K */
 	size = 2048;
