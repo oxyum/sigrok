@@ -66,8 +66,9 @@ int load_hwplugins(void)
 		if(l > 3 && !strncmp(de->d_name + l - 3, ".la", 3))
 		{
 			/* it's a libtool archive */
-			module_path = g_malloc(strlen(HWPLUGIN_DIR) + strlen(de->d_name) + 1);
-			sprintf(module_path, "%s/%s", HWPLUGIN_DIR, de->d_name);
+			l = strlen(HWPLUGIN_DIR) + strlen(de->d_name) + 2;
+			module_path = g_malloc(l);
+			snprintf(module_path, l, "%s/%s", HWPLUGIN_DIR, de->d_name);
 			g_debug("loading %s", module_path);
 			module = g_module_open(module_path, G_MODULE_BIND_LOCAL);
 			if(module)
