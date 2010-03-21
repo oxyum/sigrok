@@ -98,6 +98,8 @@ uint8_t probe_mask = 0, \
 int trigger_stage = TRIGGER_FIRED;
 
 
+int hw_set_configuration(int device_index, int capability, void *value);
+
 
 /* returns 1 if the device's configuration profile match the Logic firmware's
  * configuration, 0 otherwise
@@ -456,6 +458,13 @@ int hw_opendev(int device_index)
 		return SIGROK_NOK;
 	}
 
+	if(cur_sample_rate == 0)
+	{
+		/* sample rate hasn't been set; default to the slowest it has */
+		if(hw_set_configuration(device_index, HWCAP_SAMPLERATE, &supported_sample_rates[0]) == SIGROK_NOK)
+			return SIGROK_NOK;
+	}
+
 	return SIGROK_OK;
 }
 
@@ -511,6 +520,9 @@ char *hw_get_device_info(int device_index, int device_info_id)
 	case DI_TRIGGER_TYPES:
 		info = TRIGGER_TYPES;
 		break;
+	case DI_CUR_SAMPLE_RATE:
+		info = &cur_sample_rate;
+		break;
 	}
 
 	return info;
@@ -536,7 +548,7 @@ int *hw_get_capabilities(void)
 }
 
 
-int set_configuration_samplerate(struct usb_device_instance *udi, uint64_t rate)
+int set_configuration_samplerate(struct usb_device_instance *udi, uint64_t samplerate)
 {
 	uint8_t divider;
 	int ret, result, i;
@@ -544,39 +556,42 @@ int set_configuration_samplerate(struct usb_device_instance *udi, uint64_t rate)
 
 	for(i = 0; supported_sample_rates[i]; i++)
 	{
-		if(supported_sample_rates[i] == rate)
+		if(supported_sample_rates[i] == samplerate)
 			break;
 	}
 	if(supported_sample_rates[i] == 0)
 		return SIGROK_ERR_BADVALUE;
 
-	divider = (uint8_t) (48 / (float) (rate/1000000)) - 1;
+	divider = (uint8_t) (48 / (float) (samplerate/1000000)) - 1;
 
-	g_message("setting sample rate to %"PRId64" Hz (divider %d)", rate, divider);
+	g_message("setting sample rate to %"PRId64" Hz (divider %d)", samplerate, divider);
 	buf[0] = 0x01;
 	buf[1] = divider;
 	ret = libusb_bulk_transfer(udi->devhdl, 1 | LIBUSB_ENDPOINT_OUT, buf, 2, &result, 500);
 	if(ret != 0)
 	{
-		g_warning("failed to set rate: %d", ret);
+		g_warning("failed to set samplerate: %d", ret);
 		return SIGROK_NOK;
 	}
-	cur_sample_rate = rate;
+	cur_sample_rate = samplerate;
 
 	return SIGROK_OK;
 }
 
 
-int hw_set_configuration(int device_index, int capability, char *value)
+int hw_set_configuration(int device_index, int capability, void *value)
 {
 	struct usb_device_instance *udi;
 	int ret;
+	uint64_t *tmp_u64;
 
 	if( !(udi = get_usb_device_instance(usb_devices, device_index)) )
 		return SIGROK_NOK;
 
-	if(capability == HWCAP_SAMPLERATE)
-		ret = set_configuration_samplerate(udi, strtoul(value, NULL, 10));
+	if(capability == HWCAP_SAMPLERATE) {
+		tmp_u64 = value;
+		ret = set_configuration_samplerate(udi, *tmp_u64);
+	}
 	else if(capability == HWCAP_PROBECONFIG)
 		ret = configure_probes( (GSList *) value);
 	else if(capability == HWCAP_LIMIT_SAMPLES)
@@ -739,18 +754,9 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	const struct libusb_pollfd **lupfd;
 	int size, i;
 	unsigned char *buf;
-	char tmp[32];
 
 	if( !(udi = get_usb_device_instance(usb_devices, device_index)))
 		return SIGROK_NOK;
-
-	if(cur_sample_rate == 0)
-	{
-		/* sample rate hasn't been set; default to the slowest it has */
-		snprintf(tmp, 31, "%"PRId64, supported_sample_rates[0]);
-		if(hw_set_configuration(device_index, HWCAP_SAMPLERATE, tmp) == SIGROK_NOK)
-			return SIGROK_NOK;
-	}
 
 	packet = g_malloc(sizeof(struct datafeed_packet));
 	header = g_malloc(sizeof(struct datafeed_header));

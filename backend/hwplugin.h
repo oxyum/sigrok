@@ -31,12 +31,13 @@ enum {
 	HWCAP_SAMPLERATE,
 	HWCAP_PROBECONFIG,
 	HWCAP_CAPTURE_RATIO,
-	HWCAP_LIMIT_SECONDS,
+	HWCAP_LIMIT_MSEC,
 	HWCAP_LIMIT_SAMPLES
 };
 
 struct hwcap_option {
 	int capability;
+	int type;
 	char *description;
 	char *shortname;
 };
@@ -76,10 +77,12 @@ enum {
 	DI_IDENTIFIER,
 	/* the number of probes connected to this device */
 	DI_NUM_PROBES,
-	/* the samples rates this device supports, as a 0-terminated array of float */
+	/* the samples rates this device supports, as a 0-terminated array of uint64_t */
 	DI_SAMPLE_RATES,
 	/* types of trigger supported, out of "01crf" */
 	DI_TRIGGER_TYPES,
+	/* the currently set sample rate in Hz (uint64_t) */
+	DI_CUR_SAMPLE_RATE,
 };
 
 struct device_plugin {
@@ -95,7 +98,7 @@ struct device_plugin {
 	char *(*get_device_info) (int device_index, int device_info_id);
 	int (*get_status) (int device_index);
 	int *(*get_capabilities) (void);
-	int (*set_configuration) (int device_index, int capability, char *value);
+	int (*set_configuration) (int device_index, int capability, void *value);
 	int (*start_acquisition) (int device_index, gpointer session_device_id);
 	void (*stop_acquisition) (int device_index, gpointer session_device_id);
 };
@@ -115,6 +118,7 @@ struct usb_device_instance *usb_device_instance_new(int index, int status, uint8
 		uint8_t address, struct libusb_device_handle *hdl);
 struct usb_device_instance *get_usb_device_instance(GSList *usb_devices, int device_index);
 struct serial_device_instance *get_serial_device_instance(GSList *serial_devices, int device_index);
+int find_hwcap(int *capabilities, int hwcap);
 struct hwcap_option *find_hwcap_option(int hwcap);
 void add_source_fd(int fd, int events, receive_data_callback callback, gpointer user_data);
 

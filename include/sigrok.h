@@ -31,9 +31,16 @@
 #define SIGROK_NOK					2
 #define SIGROK_ERR_BADVALUE		20
 
+/* handy little macros */
 #define KHZ(n) (n*1000)
 #define MHZ(n) (n*1000000)
 #define GHZ(n) (n*1000000000)
+
+/* data types, used by hardware plugins for set_configuration() */
+enum {
+	T_UINT64,
+	T_CHAR,
+};
 
 enum {
 	PROTO_RAW,

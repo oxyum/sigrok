@@ -36,8 +36,8 @@ GSList *plugins;
 
 /* this enumerates which plugin capabilities correspond to user-settable options */
 struct hwcap_option hwcap_options[] = {
-	{ HWCAP_SAMPLERATE, "Sample rate", "samplerate" },
-	{ 0, NULL, NULL }
+	{ HWCAP_SAMPLERATE, T_UINT64, "Sample rate", "samplerate" },
+	{ 0, 0, NULL, NULL }
 };
 
 
@@ -148,6 +148,18 @@ struct serial_device_instance *get_serial_device_instance(GSList *serial_devices
 	g_warning("could not find device index %d instance", device_index);
 
 	return NULL;
+}
+
+
+int find_hwcap(int *capabilities, int hwcap)
+{
+	int i;
+
+	for(i = 0; capabilities[i]; i++)
+		if(capabilities[i] == hwcap)
+			return TRUE;
+
+	return FALSE;
 }
 
 

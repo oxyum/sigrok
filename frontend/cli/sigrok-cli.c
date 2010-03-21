@@ -49,7 +49,7 @@ GMainLoop *gmainloop = NULL;
 struct termios term_orig = {0};
 int format_bpl = DEFAULT_BPL_BIN;
 char format_base = 'b';
-int limit_samples = 0;
+uint64_t limit_samples = 0;
 
 static gboolean opt_version = FALSE;
 static gboolean opt_list_hwplugins = FALSE;
@@ -63,7 +63,7 @@ static gchar *opt_triggers = NULL;
 static gchar **opt_devoption = NULL;
 static gchar *opt_analyzers = NULL;
 static gchar *opt_format = NULL;
-static gchar *opt_seconds = NULL;
+static gchar *opt_time = NULL;
 static gchar *opt_samples = NULL;
 static GOptionEntry optargs[] =
 {
@@ -81,7 +81,7 @@ static GOptionEntry optargs[] =
 	{ "analyzers", 'a', 0, G_OPTION_ARG_STRING, &opt_analyzers, "Protocol analyzer sequence", NULL },
 	{ "format", 'f', 0, G_OPTION_ARG_STRING, &opt_format, "Output format", NULL },
 
-	{ "seconds", 0, 0, G_OPTION_ARG_STRING, &opt_seconds, "Number of seconds to sample", NULL },
+	{ "time", 0, 0, G_OPTION_ARG_STRING, &opt_time, "How long to sample", NULL },
 	{ "samples", 0, 0, G_OPTION_ARG_STRING, &opt_samples, "Number of samples to acquire", NULL },
 
 	{ NULL }
@@ -636,7 +636,9 @@ void run_session(void)
 	GSource *stdin_source;
 	GPollFD stdin_pfd;
 	GSList *devices;
-	int num_devices, max_probes, ret, value, i, j;
+	int num_devices, max_probes, *capabilities, ret, value, i, j;
+	unsigned int time_msec;
+	uint64_t tmp_u64;
 	char **probelist, *val;
 
 	device_scan();
@@ -745,28 +747,25 @@ void run_session(void)
 			}
 	}
 
-	if(opt_seconds)
-	{
-		device->plugin->set_configuration(device->plugin_index, HWCAP_LIMIT_SECONDS, opt_seconds);
-	}
-	if(opt_samples)
-	{
-		limit_samples = atoi(opt_samples);
-		device->plugin->set_configuration(device->plugin_index, HWCAP_LIMIT_SAMPLES, opt_samples);
-	}
-
 	if(opt_devoption)
 	{
 		for(i = 0; opt_devoption[i]; i++)
 		{
 			if( (val = strchr(opt_devoption[i], '=')) )
 			{
-				*val = 0;
+				*val++ = 0;
 				for(j = 0; hwcap_options[j].capability; j++)
 				{
 					if(!strcmp(hwcap_options[i].shortname, opt_devoption[i]))
 					{
-						ret = device->plugin->set_configuration(device->plugin_index, hwcap_options[j].capability, ++val);
+						ret = SIGROK_NOK;
+						if(hwcap_options[i].type == T_UINT64) {
+							tmp_u64 = strtoull(val, NULL, 10);
+							ret = device->plugin->set_configuration(device->plugin_index, hwcap_options[j].capability, &tmp_u64);
+						} else if(hwcap_options[i].type == T_CHAR) {
+							ret = device->plugin->set_configuration(device->plugin_index, hwcap_options[j].capability, val);
+						}
+
 						if(ret != SIGROK_OK)
 						{
 							printf("Failed to set device option '%s'.\n", opt_devoption[i]);
@@ -785,6 +784,26 @@ void run_session(void)
 		}
 	}
 
+	if(opt_time)
+	{
+		time_msec = strtoul(opt_time, &val, 10);
+		capabilities = device->plugin->get_capabilities();
+		if(find_hwcap(capabilities, HWCAP_LIMIT_MSEC))
+			device->plugin->set_configuration(device->plugin_index, HWCAP_LIMIT_MSEC, opt_time);
+		else {
+			if(val && !strncasecmp(val, "s", 1))
+				time_msec *= 1000;
+			tmp_u64 = *((uint64_t *) device->plugin->get_device_info(device->plugin_index, DI_CUR_SAMPLE_RATE));
+			limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
+		}
+	}
+
+	if(opt_samples)
+	{
+		limit_samples = atoi(opt_samples);
+		device->plugin->set_configuration(device->plugin_index, HWCAP_LIMIT_SAMPLES, opt_samples);
+	}
+
 	if(device->plugin->set_configuration(device->plugin_index, HWCAP_PROBECONFIG, (char *) device->probes) != SIGROK_OK)
 	{
 		printf("Failed to configure probes.\n");
@@ -801,7 +820,7 @@ void run_session(void)
 
 	gmaincontext = g_main_context_default();
 
-	if(!opt_seconds && !opt_samples)
+	if(!limit_samples)
 	{
 		/* monitor stdin along with the device's I/O */
 		tcgetattr(STDIN_FILENO, &term);
@@ -822,7 +841,7 @@ void run_session(void)
 	gmainloop = g_main_loop_new(gmaincontext, FALSE);
 	g_main_loop_run(gmainloop);
 
-	if(!opt_seconds && !opt_samples)
+	if(!limit_samples)
 	{
 		tcflush(STDIN_FILENO, TCIFLUSH);
 		tcsetattr(STDIN_FILENO, TCSANOW, &term_orig);
@@ -886,7 +905,7 @@ int main(int argc, char **argv)
 		show_device_list();
 	else if(opt_list_analyzers)
 		show_analyzer_list();
-	else if(opt_samples || opt_seconds)
+	else if(opt_samples || opt_time)
 		run_session();
 	else if(opt_device != -1)
 		show_device_detail();
