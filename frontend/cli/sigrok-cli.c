@@ -81,7 +81,7 @@ static GOptionEntry optargs[] =
 	{ "analyzers", 'a', 0, G_OPTION_ARG_STRING, &opt_analyzers, "Protocol analyzer sequence", NULL },
 	{ "format", 'f', 0, G_OPTION_ARG_STRING, &opt_format, "Output format", NULL },
 
-	{ "time", 0, 0, G_OPTION_ARG_STRING, &opt_time, "How long to sample", NULL },
+	{ "time", 0, 0, G_OPTION_ARG_STRING, &opt_time, "How long to sample (ms)", NULL },
 	{ "samples", 0, 0, G_OPTION_ARG_STRING, &opt_samples, "Number of samples to acquire", NULL },
 
 	{ NULL }
@@ -440,45 +440,6 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 }
 
 
-gboolean stdin_prepare(GSource *source, int *timeout)
-{
-
-	*timeout = -1;
-
-	return FALSE;
-}
-
-
-gboolean stdin_check(GSource *source)
-{
-	struct pollfd pfd;
-
-	pfd.fd = STDIN_FILENO;
-	pfd.events = POLLIN;
-	if(poll(&pfd, 1, 0))
-		return TRUE;
-
-	return FALSE;
-}
-
-
-gboolean stdin_dispatch(GSource *source, GSourceFunc callback, gpointer data)
-{
-
-	g_main_loop_quit(gmainloop);
-
-	return TRUE;
-}
-
-
-GSourceFuncs stdin_funcs = {
-	stdin_prepare,
-	stdin_check,
-	stdin_dispatch,
-	NULL
-};
-
-
 char **parse_probestring(int max_probes, char *probestring)
 {
 	int tmp, b, e, i;
@@ -632,9 +593,6 @@ void run_session(void)
 {
 	struct device *device;
 	struct probe *probe;
-	struct termios term;
-	GSource *stdin_source;
-	GPollFD stdin_pfd;
 	GSList *devices;
 	int num_devices, max_probes, *capabilities, ret, value, i, j;
 	unsigned int time_msec;
@@ -819,33 +777,9 @@ void run_session(void)
 	}
 
 	gmaincontext = g_main_context_default();
-
-	if(!limit_samples)
-	{
-		/* monitor stdin along with the device's I/O */
-		tcgetattr(STDIN_FILENO, &term);
-		memcpy(&term_orig, &term, sizeof(struct termios));
-		term.c_lflag &= ~(ECHO | ICANON | ISIG);
-		tcsetattr(STDIN_FILENO, TCSADRAIN, &term);
-
-		stdin_source = g_source_new(&stdin_funcs, sizeof(GSource));
-		stdin_pfd.fd = STDIN_FILENO;
-		stdin_pfd.events =  G_IO_IN | G_IO_HUP | G_IO_ERR;
-		g_main_context_add_poll(gmaincontext, &stdin_pfd, G_PRIORITY_DEFAULT);
-		g_source_add_poll(stdin_source, &stdin_pfd);
-		ret = g_source_attach(stdin_source, gmaincontext);
-
-		printf("press any key to stop\n");
-	}
-
 	gmainloop = g_main_loop_new(gmaincontext, FALSE);
 	g_main_loop_run(gmainloop);
 
-	if(!limit_samples)
-	{
-		tcflush(STDIN_FILENO, TCIFLUSH);
-		tcsetattr(STDIN_FILENO, TCSANOW, &term_orig);
-	}
 	session_stop();
 	if(opt_save_session_filename)
 		if(session_save(opt_save_session_filename) != SIGROK_OK)
