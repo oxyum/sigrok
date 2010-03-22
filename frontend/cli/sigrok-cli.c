@@ -464,8 +464,8 @@ char **parse_probestring(int max_probes, char *probestring)
 				break;
 			}
 
-			b = atoi(range[0]);
-			e = atoi(range[1]);
+			b = strtol(range[0], NULL, 10);
+			e = strtol(range[1], NULL, 10);
 			if(b < 1 || e > max_probes || b >= e)
 			{
 				printf("Invalid probe range '%s'.\n", tokens[i]);
@@ -482,7 +482,7 @@ char **parse_probestring(int max_probes, char *probestring)
 		}
 		else
 		{
-			tmp = atoi(tokens[i]);
+			tmp = strtol(tokens[i], NULL, 10);
 			if(tmp < 1 || tmp > max_probes)
 			{
 				printf("Invalid probe %d.\n", tmp);
@@ -550,7 +550,7 @@ char **parse_triggerstring(struct device *device, char *triggerstring)
 			}
 		}
 		else
-			probenum = atoi(tokens[i]);
+			probenum = strtol(tokens[i], NULL, 10);
 
 		if(probenum < 1 || probenum > max_probes)
 		{
@@ -688,7 +688,7 @@ void run_session(void)
 
 	if(opt_format)
 	{
-		value = atoi(opt_format);
+		value = strtol(opt_format, NULL, 10);
 		if(value > 0)
 			format_bpl = value;
 		for(i = 0; opt_format[i]; i++)
@@ -758,7 +758,7 @@ void run_session(void)
 
 	if(opt_samples)
 	{
-		limit_samples = atoi(opt_samples);
+		limit_samples = strtoull(opt_samples, NULL, 10);
 		device->plugin->set_configuration(device->plugin_index, HWCAP_LIMIT_SAMPLES, opt_samples);
 	}
 

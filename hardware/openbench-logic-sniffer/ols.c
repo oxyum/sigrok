@@ -422,12 +422,12 @@ int hw_set_configuration(int device_index, int capability, char *value)
 		ret = configure_probes( (GSList *) value);
 	else if(capability == HWCAP_LIMIT_SAMPLES)
 	{
-		limit_samples = atoi(value);
+		limit_samples = strtoull(value, NULL, 10);
 		ret = SIGROK_OK;
 	}
 	else if(capability == HWCAP_CAPTURE_RATIO)
 	{
-		capture_ratio = atoi(value);
+		capture_ratio = strtol(value, NULL, 10);
 		if(capture_ratio < 0 || capture_ratio > 100)
 		{
 			capture_ratio = 0;
