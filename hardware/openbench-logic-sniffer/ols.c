@@ -18,6 +18,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -79,7 +80,6 @@ int capabilities[] = {
 	HWCAP_LOGIC_ANALYZER,
 	HWCAP_SAMPLERATE,
 	HWCAP_CAPTURE_RATIO,
-	HWCAP_LIMIT_SECONDS,
 	HWCAP_LIMIT_SAMPLES,
 	0
 };
@@ -108,8 +108,7 @@ GSList *serial_devices = NULL;
 uint32_t flag_reg = 0;
 
 float cur_sample_rate = 0;
-int limit_seconds = 0;
-int limit_samples = 0;
+uint64_t limit_samples = 0;
 /* pre/post trigger capture ratio, in percentage. 0 means no pre-trigger data. */
 int capture_ratio = 0;
 uint32_t probe_mask = 0, trigger_mask[4] = {0}, trigger_value[4] = {0};
@@ -377,7 +376,7 @@ int *hw_get_capabilities(void)
 	return capabilities;
 }
 
-
+/* FIXME: Sample rate is now specified in Hz, not MHz. */
 int set_configuration_samplerate(struct serial_device_instance *sdi, float rate)
 {
 	uint32_t divider;
@@ -421,11 +420,6 @@ int hw_set_configuration(int device_index, int capability, char *value)
 		ret = set_configuration_samplerate(sdi, atof(value));
 	else if(capability == HWCAP_PROBECONFIG)
 		ret = configure_probes( (GSList *) value);
-	else if(capability == HWCAP_LIMIT_SECONDS)
-	{
-		limit_seconds = atoi(value);
-		ret = SIGROK_OK;
-	}
 	else if(capability == HWCAP_LIMIT_SAMPLES)
 	{
 		limit_samples = atoi(value);
