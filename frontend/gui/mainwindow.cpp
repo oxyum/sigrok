@@ -98,19 +98,19 @@ void MainWindow::setupDockWidgets(void)
 		color = QColor(2 + qrand() * 16);
 		p.setColor(QPalette::Base, color);
 		lineEdits[i]->setPalette(p);
-		gridLayouts[i]->addWidget(lineEdits[i], i, 1);
+		gridLayouts[i]->addWidget(lineEdits[i], 0, 0);
 
 		channelRenderAreas[i] = new ChannelRenderArea(this);
 		channelRenderAreas[i]->setSizePolicy(QSizePolicy::Minimum,
 					QSizePolicy::MinimumExpanding);
 		channelRenderAreas[i]->setChannelNumber(i);
 		channelRenderAreas[i]->setChannelColor(color);
-		gridLayouts[i]->addWidget(channelRenderAreas[i], i, 2);
+		gridLayouts[i]->addWidget(channelRenderAreas[i], 0, 1);
 
 		channelScrollBars[i] = new QScrollBar(Qt::Horizontal);
 		channelScrollBars[i]->setMinimum(0);
 		channelScrollBars[i]->setMaximum(0);
-		gridLayouts[i]->addWidget(channelScrollBars[i], i + 1, 2);
+		gridLayouts[i]->addWidget(channelScrollBars[i], 1, 1);
 
 		dockWidgets[i] = new QDockWidget(this);
 		dockWidgets[i]->setAllowedAreas(Qt::RightDockWidgetArea);
