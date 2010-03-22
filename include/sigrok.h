@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+
 /* returned status/error codes */
 #define SIGROK_STATUS_DISABLED		0
 #define SIGROK_OK					1
@@ -46,12 +47,19 @@ enum {
 	PROTO_RAW,
 };
 
+/* (unused) protocol decoder stack entry */
 struct protocol {
 	char *name;
 	int id;
 	int stackindex;
 };
 
+
+/*****************************
+ * datafeed
+ */
+
+/* datafeed_packet.type values */
 enum {
 	DF_HEADER,
 	DF_END,
@@ -78,7 +86,25 @@ struct datafeed_header {
 	int num_probes;
 };
 
-void feed_data_header(int sessionid, struct datafeed_header);
-void feed_data(int sessionid, int packet_type, char *datafeed);
+
+/*****************************
+ * output
+ */
+
+struct output {
+	struct output_format *format;
+	struct device *device;
+	int fd;
+	char *param;
+	char *internal;
+};
+
+struct output_format {
+	char *extension;
+	char *description;
+	void (*init) (struct output *o);
+	int (*data) (struct output *o, char *data_in, uint64_t length_in, char **data_out, uint64_t *length_out);
+	int (*event) (struct output *o, int event_type, char **data_out, uint64_t *length_out);
+};
 
 #endif

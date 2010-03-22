@@ -27,5 +27,8 @@ libbackend_a_SOURCES = \
 	datastore.c datastore.h \
 	device.c device.h \
 	session.c session.h \
-	hwplugin.c hwplugin.h
+	hwplugin.c hwplugin.h \
+	output/output_text.c \
+	output/output.c
 libbackend_a_LIBADD = $(LIBOBJS)
+
