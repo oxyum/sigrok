@@ -222,8 +222,6 @@ uint64_t ChannelRenderArea::getNumSamples(void)
 
 void ChannelRenderArea::setSampleStart(uint64_t s)
 {
-	QString str;
-
 	sampleStart = s;
 
 	emit(sampleStartChanged(sampleStart));
@@ -237,8 +235,6 @@ uint64_t ChannelRenderArea::getSampleStart(void)
 
 void ChannelRenderArea::setSampleEnd(uint64_t e)
 {
-	QString str;
-
 	sampleEnd = e;
 
 	emit(sampleEndChanged(sampleEnd));
@@ -252,8 +248,6 @@ uint64_t ChannelRenderArea::getSampleEnd(void)
 
 void ChannelRenderArea::setZoomFactor(float z)
 {
-	QString str;
-
 	zoomFactor = z;
 
 	emit(zoomFactorChanged(zoomFactor));
