@@ -79,7 +79,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupDockWidgets(void)
 {
-	QString s;
 	QColor color;
 
 	/* TODO: Do not create new dockWidgets if we already have them. */
@@ -92,7 +91,7 @@ void MainWindow::setupDockWidgets(void)
 
 		lineEdits[i] = new QLineEdit(this);
 		lineEdits[i]->setMaximumWidth(150);
-		lineEdits[i]->setText(s.sprintf("Channel %d", i));
+		lineEdits[i]->setText(QString(tr("Channel %1")).arg(i));
 		/* Use random colors for the channel names for now. */
 		QPalette p = QPalette(QApplication::palette());
 		color = QColor(2 + qrand() * 16);
@@ -236,8 +235,8 @@ void MainWindow::on_actionScan_triggered()
 	ui->comboBoxLA->clear();
 	ui->comboBoxLA->addItem(device->plugin->name); /* TODO: Full name */
 
-	ui->labelChannels->setText(s.sprintf("Channels: %d",
-			getNumChannels()));
+	s = QString(tr("Channels: %1")).arg(getNumChannels());
+	ui->labelChannels->setText(s);
 
 	di_samplerates = (uint64_t *)device->plugin->get_device_info(
 			device->plugin_index, DI_SAMPLE_RATES);
@@ -248,9 +247,9 @@ void MainWindow::on_actionScan_triggered()
 	ui->comboBoxSampleRate->clear();
 	for (int i = 0; di_samplerates[i]; ++i) {
 		if (di_samplerates[i] < 1000000)
-			s.sprintf("%"PRIu64" kHz", di_samplerates[i] / 1000);
+			s = QString(tr("%1 kHz")).arg(di_samplerates[i] / 1000);
 		else
-			s.sprintf("%"PRIu64" MHz", di_samplerates[i] / 1000000);
+			s = QString(tr("%1 MHz")).arg(di_samplerates[i] / 1000000);
 		ui->comboBoxSampleRate->addItem(s, di_samplerates[i]);
 	}
 
@@ -314,8 +313,7 @@ void MainWindow::on_action_Open_triggered()
 	ui->comboBoxLA->addItem(tr("File"));
 
 	/* FIXME: Store number of channels in the file or allow user config. */
-	s.sprintf("%d", getNumChannels());
-	s.prepend(tr("Channels: "));
+	s = QString(tr("Channels: %1")).arg(getNumChannels());
 	ui->labelChannels->setText(s);
 	ui->labelChannels->setEnabled(false);
 
@@ -323,7 +321,7 @@ void MainWindow::on_action_Open_triggered()
 	ui->comboBoxSampleRate->setEnabled(false); /* FIXME */
 
 	ui->comboBoxNumSamples->clear();
-	ui->comboBoxNumSamples->addItem(s.sprintf("%"PRIu64, getNumSamples()),
+	ui->comboBoxNumSamples->addItem(QString::number(getNumSamples()),
 					getNumSamples());
 	ui->comboBoxNumSamples->setEnabled(true);
 

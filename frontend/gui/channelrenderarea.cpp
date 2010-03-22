@@ -227,7 +227,7 @@ void ChannelRenderArea::setSampleStart(uint64_t s)
 	sampleStart = s;
 
 	emit(sampleStartChanged(sampleStart));
-	emit(sampleStartChanged(str.sprintf("%"PRIu64"", sampleStart)));
+	emit(sampleStartChanged(QString::number(sampleStart)));
 }
 
 uint64_t ChannelRenderArea::getSampleStart(void)
@@ -242,7 +242,7 @@ void ChannelRenderArea::setSampleEnd(uint64_t e)
 	sampleEnd = e;
 
 	emit(sampleEndChanged(sampleEnd));
-	emit(sampleEndChanged(str.sprintf("%"PRIu64"", sampleEnd)));
+	emit(sampleEndChanged(QString::number(sampleEnd)));
 }
 
 uint64_t ChannelRenderArea::getSampleEnd(void)
@@ -257,7 +257,7 @@ void ChannelRenderArea::setZoomFactor(float z)
 	zoomFactor = z;
 
 	emit(zoomFactorChanged(zoomFactor));
-	emit(zoomFactorChanged(str.sprintf("%f", zoomFactor)));
+	emit(zoomFactorChanged(QString::number(zoomFactor)));
 }
 
 float ChannelRenderArea::getZoomFactor(void)
