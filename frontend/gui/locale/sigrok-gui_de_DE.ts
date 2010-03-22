@@ -16,12 +16,12 @@
     <message>
         <location filename="../configform.ui" line="40"/>
         <source>User Interface</source>
-        <translation type="unfinished"></translation>
+        <translation>Benutzerschnittstelle</translation>
     </message>
     <message>
         <location filename="../configform.ui" line="52"/>
         <source>Test</source>
-        <translation type="unfinished"></translation>
+        <translation>Test</translation>
     </message>
     <message>
         <location filename="../configform.ui" line="76"/>
@@ -54,7 +54,7 @@
     <message>
         <location filename="../mainwindow.cpp" line="180"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>Über sigrok-gui</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="181"/>
@@ -62,27 +62,30 @@
 Copyright (C) 2010 Uwe Hermann &amp;lt;uwe@hermann-uwe.de&amp;gt;&lt;br /&gt;
 GNU GPL, version 2 or later&lt;br /&gt;
 &lt;a href=&quot;http://www.sigrok.org&quot;&gt;http://www.sigrok.org&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>sigrok-gui 0.1&lt;br /&gt;
+Copyright (C) 2010 Uwe Hermann &amp;lt;uwe@hermann-uwe.de&amp;gt;&lt;br /&gt;
+GNU GPL, Version 2 oder größer&lt;br /&gt;
+&lt;a href=&quot;http://www.sigrok.org&quot;&gt;http://www.sigrok.org&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="190"/>
         <source>About Qt</source>
-        <translation type="unfinished"></translation>
+        <translation>Über Qt</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="208"/>
         <source>Scanning for logic analyzers...</source>
-        <translation type="unfinished"></translation>
+        <translation>Suche nach Logic Analyzern</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="216"/>
         <source>No supported logic analyzer found.</source>
-        <translation type="unfinished"></translation>
+        <translation>Keine unterstützten Logic Analyzer gefunden</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="220"/>
         <source>Found supported logic analyzer: </source>
-        <translation type="unfinished"></translation>
+        <translation>Unterstützter Logic Analyzer gefunden:</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="238"/>
@@ -103,17 +106,17 @@ GNU GPL, version 2 or later&lt;br /&gt;
     <message>
         <location filename="../mainwindow.cpp" line="283"/>
         <source>Open sample file</source>
-        <translation type="unfinished"></translation>
+        <translation>Sample Datei öffnen</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="284"/>
         <source>Raw sample files (*.raw *.bin);;Gnuplot data files (*.dat);;VCD files (*.vcd);;All files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Binäre Sample-Datei (*.raw *.bin);;Gnuplot Eingabe-Datei (*.dat);;VCD-Datei (*.vcd);;Alle Dateien (*)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="313"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>Datei</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="582"/>
@@ -125,7 +128,7 @@ GNU GPL, version 2 or later&lt;br /&gt;
         <location filename="../mainwindow.cpp" line="531"/>
         <location filename="../mainwindow.cpp" line="591"/>
         <source>Start sample: </source>
-        <translation type="unfinished"></translation>
+        <translation>Erstes Sample</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="94"/>
@@ -137,34 +140,34 @@ GNU GPL, version 2 or later&lt;br /&gt;
         <location filename="../mainwindow.cpp" line="536"/>
         <location filename="../mainwindow.cpp" line="594"/>
         <source>End sample: </source>
-        <translation type="unfinished"></translation>
+        <translation>Letztes Sample</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="334"/>
         <location filename="../mainwindow.cpp" line="597"/>
         <source>Zoom factor: </source>
-        <translation type="unfinished"></translation>
+        <translation>Zoom-Faktor</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="354"/>
         <source>Save sample file</source>
-        <translation type="unfinished"></translation>
+        <translation>Samples speichern</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="355"/>
         <source>Raw sample files (*.raw *.bin);;All files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Binäre Sample-Datein (*.raw *.bin);;Alle Dateien (*)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="580"/>
         <location filename="../mainwindow.ui" line="56"/>
         <source>No LA detected</source>
-        <translation type="unfinished"></translation>
+        <translation>Kein Logic Analyzer gefunden</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="14"/>
         <source>sigrok</source>
-        <translation type="unfinished"></translation>
+        <translation>sigrok</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="80"/>
@@ -174,17 +177,17 @@ GNU GPL, version 2 or later&lt;br /&gt;
     <message>
         <location filename="../mainwindow.ui" line="104"/>
         <source>Start sample:</source>
-        <translation type="unfinished"></translation>
+        <translation>Erstes Sample:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="114"/>
         <source>End sample:</source>
-        <translation type="unfinished"></translation>
+        <translation>Letztes Sample:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="124"/>
         <source>Zoom factor:</source>
-        <translation type="unfinished"></translation>
+        <translation>Zoom-Faktor:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="143"/>
@@ -214,7 +217,7 @@ GNU GPL, version 2 or later&lt;br /&gt;
     <message>
         <location filename="../mainwindow.ui" line="202"/>
         <source>Ctrl+Q</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+B</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="207"/>
@@ -224,7 +227,7 @@ GNU GPL, version 2 or later&lt;br /&gt;
     <message>
         <location filename="../mainwindow.ui" line="210"/>
         <source>Ctrl+A</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+Ü</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="215"/>
@@ -239,7 +242,7 @@ GNU GPL, version 2 or later&lt;br /&gt;
     <message>
         <location filename="../mainwindow.ui" line="233"/>
         <source>&amp;Scan</source>
-        <translation type="unfinished"></translation>
+        <translation>Suchen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="236"/>
