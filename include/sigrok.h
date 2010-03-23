@@ -94,9 +94,8 @@ struct datafeed_header {
 struct output {
 	struct output_format *format;
 	struct device *device;
-	int fd;
 	char *param;
-	char *internal;
+	void *internal;
 };
 
 struct output_format {
@@ -106,5 +105,8 @@ struct output_format {
 	int (*data) (struct output *o, char *data_in, uint64_t length_in, char **data_out, uint64_t *length_out);
 	int (*event) (struct output *o, int event_type, char **data_out, uint64_t *length_out);
 };
+
+struct output_format **output_list(void);
+
 
 #endif

@@ -38,18 +38,16 @@
 #include <sys/time.h>
 
 #define SIGROK_CLI_VERSION "0.1"
-#define DEFAULT_BPL_BIN 64
-#define DEFAULT_BPL_HEX 256
+#define DEFAULT_OUTPUT_FORMAT "bin64"
 
 extern struct hwcap_option hwcap_options[];
 
 gboolean debug = FALSE;
 GMainContext *gmaincontext = NULL;
 GMainLoop *gmainloop = NULL;
-struct termios term_orig = {0};
-int format_bpl = DEFAULT_BPL_BIN;
-char format_base = 'b';
 uint64_t limit_samples = 0;
+struct output_format *output_format = NULL;
+char *output_format_param = NULL;
 
 static gboolean opt_version = FALSE;
 static gboolean opt_list_hwplugins = FALSE;
@@ -233,60 +231,21 @@ void show_analyzer_list()
 }
 
 
-void flush_linebufs(GSList *probes, char *linebuf, int linebuf_len)
-{
-	static int num_probes = 0;
-	static int max_probename_len = 0;
-
-	struct probe *probe;
-	int len, p;
-
-	if(linebuf[0])
-	{
-		if(num_probes == 0)
-		{
-			/* first time through */
-			num_probes = g_slist_length(probes);
-			for(p = 0; p < num_probes; p++)
-			{
-				probe = g_slist_nth_data(probes, p);
-				if(probe->enabled)
-				{
-					len = strlen(probe->name);
-					if(len > max_probename_len)
-						max_probename_len = len;
-				}
-			}
-		}
-
-		for(p = 0; p < num_probes; p++)
-		{
-			probe = g_slist_nth_data(probes, p);
-			if(probe->enabled)
-				printf("%*s:%s\n", max_probename_len, probe->name, linebuf + p * linebuf_len);
-		}
-		memset(linebuf, 0, num_probes * linebuf_len);
-	}
-
-}
-
+extern struct output_format output_text_binary;
 
 void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 {
-	static int num_probes = 0;
-	static int received_samples = 0;
-	static int linebuf_len = 0;
 	static int probelist[65] = {0};
-	static uint8_t *linevalues = NULL;
-	static char *linebuf = NULL;
-
+	static int received_samples = 0;
+	static struct output *o = NULL;
 	struct probe *probe;
 	struct datafeed_header *header;
-	int num_enabled_probes, offset, sample_size, unitsize, p, bpl_offset, bpl_cnt, i;
-	uint64_t sample;
+	int num_enabled_probes, sample_size, unitsize, i;
+	uint64_t output_len;
+	char *output_buf;
 
 	/* if the first packet to come in isn't a header, don't even try */
-	if(packet->type != DF_HEADER && linebuf == NULL)
+	if(packet->type != DF_HEADER && o == NULL)
 		return;
 
 	sample_size = 0;
@@ -294,44 +253,34 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 	switch(packet->type)
 	{
 	case DF_HEADER:
-		header = (struct datafeed_header *) packet->payload;
-		num_enabled_probes = 0;
-		for(i = 0; i < header->num_probes; i++)
-		{
-			probe = g_slist_nth_data(device->probes, i);
-			if(probe->enabled)
-				probelist[num_enabled_probes++] = probe->index;
-		}
-		probelist[num_enabled_probes] = 0;
-		num_probes = header->num_probes;
-		printf("Acquisition with %d/%d probes at ", num_enabled_probes, num_probes);
-		if(header->rate >= GHZ(1))
-			printf("%"PRId64" GHz", header->rate / 1000000000);
-		else if(header->rate >= MHZ(1))
-			printf("%"PRId64" MHz", header->rate / 1000000);
-		else if(header->rate >= KHZ(1))
-			printf("%"PRId64" KHz", header->rate / 1000);
-		else
-			printf("%"PRId64" Hz", header->rate);
-		printf(" starting at %s", ctime(&header->starttime.tv_sec));
+		/* initialize the output module */
+		o = malloc(sizeof(struct output));
+		o->format = output_format;
+		o->device = device;
+		o->param = output_format_param;
+		o->format->init(o);
 
-		/* saving session will need a datastore to dump into the session file */
+		header = (struct datafeed_header *) packet->payload;
 		if(opt_save_session_filename) {
+			/* saving session will need a datastore to dump into the session file */
+			for(i = 0; i < header->num_probes; i++) {
+				probe = g_slist_nth_data(device->probes, i);
+				if(probe->enabled)
+					probelist[num_enabled_probes++] = probe->index;
+			}
 			/* work out how many bytes are needed to store num_enabled_probes bits */
 			unitsize = (num_enabled_probes + 7) / 8;
 			device->datastore = datastore_new(unitsize);
 		}
-
-		linebuf_len = format_bpl * 2;
-		linebuf = g_malloc0(num_probes * linebuf_len);
-		linevalues = g_malloc0(num_probes);
 		break;
 	case DF_END:
-		flush_linebufs(device->probes, linebuf, linebuf_len);
-		/* not detecting short sample count for seconds limit here */
+		o->format->event(o, DF_END, &output_buf, &output_len);
+		printf("%s", output_buf);
 		if(limit_samples && received_samples < limit_samples)
 			printf("Device only sent %d samples.\n", received_samples);
 		g_main_loop_quit(gmainloop);
+		free(o);
+		o = NULL;
 		break;
 	case DF_TRIGGER:
 		/* TODO: if pre-trigger capture is set, display ! here. Otherwise the capture
@@ -359,82 +308,18 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 	}
 
 	if(sample_size > 0) {
-		if(device->datastore) {
+		if(device->datastore)
 			datastore_put(device->datastore, packet->payload, packet->length, sample_size, probelist);
-		}
 
 		/* don't dump samples on stdout when also saving the session */
 		if(!opt_save_session_filename) {
-			/* we're handling all probes here, not checking whether they're
-			 * enabled or not. flush_linebufs() will skip them.
-			 */
-			if(format_base == 'b')
-			{
-				bpl_offset = bpl_cnt = 0;
-				for(offset = 0; received_samples < limit_samples && offset < packet->length; offset += sample_size)
-				{
-					memcpy(&sample, packet->payload+offset, sample_size);
-					for(p = 0; p < num_probes; p++)
-					{
-						if(sample & ((uint64_t) 1 << p))
-							linebuf[p * linebuf_len + bpl_offset] = '1';
-						else
-							linebuf[p * linebuf_len + bpl_offset] = '0';
-					}
-					bpl_offset++;
-					bpl_cnt++;
-
-					/* space every 8th bit */
-					if((bpl_cnt & 7) == 0)
-					{
-						for(p = 0; p < num_probes; p++)
-							linebuf[p * linebuf_len + bpl_offset] = ' ';
-						bpl_offset++;
-					}
-
-					/* end of line */
-					if(bpl_cnt >= format_bpl)
-					{
-						flush_linebufs(device->probes, linebuf, linebuf_len);
-						bpl_offset = bpl_cnt = 0;
-					}
-					received_samples++;
-				}
-			}
-			else if(format_base == 'h')
-			{
-				bpl_offset = bpl_cnt = 0;
-				for(offset = 0; received_samples < limit_samples && offset < packet->length; offset += sample_size)
-				{
-					memcpy(&sample, packet->payload+offset, sample_size);
-					for(p = 0; p < num_probes; p++)
-					{
-						linevalues[p] <<= 1;
-						if(sample & ((uint64_t) 1 << p))
-							linevalues[p] |= 1;
-						sprintf(linebuf + (p * linebuf_len) + bpl_offset, "%.2x", linevalues[p]);
-					}
-					bpl_cnt++;
-
-					/* space after every complete hex byte */
-					if((bpl_cnt & 7) == 0)
-					{
-						for(p = 0; p < num_probes; p++)
-							linebuf[p * linebuf_len + bpl_offset + 2] = ' ';
-						bpl_offset += 3;
-					}
-
-					/* end of line */
-					if(bpl_cnt >= format_bpl)
-					{
-						flush_linebufs(device->probes, linebuf, linebuf_len);
-						memset(linevalues, 0, num_probes);
-						bpl_offset = bpl_cnt = 0;
-					}
-					received_samples++;
-				}
-			}
+			if(received_samples + packet->length > limit_samples * sample_size)
+				o->format->data(o, packet->payload, limit_samples * sample_size - received_samples, &output_buf, &output_len);
+			else
+				o->format->data(o, packet->payload, packet->length, &output_buf, &output_len);
+			printf("%s", output_buf);
 		}
+		received_samples += packet->length / sample_size;
 	}
 
 }
@@ -593,8 +478,9 @@ void run_session(void)
 {
 	struct device *device;
 	struct probe *probe;
+	struct output_format **formats;
 	GSList *devices;
-	int num_devices, max_probes, *capabilities, ret, value, i, j;
+	int num_devices, max_probes, *capabilities, ret, i, j;
 	unsigned int time_msec;
 	uint64_t tmp_u64;
 	char **probelist, *val;
@@ -686,23 +572,15 @@ void run_session(void)
 		g_free(probelist);
 	}
 
-	if(opt_format)
-	{
-		value = strtol(opt_format, NULL, 10);
-		if(value > 0)
-			format_bpl = value;
-		for(i = 0; opt_format[i]; i++)
-			if(opt_format[i] == 'b' || opt_format[i] == 'h')
-			{
-				format_base = opt_format[i];
-				if(value == 0) {
-					if(format_base == 'b')
-						format_bpl = DEFAULT_BPL_BIN;
-					else
-						format_bpl = DEFAULT_BPL_HEX;
-				}
-				break;
-			}
+	if(!opt_format)
+		opt_format = DEFAULT_OUTPUT_FORMAT;
+	formats = output_list();
+	for(i = 0; formats[i]; i++) {
+		if(!strncasecmp(formats[i]->extension, opt_format, strlen(formats[i]->extension))) {
+			output_format = formats[i];
+			output_format_param = opt_format + strlen(formats[i]->extension);
+			break;
+		}
 	}
 
 	if(opt_devoption)
