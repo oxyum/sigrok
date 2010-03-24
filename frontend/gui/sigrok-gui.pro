@@ -18,29 +18,30 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-TARGET     = sigrok-gui
-TEMPLATE   = app
+TARGET        = sigrok-gui
+TEMPLATE      = app
 
-SOURCES   += main.cpp \
-	     mainwindow.cpp \
-	     channelrenderarea.cpp \
-	     configform.cpp
+SOURCES      += main.cpp \
+	        mainwindow.cpp \
+	        channelrenderarea.cpp \
+	        configform.cpp
 
-HEADERS   += mainwindow.h \
-	     channelrenderarea.h \
-	     configform.h
+HEADERS      += mainwindow.h \
+	        channelrenderarea.h \
+	        configform.h
 
-FORMS     += mainwindow.ui \
-	     configform.ui
+FORMS        += mainwindow.ui \
+	        configform.ui
 
-TRANSLATIONS = locale/sigrok-gui_de_DE.ts
+TRANSLATIONS  = locale/sigrok-gui_de_DE.ts
 
-LIBS      += -L../../backend -lbackend -lgmodule-2.0 -lglib-2.0 -lusb-1.0 -lzip
+LIBS         += -L../../backend -lbackend -lgmodule-2.0 -lglib-2.0 -lusb-1.0 \
+	        -lzip
 
-INCLUDEPATH += /usr/include/glib-2.0 /usr/lib/glib-2.0/include \
-	       /usr/include/libusb-1.0 ../../include ../../backend
+INCLUDEPATH  += /usr/include/glib-2.0 /usr/lib/glib-2.0/include \
+	        /usr/include/libusb-1.0 ../../include ../../backend
 
-RESOURCES += sigrok-gui.qrc
+RESOURCES    += sigrok-gui.qrc
 
 # TODO: This may need fixes.
 macx {
