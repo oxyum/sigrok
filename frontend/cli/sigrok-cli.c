@@ -325,6 +325,7 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 				o->format->data(o, filter_out, filter_out_len, &output_buf, &output_len);
 			printf("%s", output_buf);
 		}
+		free(filter_out);
 		received_samples += packet->length / sample_size;
 	}
 
