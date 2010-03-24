@@ -56,42 +56,8 @@ void datastore_destroy(struct datastore *ds)
 
 void datastore_put(struct datastore *ds, void *data, unsigned int length, int in_unitsize, int *probelist)
 {
-	int num_enabled_probes, out_bit, in_offset, out_offset, capacity, stored, size, i;
-	int num_chunks, chunk_bytes_free, chunk_offset;
-	uint64_t sample_in, sample_out;
+	int capacity, stored, size, num_chunks, chunk_bytes_free, chunk_offset;
 	gpointer chunk;
-	char *buf;
-
-	num_enabled_probes = 0;
-	for(i = 0; probelist[i]; i++)
-		num_enabled_probes++;
-
-	if(num_enabled_probes != in_unitsize * 8) {
-		/* convert sample from maximum probes -- the way the hardware driver sent
-		 * it -- to a sample taking up only as much space as required, with
-		 * unused probes removed.
-		 */
-		buf = malloc(length);
-		in_offset = out_offset = 0;
-		while(in_offset < length - in_unitsize) {
-			memcpy(&sample_in, data + in_offset, in_unitsize);
-			sample_out = 0;
-			out_bit = 0;
-			for(i = 0; probelist[i]; i++) {
-				if(sample_in & (1 << (probelist[i]-1)))
-					sample_out |= 1 << out_bit;
-				out_bit++;
-			}
-			memcpy(buf + out_offset, &sample_out, ds->ds_unitsize);
-			in_offset += in_unitsize;
-			out_offset += ds->ds_unitsize;
-		}
-	}
-	else {
-		/* all probes are used -- no need to compress anything */
-		buf = data;
-		out_offset = length;
-	}
 
 	if(ds->chunklist == NULL)
 		chunk = new_chunk(&ds);
@@ -102,26 +68,23 @@ void datastore_put(struct datastore *ds, void *data, unsigned int length, int in
 	chunk_bytes_free = capacity - (ds->ds_unitsize * ds->num_units);
 	chunk_offset = capacity - (DATASTORE_CHUNKSIZE * (num_chunks - 1)) - chunk_bytes_free;
 	stored = 0;
-	while(stored < out_offset) {
+	while(stored < length) {
 		if(chunk_bytes_free == 0) {
 			chunk = new_chunk(&ds);
 			chunk_bytes_free = DATASTORE_CHUNKSIZE;
 			chunk_offset = 0;
 		}
 
-		if(out_offset - stored > chunk_bytes_free)
+		if(length - stored > chunk_bytes_free)
 			size = chunk_bytes_free;
 		else
 			/* last part, won't fill up this chunk */
-			size = out_offset - stored;
-		memcpy(chunk + chunk_offset, buf + stored, size);
+			size = length - stored;
+		memcpy(chunk + chunk_offset, data + stored, size);
 		chunk_bytes_free -= size;
 		stored += size;
 	}
 	ds->num_units += stored / ds->ds_unitsize;
-
-	if(buf != data)
-		free(buf);
 
 }
 

@@ -235,14 +235,15 @@ extern struct output_format output_text_binary;
 
 void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 {
+	static struct output *o = NULL;
 	static int probelist[65] = {0};
 	static int received_samples = 0;
-	static struct output *o = NULL;
+	static int unitsize = 0;
 	struct probe *probe;
 	struct datafeed_header *header;
-	int num_enabled_probes, sample_size, unitsize, i;
-	uint64_t output_len;
-	char *output_buf;
+	int num_enabled_probes, sample_size, i;
+	uint64_t output_len, filter_out_len;
+	char *output_buf, *filter_out;
 
 	/* if the first packet to come in isn't a header, don't even try */
 	if(packet->type != DF_HEADER && o == NULL)
@@ -261,18 +262,20 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 		o->format->init(o);
 
 		header = (struct datafeed_header *) packet->payload;
-		if(opt_save_session_filename) {
-			/* saving session will need a datastore to dump into the session file */
-			for(i = 0; i < header->num_probes; i++) {
-				probe = g_slist_nth_data(device->probes, i);
-				if(probe->enabled)
-					probelist[num_enabled_probes++] = probe->index;
-			}
-			/* work out how many bytes are needed to store num_enabled_probes bits */
-			unitsize = (num_enabled_probes + 7) / 8;
-			device->datastore = datastore_new(unitsize);
+		num_enabled_probes = 0;
+		for(i = 0; i < header->num_probes; i++) {
+			probe = g_slist_nth_data(device->probes, i);
+			if(probe->enabled)
+				probelist[num_enabled_probes++] = probe->index;
 		}
+		/* work out how many bytes are needed to store num_enabled_probes bits */
+		unitsize = (num_enabled_probes + 7) / 8;
+
+		if(opt_save_session_filename)
+			/* saving session will need a datastore to dump into the session file */
+			device->datastore = datastore_new(unitsize);
 		break;
+
 	case DF_END:
 		o->format->event(o, DF_END, &output_buf, &output_len);
 		printf("%s", output_buf);
@@ -282,6 +285,7 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 		free(o);
 		o = NULL;
 		break;
+
 	case DF_TRIGGER:
 		/* TODO: if pre-trigger capture is set, display ! here. Otherwise the capture
 		 * just always begins with the trigger, which is fine: no need to mark the trigger.
@@ -308,15 +312,17 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 	}
 
 	if(sample_size > 0) {
+		filter_probes(sample_size, unitsize, probelist,
+				packet->payload, packet->length, &filter_out, &filter_out_len);
 		if(device->datastore)
-			datastore_put(device->datastore, packet->payload, packet->length, sample_size, probelist);
+			datastore_put(device->datastore, filter_out, filter_out_len, sample_size, probelist);
 
 		/* don't dump samples on stdout when also saving the session */
 		if(!opt_save_session_filename) {
-			if(received_samples + packet->length > limit_samples * sample_size)
-				o->format->data(o, packet->payload, limit_samples * sample_size - received_samples, &output_buf, &output_len);
+			if(received_samples + filter_out_len > limit_samples * sample_size)
+				o->format->data(o, filter_out, limit_samples * sample_size - received_samples, &output_buf, &output_len);
 			else
-				o->format->data(o, packet->payload, packet->length, &output_buf, &output_len);
+				o->format->data(o, filter_out, filter_out_len, &output_buf, &output_len);
 			printf("%s", output_buf);
 		}
 		received_samples += packet->length / sample_size;

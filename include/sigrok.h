@@ -75,7 +75,7 @@ enum {
 struct datafeed_packet {
 	uint16_t type;
 	uint16_t length;
-	unsigned char *payload;
+	void *payload;
 };
 
 struct datafeed_header {
@@ -107,6 +107,8 @@ struct output_format {
 };
 
 struct output_format **output_list(void);
+int filter_probes(int in_unitsize, int out_unitsize, int *probelist,
+		char *data_in, uint64_t length_in, char **data_out, uint64_t *length_out);
 
 
 #endif

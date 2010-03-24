@@ -28,6 +28,7 @@ libbackend_a_SOURCES = \
 	device.c device.h \
 	session.c session.h \
 	hwplugin.c hwplugin.h \
+	filter.c \
 	output/output_text.c \
 	output/output.c
 libbackend_a_LIBADD = $(LIBOBJS)
