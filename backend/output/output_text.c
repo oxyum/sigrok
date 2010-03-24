@@ -29,11 +29,11 @@
 #define DEFAULT_BPL_HEX 256
 
 struct context {
-	int probelist[65];
 	int num_enabled_probes;
 	int samples_per_line;
 	int unitsize;
 	int linebuf_len;
+	char *probelist[65];
 	char *linebuf;
 	int spl_cnt;
 	uint8_t *linevalues;
@@ -43,33 +43,26 @@ struct context {
 
 static void flush_linebufs(struct context *ctx, GSList *probes, char *outbuf)
 {
-	static int num_probes = 0;
 	static int max_probename_len = 0;
-	struct probe *probe;
-	int len, p;
+	int len, i;
 
 	if(ctx->linebuf[0] == 0)
 		return;
 
-	if(num_probes == 0) {
+	if(max_probename_len == 0) {
 		/* first time through */
-		num_probes = g_slist_length(probes);
-		for(p = 0; p < num_probes; p++) {
-			probe = g_slist_nth_data(probes, p);
-			if(probe->enabled) {
-				len = strlen(probe->name);
-				if(len > max_probename_len)
-					max_probename_len = len;
-			}
+		for(i = 0; ctx->probelist[i]; i++) {
+			len = strlen(ctx->probelist[i]);
+			if(len > max_probename_len)
+				max_probename_len = len;
 		}
 	}
 
-	for(p = 0; p < num_probes; p++) {
-		probe = g_slist_nth_data(probes, p);
-		if(probe->enabled)
-			sprintf(outbuf + strlen(outbuf), "%*s:%s\n", max_probename_len, probe->name, ctx->linebuf + p * ctx->linebuf_len);
+	for(i = 0; ctx->probelist[i]; i++) {
+		sprintf(outbuf + strlen(outbuf), "%*s:%s\n", max_probename_len, ctx->probelist[i],
+				ctx->linebuf + i * ctx->linebuf_len);
 	}
-	memset(ctx->linebuf, 0, num_probes * ctx->linebuf_len);
+	memset(ctx->linebuf, 0, i * ctx->linebuf_len);
 
 }
 
@@ -88,7 +81,7 @@ static void init(struct output *o, int default_spl)
 	for(l = o->device->probes; l; l = l->next) {
 		probe = l->data;
 		if(probe->enabled)
-			ctx->probelist[ctx->num_enabled_probes++] = probe->index;
+			ctx->probelist[ctx->num_enabled_probes++] = probe->name;
 	}
 	ctx->probelist[ctx->num_enabled_probes] = 0;
 	ctx->unitsize = (ctx->num_enabled_probes + 7) / 8;
