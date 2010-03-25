@@ -35,22 +35,23 @@ FORMS        += mainwindow.ui \
 
 TRANSLATIONS  = locale/sigrok-gui_de_DE.ts
 
-LIBS         += -L../../backend -lbackend -lgmodule-2.0 -lglib-2.0 -lusb-1.0 \
-	        -lzip
+CONFIG       += link_pkgconfig
+PKGCONFIG     = gmodule-2.0 glib-2.0 libusb-1.0 libzip
 
-INCLUDEPATH  += /usr/include/glib-2.0 /usr/lib/glib-2.0/include \
-	        /usr/include/libusb-1.0 ../../include ../../backend
+LIBS         += -L../../backend -lbackend 
+
+INCLUDEPATH  += ../../include ../../backend
 
 RESOURCES    += sigrok-gui.qrc
 
 # TODO: This may need fixes.
 macx {
-	LIBS += -L/opt/local/lib -L/opt/local/lib/glib-2.0 -lgmodule-2.0 -lglib-2.0
-	INCLUDEPATH += /opt/local/lib/glib-2.0/include /opt/local/include/glib-2.0
+	# LIBS += -L/opt/local/lib -L/opt/local/lib/glib-2.0 -lgmodule-2.0 -lglib-2.0
+	# INCLUDEPATH += /opt/local/lib/glib-2.0/include /opt/local/include/glib-2.0
 	ICON = icons/sigrok-gui.icns
 	#FILETYPES.files = ../lib/libsigrok.dylib
 	#FILETYPES.path = Contents/Frameworks
 	#QMAKE_BUNDLE_DATA += FILETYPES
-}else{
+} else {
 	LIBS += -Wl,--export-dynamic
 }
