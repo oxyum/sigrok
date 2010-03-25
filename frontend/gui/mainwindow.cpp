@@ -425,7 +425,7 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 	for (uint64_t i = 0; received_samples < limit_samples
 			     && i < packet->length; i += sample_size) {
 		sample = 0;
-		memcpy(&sample, packet->payload + offset, sample_size);
+		memcpy(&sample, (char *)packet->payload + offset, sample_size);
 		sample_buffer[i] = (uint8_t)(sample & 0xff); /* FIXME */
 		printf("Sample %d: 0x%x\n", i, sample);
 		received_samples++;
