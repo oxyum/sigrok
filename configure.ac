@@ -23,7 +23,7 @@ AC_INIT([sigrok], [0.1pre], [sigrok-devel@lists.sourceforge.net],
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2 std-options])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Checks for programs.
