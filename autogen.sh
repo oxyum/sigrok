@@ -26,11 +26,10 @@ else
 fi
 
 echo "Generating build system..."
-touch NEWS AUTHORS ChangeLog
 ${LIBTOOLIZE} --install --copy --quiet || exit 1
 aclocal || exit 1
 autoheader || exit 1
-automake --add-missing --copy --gnu || exit 1
+automake --add-missing --copy --foreign || exit 1
 autoconf || exit 1
 
 ./configure "$@" && echo "Type 'make' to compile."
