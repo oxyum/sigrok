@@ -26,7 +26,7 @@ AM_INIT_AUTOMAKE
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Checks for programs.
-CFLAGS="-g -Wall"
+CFLAGS="-g -Wall -Wextra"
 AC_PROG_CC
 AM_PROG_CC_C_O
 LT_INIT
