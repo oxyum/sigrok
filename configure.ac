@@ -27,8 +27,11 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Checks for programs.
 CFLAGS="-g -Wall -Wextra"
+AC_PROG_CXX
 AC_PROG_CC
-AM_PROG_CC_C_O
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
 LT_INIT
 
 # Checks for libraries.
@@ -48,20 +51,31 @@ PKG_CHECK_MODULES([libzip], [libzip >= 0.8],
 	LIBS="$LIBS $libzip_LIBS"])
 
 # Checks for header files.
+# These are already checked: inttypes.h stdint.h stdlib.h string.h unistd.h.
+AC_CHECK_HEADERS([fcntl.h sys/time.h termios.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_TYPE_INT8_T
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_INT64_T
+AC_TYPE_UINT8_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
 
 # Checks for library functions.
+AC_CHECK_FUNCS([gettimeofday memset strchr strerror strncasecmp strtol strtoul strtoull])
 
 AC_CONFIG_FILES([Makefile
-				 backend/Makefile
-				 hardware/Makefile
-				 hardware/common/Makefile
-				 hardware/saleae-logic/Makefile
-				 hardware/openbench-logic-sniffer/Makefile
-				 frontend/Makefile
-				 frontend/cli/Makefile
-                 ])
+		 backend/Makefile
+		 hardware/Makefile
+		 hardware/common/Makefile
+		 hardware/saleae-logic/Makefile
+		 hardware/openbench-logic-sniffer/Makefile
+		 frontend/Makefile
+		 frontend/cli/Makefile
+		])
 
 AC_SUBST(HWPLUGIN_DIR,'$(libdir)/sigrok')
 AC_SUBST(FIRMWARE_DIR,'$(datadir)/sigrok')
