@@ -44,6 +44,10 @@ INCLUDEPATH  += ../../include ../../backend
 
 RESOURCES    += sigrok-gui.qrc
 
+win32 {
+	RC_FILE = sigrok-gui.rc
+}
+
 # TODO: This may need fixes.
 macx {
 	# LIBS += -L/opt/local/lib -L/opt/local/lib/glib-2.0 -lgmodule-2.0 -lglib-2.0
