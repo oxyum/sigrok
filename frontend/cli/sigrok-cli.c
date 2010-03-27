@@ -225,8 +225,6 @@ void show_analyzer_list()
 }
 
 
-extern struct output_format output_text_binary;
-
 void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 {
 	static struct output *o = NULL;
@@ -306,22 +304,24 @@ void datafeed_callback(struct device *device, struct datafeed_packet *packet)
 	}
 
 	if(sample_size > 0) {
-		filter_probes(sample_size, unitsize, probelist,
-				packet->payload, packet->length, &filter_out, &filter_out_len);
-		if(device->datastore)
-			datastore_put(device->datastore, filter_out, filter_out_len, sample_size, probelist);
+		if(received_samples < limit_samples) {
+			filter_probes(sample_size, unitsize, probelist,
+					packet->payload, packet->length, &filter_out, &filter_out_len);
+			if(device->datastore)
+				datastore_put(device->datastore, filter_out, filter_out_len, sample_size, probelist);
 
-		/* don't dump samples on stdout when also saving the session */
-		if(!opt_save_session_filename) {
-			if(received_samples + filter_out_len > limit_samples * sample_size)
-				o->format->data(o, filter_out, limit_samples * sample_size - received_samples, &output_buf, &output_len);
-			else
-				o->format->data(o, filter_out, filter_out_len, &output_buf, &output_len);
-			printf("%s", output_buf);
+			/* don't dump samples on stdout when also saving the session */
+			if(!opt_save_session_filename) {
+				if(received_samples + packet->length / sample_size > limit_samples * sample_size)
+					o->format->data(o, filter_out, limit_samples * sample_size - received_samples, &output_buf, &output_len);
+				else
+					o->format->data(o, filter_out, filter_out_len, &output_buf, &output_len);
+				printf("%s", output_buf);
+			}
+			if(filter_out)
+				free(filter_out);
+			received_samples += packet->length / sample_size;
 		}
-		if(filter_out)
-			free(filter_out);
-		received_samples += packet->length / sample_size;
 	}
 
 }
