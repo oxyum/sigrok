@@ -1,5 +1,5 @@
 /*
- * This file is part of the flosslogic project.
+ * This file is part of the sigrok project.
  *
  * Copyright (C) 2010 Bert Vermeulen <bert@biot.com>
  *
