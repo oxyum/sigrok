@@ -28,6 +28,8 @@ char *serial_port_glob[] = {
 	"/dev/ttyACM*",
 	/* MacOS X */
 	"/dev/ttys*",
+	"/dev/tty.USB-*",
+	"/dev/tty.Modem-*",
 	NULL
 };
 
