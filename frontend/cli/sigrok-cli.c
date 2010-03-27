@@ -197,13 +197,13 @@ void show_device_detail(void)
 					for(i = 0; sample_rates[i]; i++) {
 						printf("    ");
 						if(sample_rates[i] >= GHZ(1))
-							printf("%6"PRId64" GHz\n", sample_rates[i] / 1000000000);
+							printf("%6"PRIu64" GHz\n", sample_rates[i] / 1000000000);
 						else if(sample_rates[i] >= MHZ(1))
-							printf("%6"PRId64" MHz\n", sample_rates[i] / 1000000);
+							printf("%6"PRIu64" MHz\n", sample_rates[i] / 1000000);
 						else if(sample_rates[i] >= KHZ(1))
-							printf("%6"PRId64" KHz\n", sample_rates[i] / 1000);
+							printf("%6"PRIu64" KHz\n", sample_rates[i] / 1000);
 						else
-							printf("%6"PRId64" Hz\n", sample_rates[i]);
+							printf("%6"PRIu64" Hz\n", sample_rates[i]);
 					}
 				}
 				else

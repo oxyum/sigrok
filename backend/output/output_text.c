@@ -94,13 +94,13 @@ static void init(struct output *o, int default_spl)
 	samplerate = *((uint64_t *) o->device->plugin->get_device_info(o->device->plugin_index, DI_CUR_SAMPLE_RATE));
 	snprintf(ctx->header, 512, "Acquisition with %d/%d probes at ", ctx->num_enabled_probes, num_probes);
 	if(samplerate >= GHZ(1))
-		snprintf(ctx->header + strlen(ctx->header), 512, "%"PRId64" GHz", samplerate / 1000000000);
+		snprintf(ctx->header + strlen(ctx->header), 512, "%"PRIu64" GHz", samplerate / 1000000000);
 	else if(samplerate >= MHZ(1))
-		snprintf(ctx->header + strlen(ctx->header), 512, "%"PRId64" MHz", samplerate / 1000000);
+		snprintf(ctx->header + strlen(ctx->header), 512, "%"PRIu64" MHz", samplerate / 1000000);
 	else if(samplerate >= KHZ(1))
-		snprintf(ctx->header + strlen(ctx->header), 512, "%"PRId64" KHz", samplerate / 1000);
+		snprintf(ctx->header + strlen(ctx->header), 512, "%"PRIu64" KHz", samplerate / 1000);
 	else
-		snprintf(ctx->header + strlen(ctx->header), 512, "%"PRId64" Hz", samplerate);
+		snprintf(ctx->header + strlen(ctx->header), 512, "%"PRIu64" Hz", samplerate);
 	snprintf(ctx->header + strlen(ctx->header), 512, "\n");
 
 	ctx->linebuf_len = ctx->samples_per_line * 2;

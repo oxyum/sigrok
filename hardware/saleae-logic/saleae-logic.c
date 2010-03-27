@@ -560,7 +560,7 @@ int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t sa
 
 	divider = (uint8_t) (48 / (float) (samplerate/1000000)) - 1;
 
-	g_message("setting sample rate to %"PRId64" Hz (divider %d)", samplerate, divider);
+	g_message("setting sample rate to %"PRIu64" Hz (divider %d)", samplerate, divider);
 	buf[0] = 0x01;
 	buf[1] = divider;
 	ret = libusb_bulk_transfer(sdi->usb->devhdl, 1 | LIBUSB_ENDPOINT_OUT, buf, 2, &result, 500);
