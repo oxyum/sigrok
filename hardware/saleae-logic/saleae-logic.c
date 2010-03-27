@@ -74,7 +74,7 @@ GTimeVal firmware_updated = {0};
 
 libusb_context *usb_context = NULL;
 
-uint64_t supported_sample_rates[] = {
+uint64_t supported_samplerates[] = {
 	KHZ(200),
 	KHZ(250),
 	KHZ(500),
@@ -86,6 +86,13 @@ uint64_t supported_sample_rates[] = {
 	MHZ(16),
 	MHZ(24),
 	0
+};
+
+struct samplerates samplerates = {
+	KHZ(200),
+	MHZ(24),
+	0,
+	supported_samplerates
 };
 
 /* TODO: all of these should go in a device-specific struct */
@@ -458,7 +465,7 @@ int hw_opendev(int device_index)
 
 	if(cur_sample_rate == 0) {
 		/* sample rate hasn't been set; default to the slowest it has */
-		if(hw_set_configuration(device_index, HWCAP_SAMPLERATE, &supported_sample_rates[0]) == SIGROK_NOK)
+		if(hw_set_configuration(device_index, HWCAP_SAMPLERATE, &supported_samplerates[0]) == SIGROK_NOK)
 			return SIGROK_NOK;
 	}
 
@@ -497,7 +504,7 @@ void hw_cleanup(void)
 }
 
 
-char *hw_get_device_info(int device_index, int device_info_id)
+void *hw_get_device_info(int device_index, int device_info_id)
 {
 	void *info;
 
@@ -511,8 +518,8 @@ char *hw_get_device_info(int device_index, int device_info_id)
 	case DI_NUM_PROBES:
 		info = GINT_TO_POINTER(NUM_PROBES);
 		break;
-	case DI_SAMPLE_RATES:
-		info = supported_sample_rates;
+	case DI_SAMPLERATES:
+		info = &samplerates;
 		break;
 	case DI_TRIGGER_TYPES:
 		info = TRIGGER_TYPES;
@@ -551,11 +558,11 @@ int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t sa
 	int ret, result, i;
 	unsigned char buf[2];
 
-	for(i = 0; supported_sample_rates[i]; i++) {
-		if(supported_sample_rates[i] == samplerate)
+	for(i = 0; supported_samplerates[i]; i++) {
+		if(supported_samplerates[i] == samplerate)
 			break;
 	}
-	if(supported_sample_rates[i] == 0)
+	if(supported_samplerates[i] == 0)
 		return SIGROK_ERR_BADVALUE;
 
 	divider = (uint8_t) (48 / (float) (samplerate/1000000)) - 1;

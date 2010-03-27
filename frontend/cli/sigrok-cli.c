@@ -143,31 +143,45 @@ void show_device_list(void)
 }
 
 
+char *nice_freq(uint64_t freq, int pad)
+{
+	static char str[32];
+
+	if(freq >= GHZ(1))
+		snprintf(str, 31, "%*"PRIu64" GHz", pad, freq / 1000000000);
+	else if(freq >= MHZ(1))
+		snprintf(str, 31, "%*"PRIu64" MHz", pad, freq / 1000000);
+	else if(freq >= KHZ(1))
+		snprintf(str, 31, "%*"PRIu64" KHz", pad, freq / 1000);
+	else
+		snprintf(str, 31, "%*"PRIu64" Hz", pad, freq);
+
+	return str;
+}
+
+
 void show_device_detail(void)
 {
 	struct device *device;
 	struct hwcap_option *hwo;
+	struct samplerates *samplerates;
 	GSList *devices;
-	uint64_t *sample_rates;
 	int cap, *capabilities, i;
 	char *title, *triggers;
 
 	device_scan();
 	devices = device_list();
 	device = g_slist_nth_data(devices, opt_device);
-	if(device == NULL)
-	{
+	if(device == NULL) {
 		printf("No such device. Use -D to list all devices.\n");
 		return;
 	}
 
 	print_device_line(device);
 
-	if( (triggers = (char *) device->plugin->get_device_info(device->plugin_index, DI_TRIGGER_TYPES)) )
-	{
+	if( (triggers = (char *) device->plugin->get_device_info(device->plugin_index, DI_TRIGGER_TYPES)) ) {
 		printf("Supported triggers: ");
-		while(*triggers)
-		{
+		while(*triggers) {
 			printf("%c ", *triggers);
 			triggers++;
 		}
@@ -176,34 +190,28 @@ void show_device_detail(void)
 
 	title = "Supported options:\n";
 	capabilities = device->plugin->get_capabilities();
-	for(cap = 0; capabilities[cap]; cap++)
-	{
+	for(cap = 0; capabilities[cap]; cap++) {
 		hwo = find_hwcap_option(capabilities[cap]);
-		if(hwo)
-		{
-			if(title)
-			{
+		if(hwo) {
+			if(title) {
 				printf("%s", title);
 				title = NULL;
 			}
-			if(hwo->capability == HWCAP_SAMPLERATE)
-			{
+			if(hwo->capability == HWCAP_SAMPLERATE) {
 				printf("    %s", hwo->shortname);
 				/* supported sample rates */
-				sample_rates = (uint64_t *) device->plugin->get_device_info(device->plugin_index, DI_SAMPLE_RATES);
-				if(sample_rates)
-				{
-					printf(" - supported sample rates:\n");
-					for(i = 0; sample_rates[i]; i++) {
-						printf("    ");
-						if(sample_rates[i] >= GHZ(1))
-							printf("%6"PRIu64" GHz\n", sample_rates[i] / 1000000000);
-						else if(sample_rates[i] >= MHZ(1))
-							printf("%6"PRIu64" MHz\n", sample_rates[i] / 1000000);
-						else if(sample_rates[i] >= KHZ(1))
-							printf("%6"PRIu64" KHz\n", sample_rates[i] / 1000);
-						else
-							printf("%6"PRIu64" Hz\n", sample_rates[i]);
+				samplerates = device->plugin->get_device_info(device->plugin_index, DI_SAMPLERATES);
+				if(samplerates) {
+					if(samplerates->step) {
+						printf(" (%s - ", nice_freq(samplerates->low, 0));
+						printf("%s in steps of ", nice_freq(samplerates->high, 0));
+						printf("%s)\n", nice_freq(samplerates->step, 0));
+					}
+					else {
+						printf(" - supported sample rates:\n");
+						for(i = 0; samplerates->list[i]; i++) {
+							printf("    %6s\n", nice_freq(samplerates->list[i], 6));
+						}
 					}
 				}
 				else

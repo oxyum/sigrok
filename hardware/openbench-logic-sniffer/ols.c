@@ -79,20 +79,10 @@ int capabilities[] = {
 	0
 };
 
-float supported_sample_rates[] = {
-	0.2,
-	0.25,
-	0.50,
+struct samplerates samplerates = {
 	1,
-	2,
-	4,
-	8,
-	10,
-	20,
-	50,
-	70,
-	100,
-	200,
+	MHZ(200),
+	1,
 	0
 };
 
@@ -328,9 +318,9 @@ void hw_cleanup(void)
 }
 
 
-char *hw_get_device_info(int device_index, int device_info_id)
+void *hw_get_device_info(int device_index, int device_info_id)
 {
-	char *info;
+	void *info;
 
 	info = NULL;
 	switch(device_info_id)
@@ -342,8 +332,8 @@ char *hw_get_device_info(int device_index, int device_info_id)
 	case DI_NUM_PROBES:
 		info = GINT_TO_POINTER(NUM_PROBES);
 		break;
-	case DI_SAMPLE_RATES:
-		info = (char *) supported_sample_rates;
+	case DI_SAMPLERATES:
+		info = &samplerates;
 		break;
 	case DI_TRIGGER_TYPES:
 		info = (char *) TRIGGER_TYPES;

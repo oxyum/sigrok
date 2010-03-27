@@ -266,12 +266,23 @@ enum {
 	DI_IDENTIFIER,
 	/* The number of probes connected to this device */
 	DI_NUM_PROBES,
-	/* Sample rates this device supports (0-terminated uint64_t array) */
-	DI_SAMPLE_RATES,
-	/* Types of trigger supported, out of "01crf" */
+	/* Sample rates supported by this device, (struct samplerates) */
+	DI_SAMPLERATES,
+	/* Types of trigger supported, out of "01crf" (char *) */
 	DI_TRIGGER_TYPES,
 	/* The currently set sample rate in Hz (uint64_t) */
 	DI_CUR_SAMPLE_RATE,
+};
+
+/* a device supports either a range of samplerates with steps of a given
+ * granularity, or is limited to a set of defined samplerates. use either
+ * step or list, but not both.
+ */
+struct samplerates {
+	uint64_t low;
+	uint64_t high;
+	uint64_t step;
+	uint64_t *list;
 };
 
 struct device_plugin {
@@ -284,7 +295,7 @@ struct device_plugin {
 	/* device-specific */
 	int (*open) (int device_index);
 	void (*close) (int device_index);
-	char *(*get_device_info) (int device_index, int device_info_id);
+	void *(*get_device_info) (int device_index, int device_info_id);
 	int (*get_status) (int device_index);
 	int *(*get_capabilities) (void);
 	int (*set_configuration) (int device_index, int capability, void *value);
