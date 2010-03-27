@@ -34,12 +34,17 @@
 
 #define USB_VENDOR				0x0925
 #define USB_PRODUCT			0x3881
+#define USB_VENDOR_NAME		"Saleae"
+#define USB_MODEL_NAME			"Logic"
+#define USB_MODEL_VERSION		""
+
 #define USB_INTERFACE			0
 #define USB_CONFIGURATION		1
 #define NUM_PROBES				8
 #define NUM_TRIGGER_STAGES		4
 #define TRIGGER_TYPES			"01"
 #define FIRMWARE FIRMWARE_DIR	"/saleae-logic.firmware"
+
 /* delay in ms */
 #define FIRMWARE_RENUM_DELAY	2000
 #define NUM_SIMUL_TRANSFERS	10
@@ -62,8 +67,8 @@ int capabilities[] = {
 	0
 };
 
-/* list of struct usb_device_instance, maintained by opendev() and closedev() */
-GSList *usb_devices = NULL;
+/* list of struct sigrok_device_instance, maintained by opendev() and closedev() */
+GSList *device_instances = NULL;
 
 /* since we can't keep track of a Saleae Logic device after upgrading the
  * firmware -- it re-enumerates into a different device address after the
@@ -159,18 +164,18 @@ int check_conf_profile(libusb_device *dev)
 }
 
 
-struct usb_device_instance *sl_open_device(int device_index)
+struct sigrok_device_instance *sl_open_device(int device_index)
 {
-	struct usb_device_instance *udi;
+	struct sigrok_device_instance *sdi;
 	libusb_device **devlist;
 	struct libusb_device_descriptor des;
 	int err, skip, i;
 
-	if(!(udi = get_usb_device_instance(usb_devices, device_index)))
+	if(!(sdi = get_sigrok_device_instance(device_instances, device_index)))
 		return NULL;
 
 	libusb_get_device_list(usb_context, &devlist);
-	if(udi->status == ST_INITIALIZING)
+	if(sdi->status == ST_INITIALIZING)
 	{
 		/* this device was renumerating last time we touched it. opendev() guarantees we've
 		 * waited long enough for it to have booted properly, so now we need to find it on
@@ -198,22 +203,22 @@ struct usb_device_instance *sl_open_device(int device_index)
 				 * are we going to do if it doesn't match after the right number of skips?
 				 */
 
-				if( !(err = libusb_open(devlist[i], &(udi->devhdl))) )
+				if( !(err = libusb_open(devlist[i], &(sdi->usb->devhdl))) )
 				{
-					udi->address = libusb_get_device_address(devlist[i]);
-					udi->status = ST_ACTIVE;
-					g_message("opened device %d on %d.%d interface %d", udi->index, udi->bus,
-							udi->address, USB_INTERFACE);
+					sdi->usb->address = libusb_get_device_address(devlist[i]);
+					sdi->status = ST_ACTIVE;
+					g_message("opened device %d on %d.%d interface %d", sdi->index, sdi->usb->bus,
+							sdi->usb->address, USB_INTERFACE);
 				}
 				else
 				{
 					g_warning("failed to open device: %d", err);
-					udi = NULL;
+					sdi = NULL;
 				}
 			}
 		}
 	}
-	else if(udi->status == ST_INACTIVE)
+	else if(sdi->status == ST_INACTIVE)
 	{
 		/* this device is fully enumerated, so we need to find this device by
 		 * vendor, product, bus and address */
@@ -228,20 +233,20 @@ struct usb_device_instance *sl_open_device(int device_index)
 
 			if(des.idVendor == USB_VENDOR && des.idProduct == USB_PRODUCT)
 			{
-				if(libusb_get_bus_number(devlist[i]) == udi->bus &&
-						libusb_get_device_address(devlist[i]) == udi->address)
+				if(libusb_get_bus_number(devlist[i]) == sdi->usb->bus &&
+						libusb_get_device_address(devlist[i]) == sdi->usb->address)
 				{
 					/* found it */
-					if( !(err = libusb_open(devlist[i], &(udi->devhdl))) )
+					if( !(err = libusb_open(devlist[i], &(sdi->usb->devhdl))) )
 					{
-						udi->status = ST_ACTIVE;
-						g_message("opened device %d on %d.%d interface %d", udi->index, udi->bus,
-								udi->address, USB_INTERFACE);
+						sdi->status = ST_ACTIVE;
+						g_message("opened device %d on %d.%d interface %d", sdi->index, sdi->usb->bus,
+								sdi->usb->address, USB_INTERFACE);
 					}
 					else
 					{
 						g_warning("failed to open device: %d", err);
-						udi = NULL;
+						sdi = NULL;
 					}
 				}
 			}
@@ -250,14 +255,14 @@ struct usb_device_instance *sl_open_device(int device_index)
 	else
 	{
 		/* status must be ST_ACTIVE, i.e. already in use... */
-		udi = NULL;
+		sdi = NULL;
 	}
 	libusb_free_device_list(devlist, 1);
 
-	if(udi && udi->status != ST_ACTIVE)
-		udi = NULL;
+	if(sdi && sdi->status != ST_ACTIVE)
+		sdi = NULL;
 
-	return udi;
+	return sdi;
 }
 
 
@@ -301,17 +306,17 @@ int upload_firmware(libusb_device *dev)
 }
 
 
-void close_device(struct usb_device_instance *udi)
+void close_device(struct sigrok_device_instance *sdi)
 {
 
-	if(udi->devhdl)
+	if(sdi->usb->devhdl)
 	{
-		g_message("closing device %d on %d.%d interface %d", udi->index, udi->bus,
-				udi->address, USB_INTERFACE);
-		libusb_release_interface(udi->devhdl, USB_INTERFACE);
-		libusb_close(udi->devhdl);
-		udi->devhdl = NULL;
-		udi->status = ST_INACTIVE;
+		g_message("closing device %d on %d.%d interface %d", sdi->index, sdi->usb->bus,
+				sdi->usb->address, USB_INTERFACE);
+		libusb_release_interface(sdi->usb->devhdl, USB_INTERFACE);
+		libusb_close(sdi->usb->devhdl);
+		sdi->usb->devhdl = NULL;
+		sdi->status = ST_INACTIVE;
 	}
 
 }
@@ -371,13 +376,12 @@ int configure_probes(GSList *probes)
 
 int hw_init(char *deviceinfo)
 {
-	struct usb_device_instance *udi;
+	struct sigrok_device_instance *sdi;
 	struct libusb_device_descriptor des;
 	libusb_device **devlist;
 	int err, devcnt, i;
 
-	if(libusb_init(&usb_context) != 0)
-	{
+	if(libusb_init(&usb_context) != 0) {
 		g_warning("Failed to initialize USB.");
 		return 0;
 	}
@@ -386,32 +390,35 @@ int hw_init(char *deviceinfo)
 	/* find all Saleae Logic devices and upload firmware to all of them */
 	devcnt = 0;
 	libusb_get_device_list(usb_context, &devlist);
-	for(i = 0; devlist[i]; i++)
-	{
+	for(i = 0; devlist[i]; i++) {
 		err = libusb_get_device_descriptor(devlist[i], &des);
-		if(err != 0)
-		{
+		if(err != 0) {
 			g_warning("failed to get device descriptor: %d", err);
 			continue;
 		}
-		if(des.idVendor == USB_VENDOR && des.idProduct == USB_PRODUCT)
-		{
+
+		if(des.idVendor == USB_VENDOR && des.idProduct == USB_PRODUCT) {
 			/* definitely a Saleae Logic */
+
+			sdi = sigrok_device_instance_new(devcnt, ST_INITIALIZING,
+					USB_VENDOR_NAME, USB_MODEL_NAME, USB_MODEL_VERSION);
+			if(!sdi)
+				return 0;
+			device_instances = g_slist_append(device_instances, sdi);
+
 			if(check_conf_profile(devlist[i]) == 0)
 			{
 				if(upload_firmware(devlist[i]) > 0)
+					/* continue on the off chance that the device is in a working state */
+					/* TODO: could maybe try a USB reset, or uploading the firmware again... */
 					g_warning("firmware upload failed for device %d", devcnt);
-				udi = usb_device_instance_new(devcnt, ST_INITIALIZING,
-						libusb_get_bus_number(devlist[i]), 0, NULL);
-				usb_devices = g_slist_append(usb_devices, udi);
+
+				sdi->usb = usb_device_instance_new(libusb_get_bus_number(devlist[i]), 0, NULL);
 			}
-			else
-			{
-				/* already has the firmware on it, so fix the address */
-				udi = usb_device_instance_new(devcnt, ST_INACTIVE,
-						libusb_get_bus_number(devlist[i]),
+			else {
+				/* already has the firmware on it, so fix the new address */
+				sdi->usb = usb_device_instance_new(libusb_get_bus_number(devlist[i]),
 						libusb_get_device_address(devlist[i]), NULL);
-				usb_devices = g_slist_append(usb_devices, udi);
 			}
 			devcnt++;
 		}
@@ -425,19 +432,17 @@ int hw_init(char *deviceinfo)
 int hw_opendev(int device_index)
 {
 	GTimeVal cur_time;
-	struct usb_device_instance *udi;
+	struct sigrok_device_instance *sdi;
 	int timediff, err;
 	unsigned int cur, upd;
 
-	if(firmware_updated.tv_sec > 0)
-	{
+	if(firmware_updated.tv_sec > 0) {
 		/* firmware was recently uploaded */
 		g_get_current_time(&cur_time);
 		cur = cur_time.tv_sec * 1000 + cur_time.tv_usec / 1000;
 		upd = firmware_updated.tv_sec * 1000 + firmware_updated.tv_usec / 1000;
 		timediff = cur - upd;
-		if(timediff < FIRMWARE_RENUM_DELAY)
-		{
+		if(timediff < FIRMWARE_RENUM_DELAY) {
 			timediff = FIRMWARE_RENUM_DELAY - timediff;
 			g_message("waiting %d ms for device to reset", timediff);
 			g_usleep(timediff * 1000);
@@ -445,21 +450,18 @@ int hw_opendev(int device_index)
 		}
 	}
 
-	if( !(udi = sl_open_device(device_index)) )
-	{
+	if( !(sdi = sl_open_device(device_index)) ) {
 		g_warning("unable to open device");
 		return SIGROK_NOK;
 	}
 
-	err = libusb_claim_interface(udi->devhdl, USB_INTERFACE);
-	if(err != 0)
-	{
+	err = libusb_claim_interface(sdi->usb->devhdl, USB_INTERFACE);
+	if(err != 0) {
 		g_warning("Unable to claim interface: %d", err);
 		return SIGROK_NOK;
 	}
 
-	if(cur_sample_rate == 0)
-	{
+	if(cur_sample_rate == 0) {
 		/* sample rate hasn't been set; default to the slowest it has */
 		if(hw_set_configuration(device_index, HWCAP_SAMPLERATE, &supported_sample_rates[0]) == SIGROK_NOK)
 			return SIGROK_NOK;
@@ -471,10 +473,10 @@ int hw_opendev(int device_index)
 
 void hw_closedev(int device_index)
 {
-	struct usb_device_instance *udi;
+	struct sigrok_device_instance *sdi;
 
-	if( (udi = get_usb_device_instance(usb_devices, device_index)) )
-		close_device(udi);
+	if( (sdi = get_sigrok_device_instance(device_instances, device_index)) )
+		close_device(sdi);
 
 }
 
@@ -484,14 +486,14 @@ void hw_cleanup(void)
 	GSList *l;
 
 	/* properly close all devices */
-	for(l = usb_devices; l; l = l->next)
-		close_device( (struct usb_device_instance *) l->data);
+	for(l = device_instances; l; l = l->next)
+		close_device( (struct sigrok_device_instance *) l->data);
 
 	/* and free all their memory */
-	for(l = usb_devices; l; l = l->next)
+	for(l = device_instances; l; l = l->next)
 		g_free(l->data);
-	g_slist_free(usb_devices);
-	usb_devices = NULL;
+	g_slist_free(device_instances);
+	device_instances = NULL;
 
 	if(usb_context)
 		libusb_exit(usb_context);
@@ -531,11 +533,11 @@ char *hw_get_device_info(int device_index, int device_info_id)
 
 int hw_get_status(int device_index)
 {
-	struct usb_device_instance *udi;
+	struct sigrok_device_instance *sdi;
 
-	udi = get_usb_device_instance(usb_devices, device_index);
-	if(udi)
-		return udi->status;
+	sdi = get_sigrok_device_instance(device_instances, device_index);
+	if(sdi)
+		return sdi->status;
 	else
 		return ST_NOT_FOUND;
 }
@@ -548,14 +550,13 @@ int *hw_get_capabilities(void)
 }
 
 
-int set_configuration_samplerate(struct usb_device_instance *udi, uint64_t samplerate)
+int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t samplerate)
 {
 	uint8_t divider;
 	int ret, result, i;
 	unsigned char buf[2];
 
-	for(i = 0; supported_sample_rates[i]; i++)
-	{
+	for(i = 0; supported_sample_rates[i]; i++) {
 		if(supported_sample_rates[i] == samplerate)
 			break;
 	}
@@ -567,9 +568,8 @@ int set_configuration_samplerate(struct usb_device_instance *udi, uint64_t sampl
 	g_message("setting sample rate to %"PRId64" Hz (divider %d)", samplerate, divider);
 	buf[0] = 0x01;
 	buf[1] = divider;
-	ret = libusb_bulk_transfer(udi->devhdl, 1 | LIBUSB_ENDPOINT_OUT, buf, 2, &result, 500);
-	if(ret != 0)
-	{
+	ret = libusb_bulk_transfer(sdi->usb->devhdl, 1 | LIBUSB_ENDPOINT_OUT, buf, 2, &result, 500);
+	if(ret != 0) {
 		g_warning("failed to set samplerate: %d", ret);
 		return SIGROK_NOK;
 	}
@@ -581,21 +581,20 @@ int set_configuration_samplerate(struct usb_device_instance *udi, uint64_t sampl
 
 int hw_set_configuration(int device_index, int capability, void *value)
 {
-	struct usb_device_instance *udi;
+	struct sigrok_device_instance *sdi;
 	int ret;
 	uint64_t *tmp_u64;
 
-	if( !(udi = get_usb_device_instance(usb_devices, device_index)) )
+	if( !(sdi = get_sigrok_device_instance(device_instances, device_index)) )
 		return SIGROK_NOK;
 
 	if(capability == HWCAP_SAMPLERATE) {
 		tmp_u64 = value;
-		ret = set_configuration_samplerate(udi, *tmp_u64);
+		ret = set_configuration_samplerate(sdi, *tmp_u64);
 	}
 	else if(capability == HWCAP_PROBECONFIG)
 		ret = configure_probes( (GSList *) value);
-	else if(capability == HWCAP_LIMIT_SAMPLES)
-	{
+	else if(capability == HWCAP_LIMIT_SAMPLES) {
 		limit_samples = strtoull(value, NULL, 10);
 		ret = SIGROK_OK;
 	}
@@ -680,9 +679,8 @@ void receive_transfer(struct libusb_transfer *transfer)
 					trigger_stage++;
 					if(trigger_stage == NUM_TRIGGER_STAGES || trigger_mask[trigger_stage] == 0)
 					{
-						trigger_offset = i+1;
 						/* match on all trigger stages, we're done */
-						trigger_stage = TRIGGER_FIRED;
+						trigger_offset = i+1;
 
 						/* TODO: send pre-trigger buffer to session bus */
 
@@ -697,6 +695,8 @@ void receive_transfer(struct libusb_transfer *transfer)
 						packet.payload = trigger_buffer;
 						session_bus(user_data, &packet);
 						break;
+
+						trigger_stage = TRIGGER_FIRED;
 					}
 				}
 				else if(trigger_stage > 0)
@@ -747,7 +747,7 @@ void receive_transfer(struct libusb_transfer *transfer)
 
 int hw_start_acquisition(int device_index, gpointer session_device_id)
 {
-	struct usb_device_instance *udi;
+	struct sigrok_device_instance *sdi;
 	struct datafeed_packet *packet;
 	struct datafeed_header *header;
 	struct libusb_transfer *transfer;
@@ -755,7 +755,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	int size, i;
 	unsigned char *buf;
 
-	if( !(udi = get_usb_device_instance(usb_devices, device_index)))
+	if( !(sdi = get_sigrok_device_instance(device_instances, device_index)))
 		return SIGROK_NOK;
 
 	packet = g_malloc(sizeof(struct datafeed_packet));
@@ -765,14 +765,12 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 
 	/* start with 2K transfer, subsequently increased to 4K */
 	size = 2048;
-	for(i = 0; i < NUM_SIMUL_TRANSFERS; i++)
-	{
+	for(i = 0; i < NUM_SIMUL_TRANSFERS; i++) {
 		buf = g_malloc(size);
 		transfer = libusb_alloc_transfer(0);
-		libusb_fill_bulk_transfer(transfer, udi->devhdl, 2 | LIBUSB_ENDPOINT_IN, buf, size,
+		libusb_fill_bulk_transfer(transfer, sdi->usb->devhdl, 2 | LIBUSB_ENDPOINT_IN, buf, size,
 				receive_transfer, session_device_id, 40);
-		if(libusb_submit_transfer(transfer) != 0)
-		{
+		if(libusb_submit_transfer(transfer) != 0) {
 			/* TODO: free them all */
 			libusb_free_transfer(transfer);
 			g_free(buf);

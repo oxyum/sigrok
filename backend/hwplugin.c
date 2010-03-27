@@ -100,14 +100,74 @@ GSList *list_hwplugins(void)
 }
 
 
-struct usb_device_instance *usb_device_instance_new(int index, int status, uint8_t bus,
-		uint8_t address, struct libusb_device_handle *hdl)
+struct sigrok_device_instance *sigrok_device_instance_new(int index, int status,
+		char *vendor, char *model, char *version)
+{
+	struct sigrok_device_instance *sdi;
+
+	sdi = g_malloc(sizeof(struct sigrok_device_instance));
+	if(!sdi)
+		return NULL;
+
+	sdi->index = index;
+	sdi->status = status;
+	sdi->instance_type = -1;
+	sdi->vendor = strdup(vendor);
+	sdi->model = strdup(model);
+	sdi->version = strdup(version);
+	sdi->usb = NULL;
+
+	return sdi;
+}
+
+
+struct sigrok_device_instance *get_sigrok_device_instance(GSList *device_instances, int device_index)
+{
+	struct sigrok_device_instance *sdi;
+	GSList *l;
+
+	sdi = NULL;
+	for(l = device_instances; l; l = l->next) {
+		sdi = (struct sigrok_device_instance *) (l->data);
+		if(sdi->index == device_index)
+			return sdi;
+	}
+	g_warning("could not find device index %d instance", device_index);
+
+	return NULL;
+}
+
+
+void sigrok_device_instance_free(struct sigrok_device_instance *sdi)
+{
+
+	switch(sdi->instance_type) {
+	case USB_INSTANCE:
+		usb_device_instance_free(sdi->usb);
+		break;
+	case SERIAL_INSTANCE:
+		serial_device_instance_free(sdi->serial);
+		break;
+		/* no specific type, nothing extra to free */
+	}
+
+	free(sdi->vendor);
+	free(sdi->model);
+	free(sdi->version);
+	free(sdi);
+
+}
+
+
+struct usb_device_instance *usb_device_instance_new(uint8_t bus, uint8_t address,
+		struct libusb_device_handle *hdl)
 {
 	struct usb_device_instance *udi;
 
 	udi = g_malloc(sizeof(struct usb_device_instance));
-	udi->index = index;
-	udi->status = status;
+	if(!udi)
+		return NULL;
+
 	udi->bus = bus;
 	udi->address = address;
 	udi->devhdl = hdl;
@@ -116,24 +176,15 @@ struct usb_device_instance *usb_device_instance_new(int index, int status, uint8
 }
 
 
-struct usb_device_instance *get_usb_device_instance(GSList *usb_devices, int device_index)
+void usb_device_instance_free(struct usb_device_instance *usb)
 {
-	struct usb_device_instance *udi;
-	GSList *l;
 
-	udi = NULL;
-	for(l = usb_devices; l; l = l->next)
-	{
-		udi = (struct usb_device_instance *) (l->data);
-		if(udi->index == device_index)
-			return udi;
-	}
-	g_warning("could not find device index %d instance", device_index);
+	/* nothing to do for this device instance type */
 
-	return NULL;
 }
 
 
+// obsolete
 struct serial_device_instance *get_serial_device_instance(GSList *serial_devices, int device_index)
 {
 	struct serial_device_instance *sdi;
@@ -149,6 +200,14 @@ struct serial_device_instance *get_serial_device_instance(GSList *serial_devices
 	g_warning("could not find device index %d instance", device_index);
 
 	return NULL;
+}
+
+
+void serial_device_instance_free(struct serial_device_instance *serial)
+{
+
+	free(serial->port);
+
 }
 
 

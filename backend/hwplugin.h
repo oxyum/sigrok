@@ -42,9 +42,26 @@ struct hwcap_option {
 	char *shortname;
 };
 
-struct usb_device_instance {
+struct sigrok_device_instance {
 	int index;
 	int status;
+	int instance_type;
+	char *vendor;
+	char *model;
+	char *version;
+	union {
+		struct usb_device_instance *usb;
+		struct serial_device_instance *serial;
+	};
+};
+
+/* sigrok_device_instance types */
+enum {
+	USB_INSTANCE,
+	SERIAL_INSTANCE
+};
+
+struct usb_device_instance {
 	uint8_t bus;
 	uint8_t address;
 	struct libusb_device_handle *devhdl;
@@ -114,10 +131,22 @@ typedef int (*receive_data_callback) (GSource *source, gpointer data);
 
 int load_hwplugins(void);
 GSList *list_hwplugins(void);
-struct usb_device_instance *usb_device_instance_new(int index, int status, uint8_t bus,
-		uint8_t address, struct libusb_device_handle *hdl);
-struct usb_device_instance *get_usb_device_instance(GSList *usb_devices, int device_index);
+
+/* generic device instances */
+struct sigrok_device_instance *sigrok_device_instance_new(int index, int status,
+		char *vendor, char *model, char *version);
+struct sigrok_device_instance *get_sigrok_device_instance(GSList *device_instances, int device_index);
+void sigrok_device_instance_free(struct sigrok_device_instance *sdi);
+
+/* usb-specific instances */
+struct usb_device_instance *usb_device_instance_new(uint8_t bus, uint8_t address,
+		struct libusb_device_handle *hdl);
+void usb_device_instance_free(struct usb_device_instance *usb);
+
+/* serial-specific instances */
 struct serial_device_instance *get_serial_device_instance(GSList *serial_devices, int device_index);
+void serial_device_instance_free(struct serial_device_instance *serial);
+
 int find_hwcap(int *capabilities, int hwcap);
 struct hwcap_option *find_hwcap_option(int hwcap);
 void add_source_fd(int fd, int events, receive_data_callback callback, gpointer user_data);
