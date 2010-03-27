@@ -23,22 +23,47 @@ IMPORTANT: The API of the library is NOT yet considered stable! Please do
 Requirements
 ------------
 
- - libusb 1.0
- - libglib
- - QT 4 (only required for the GUI)
+ - libglib >= 2.0
+ - libusb >= 1.0.5
+ - libzip >= 0.8
+ - Python (for protocol decoder scripts)
+ - Qt + Qt Creator >= 4.5 (for building/editing the GUI) 
 
 
-Building
---------
+Building and installing
+-----------------------
 
+In order to get the sigrok source code and built it, run:
+
+ $ git clone git://sigrok.git.sourceforge.net/gitroot/sigrok/sigrok
+ $ cd sigrok
  $ ./autogen.sh
  $ make
 
+For building the GUI:
 
-Installation
-------------
+ $ cd frontend/gui
+ $ qmake
+ $ make
+
+For installing sigrok:
 
  $ make install
+
+Please see the following wiki pages for more detailed instructions:
+
+ http://sigrok.org/wiki/Linux
+ http://sigrok.org/wiki/Mac_OS_X
+ http://sigrok.org/wiki/Windows
+
+
+Mailing lists
+-------------
+
+There are two mailing lists for sigrok:
+
+ https://lists.sourceforge.net/lists/listinfo/sigrok-devel
+ https://lists.sourceforge.net/lists/listinfo/sigrok-commits
 
 
 Website
