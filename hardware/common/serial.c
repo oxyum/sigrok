@@ -25,6 +25,7 @@ char *serial_port_glob[] = {
 	/* Linux */
 	"/dev/ttyS*",
 	"/dev/ttyUSB*",
+	"/dev/ttyACM*",
 	/* MacOS X */
 	"/dev/ttys*",
 	NULL
