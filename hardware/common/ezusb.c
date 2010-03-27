@@ -21,14 +21,12 @@
  * Helper functions for the Cypress EZ-USB / FX2 series chips.
  */
 
-#include "config.h"
 #include <libusb.h>
 #include <glib.h>
-
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-
+#include "config.h"
 
 int ezusb_reset(struct libusb_device_handle *hdl, int set_clear)
 {

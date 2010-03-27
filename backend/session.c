@@ -21,13 +21,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-
-#include "sigrok.h"
-#include "device.h"
-#include "session.h"
-#include "analyzer.h"
-
 #include <zip.h>
+#include "sigrok.h"
 
 /* there can only be one session at a time */
 struct session *session;

@@ -22,15 +22,11 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <string.h>
-
 #include <glib.h>
 #include <gmodule.h>
-
 #include "sigrok.h"
-#include "hwplugin.h"
 
 extern GMainContext *gmaincontext;
-
 
 GSList *plugins;
 

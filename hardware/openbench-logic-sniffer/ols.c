@@ -28,13 +28,8 @@
 #include <string.h>
 #include <poll.h>
 #include <sys/time.h>
-
 #include <glib.h>
-
 #include "sigrok.h"
-#include "hwplugin.h"
-#include "hwcommon.h"
-#include "session.h"
 
 #define NUM_PROBES				32
 #define NUM_TRIGGER_STAGES		4

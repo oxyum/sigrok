@@ -18,11 +18,6 @@
  */
 
 #include "sigrok.h"
-#include "hwplugin.h"
-#include "hwcommon.h"
-#include "session.h"
-
-
 
 int hw_init(char *deviceinfo)
 {

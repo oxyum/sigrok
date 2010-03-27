@@ -19,11 +19,7 @@
 
 #include <stdio.h>
 #include <glib.h>
-
 #include "sigrok.h"
-#include "backend.h"
-#include "device.h"
-
 
 extern struct sigrok_global *global;
 

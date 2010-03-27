@@ -18,12 +18,7 @@
  */
 
 #include <glib.h>
-
-#include "backend.h"
-#include "hwplugin.h"
-#include "device.h"
-
-
+#include "sigrok.h"
 
 int sigrok_init(void)
 {

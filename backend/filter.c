@@ -20,9 +20,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-
 #include "sigrok.h"
-
 
 /* convert sample from maximum probes -- the way the hardware driver sent
  * it -- to a sample taking up only as much space as required, with

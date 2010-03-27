@@ -24,18 +24,12 @@
 #include <string.h>
 #include <poll.h>
 #include <time.h>
+#include <sys/time.h>
 #include <inttypes.h>
 #include <glib.h>
-
+#include <libusb.h>
 #include "config.h"
 #include "sigrok.h"
-#include "backend.h"
-#include "hwplugin.h"
-#include "device.h"
-#include "session.h"
-
-#include <libusb.h>
-#include <sys/time.h>
 
 #define SIGROK_CLI_VERSION "0.1"
 #define DEFAULT_OUTPUT_FORMAT "bin64"

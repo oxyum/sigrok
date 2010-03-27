@@ -19,11 +19,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "string.h"
+#include <string.h>
 #include <glib.h>
-
 #include "sigrok.h"
-#include "hwplugin.h"
 
 #define DEFAULT_BPL_BIN 64
 #define DEFAULT_BPL_HEX 256

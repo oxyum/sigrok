@@ -18,8 +18,7 @@
  */
 
 #include <stdio.h>
-#include <glib.h>
-
+#include "sigrok.h"
 
 void hexdump(unsigned char *address, int length)
 {

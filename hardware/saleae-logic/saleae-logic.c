@@ -22,15 +22,10 @@
 #include <poll.h>
 #include <sys/time.h>
 #include <inttypes.h>
-
+#include <glib.h>
+#include <libusb.h>
 #include "config.h"
 #include "sigrok.h"
-#include "hwcommon.h"
-#include "hwplugin.h"
-#include "session.h"
-
-#include <libusb.h>
-#include <glib.h>
 
 #define USB_VENDOR				0x0925
 #define USB_PRODUCT			0x3881
