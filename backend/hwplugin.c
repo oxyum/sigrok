@@ -101,7 +101,7 @@ struct sigrok_device_instance *sigrok_device_instance_new(int index, int status,
 {
 	struct sigrok_device_instance *sdi;
 
-	sdi = g_malloc(sizeof(struct sigrok_device_instance));
+	sdi = malloc(sizeof(struct sigrok_device_instance));
 	if(!sdi)
 		return NULL;
 
@@ -160,7 +160,7 @@ struct usb_device_instance *usb_device_instance_new(uint8_t bus, uint8_t address
 {
 	struct usb_device_instance *udi;
 
-	udi = g_malloc(sizeof(struct usb_device_instance));
+	udi = malloc(sizeof(struct usb_device_instance));
 	if(!udi)
 		return NULL;
 
@@ -180,22 +180,18 @@ void usb_device_instance_free(struct usb_device_instance *usb)
 }
 
 
-// obsolete
-struct serial_device_instance *get_serial_device_instance(GSList *serial_devices, int device_index)
+struct serial_device_instance *serial_device_instance_new(char *port, int fd)
 {
-	struct serial_device_instance *sdi;
-	GSList *l;
+	struct serial_device_instance *serial;
 
-	sdi = NULL;
-	for(l = serial_devices; l; l = l->next)
-	{
-		sdi = (struct serial_device_instance *) (l->data);
-		if(sdi->index == device_index)
-			return sdi;
-	}
-	g_warning("could not find device index %d instance", device_index);
+	serial = malloc(sizeof(struct serial_device_instance));
+	if(!serial)
+		return NULL;
 
-	return NULL;
+	serial->port = strdup(port);
+	serial->fd = fd;
+
+	return serial;
 }
 
 

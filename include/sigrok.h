@@ -237,9 +237,6 @@ struct usb_device_instance {
 };
 
 struct serial_device_instance {
-	int index;
-	int status;
-	char *model;
 	char *port;
 	int fd;
 };
@@ -327,7 +324,7 @@ struct usb_device_instance *usb_device_instance_new(uint8_t bus,
 void usb_device_instance_free(struct usb_device_instance *usb);
 
 /* Serial-specific instances */
-struct serial_device_instance *get_serial_device_instance(GSList *serial_devices, int device_index);
+struct serial_device_instance *serial_device_instance_new(char *port, int fd);
 void serial_device_instance_free(struct serial_device_instance *serial);
 
 int find_hwcap(int *capabilities, int hwcap);

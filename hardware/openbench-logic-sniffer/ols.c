@@ -28,6 +28,7 @@
 #include <string.h>
 #include <poll.h>
 #include <sys/time.h>
+#include <inttypes.h>
 #include <glib.h>
 #include "sigrok.h"
 
@@ -87,12 +88,12 @@ struct samplerates samplerates = {
 };
 
 /* list of struct serial_device_instance  */
-GSList *serial_devices = NULL;
+GSList *device_instances = NULL;
 
 /* current state of the flag register */
 uint32_t flag_reg = 0;
 
-float cur_sample_rate = 0;
+uint64_t cur_samplerate = 0;
 uint64_t limit_samples = 0;
 /* pre/post trigger capture ratio, in percentage. 0 means no pre-trigger data. */
 int capture_ratio = 0;
@@ -171,10 +172,10 @@ int configure_probes(GSList *probes)
 
 int hw_init(char *deviceinfo)
 {
+	struct sigrok_device_instance *sdi;
 	GSList *ports, *l;
 	struct pollfd *fds;
 	struct termios term, *prev_termios;
-	struct serial_device_instance *dev;
 	int devcnt, final_devcnt, num_ports, fd, i;
 	char buf[8], **device_names;
 
@@ -189,8 +190,7 @@ int hw_init(char *deviceinfo)
 	device_names = g_malloc(num_ports * (sizeof(char *)));
 	prev_termios = g_malloc(num_ports * sizeof(struct termios));
 	devcnt = 0;
-	for(l = ports; l; l = l->next)
-	{
+	for(l = ports; l; l = l->next) {
 		/* The discovery procedure is like this: first send the Reset command (0x00) 5 times,
 		 * since the device could be anywhere in a 5-byte command. Then send the ID command
 		 * (0x02). If the device responds with 4 bytes ("OLS1" or "SLA1"), we have a match.
@@ -198,24 +198,22 @@ int hw_init(char *deviceinfo)
 		 * first, then wait for all of them to respond with poll().
 		 */
 		fd = open(l->data, O_RDWR | O_NONBLOCK);
-		if(fd != -1)
-		{
+		if(fd != -1) {
 			tcgetattr(fd, &prev_termios[devcnt]);
 			tcgetattr(fd, &term);
 			cfsetispeed(&term, SERIAL_SPEED);
 			tcsetattr(fd, TCSADRAIN, &term);
 			memset(buf, CMD_RESET, 5);
 			buf[5] = CMD_ID;
-			if(write(fd, buf, 6) == 6)
-			{
+			if(write(fd, buf, 6) == 6) {
 				fds[devcnt].fd = fd;
 				fds[devcnt].events = POLLIN;
 				device_names[devcnt] = l->data;
 				devcnt++;
 				g_message("probed device %s", (char *) l->data);
 			}
-			else
-			{
+			else {
+				/* restore port settings. of course, we've crapped all over the port. */
 				tcsetattr(fd, TCSADRAIN, &prev_termios[devcnt]);
 				g_free(l->data);
 			}
@@ -224,26 +222,21 @@ int hw_init(char *deviceinfo)
 
 	/* 2ms should do it, that's enough time for 28 bytes to go over the bus */
 	usleep(2000);
+
 	final_devcnt = 0;
 	poll(fds, devcnt, 1);
-	for(i = 0; i < devcnt; i++)
-	{
-		if(fds[i].revents == POLLIN)
-		{
-			if(read(fds[i].fd, buf, 4) == 4)
-			{
-				if(!strncmp(buf, "1SLO", 4) || !strncmp(buf, "1ALS", 4))
-				{
-					dev = g_malloc(sizeof(struct serial_device_instance));
-					dev->index = final_devcnt;
-					dev->status = ST_INACTIVE;
-					dev->port = g_strdup(device_names[i]);
-					dev->fd = -1;
+	for(i = 0; i < devcnt; i++) {
+		if(fds[i].revents == POLLIN) {
+			if(read(fds[i].fd, buf, 4) == 4) {
+				if(!strncmp(buf, "1SLO", 4) || !strncmp(buf, "1ALS", 4)) {
 					if(!strncmp(buf, "1SLO", 4))
-						dev->model = g_strdup("OLS v1.0");
+						sdi = sigrok_device_instance_new(final_devcnt, ST_INACTIVE,
+								"Openbench", "Logic Sniffer", "v1.0");
 					else
-						dev->model = g_strdup("Sump v1.0");
-					serial_devices = g_slist_append(serial_devices, dev);
+						sdi = sigrok_device_instance_new(final_devcnt, ST_INACTIVE,
+								"Sump", "Logic Analyzer", "v1.0");
+					sdi->serial = serial_device_instance_new(device_names[i], -1);
+					device_instances = g_slist_append(device_instances, sdi);
 					final_devcnt++;
 					fds[i].fd = 0;
 				}
@@ -266,14 +259,15 @@ int hw_init(char *deviceinfo)
 
 int hw_opendev(int device_index)
 {
-	struct serial_device_instance *sdi;
+	struct sigrok_device_instance *sdi;
 
-	if(!(sdi = get_serial_device_instance(serial_devices, device_index)))
+	if(!(sdi = get_sigrok_device_instance(device_instances, device_index)))
 		return SIGROK_NOK;
 
-	sdi->fd = open(sdi->port, O_RDWR);
-	if(sdi->fd == -1)
+	sdi->serial->fd = open(sdi->serial->port, O_RDWR);
+	if(sdi->serial->fd == -1)
 		return SIGROK_NOK;
+
 	sdi->status = ST_ACTIVE;
 
 	return SIGROK_OK;
@@ -282,15 +276,14 @@ int hw_opendev(int device_index)
 
 void hw_closedev(int device_index)
 {
-	struct serial_device_instance *sdi;
+	struct sigrok_device_instance *sdi;
 
-	if(!(sdi = get_serial_device_instance(serial_devices, device_index)))
+	if(!(sdi = get_sigrok_device_instance(device_instances, device_index)))
 		return;
 
-	if(sdi->fd != -1)
-	{
-		close(sdi->fd);
-		sdi->fd = -1;
+	if(sdi->serial->fd != -1) {
+		close(sdi->serial->fd);
+		sdi->serial->fd = -1;
 		sdi->status = ST_INACTIVE;
 	}
 
@@ -300,20 +293,17 @@ void hw_closedev(int device_index)
 void hw_cleanup(void)
 {
 	GSList *l;
-	struct serial_device_instance *sdi;
+	struct sigrok_device_instance *sdi;
 
 	/* properly close all devices */
-	for(l = serial_devices; l; l = l->next)
-	{
+	for(l = device_instances; l; l = l->next) {
 		sdi = l->data;
-		if(sdi->fd != -1)
-			close(sdi->fd);
-		g_free(sdi->model);
-		g_free(sdi->port);
-		g_free(sdi);
+		if(sdi->serial->fd != -1)
+			close(sdi->serial->fd);
+		sigrok_device_instance_free(sdi);
 	}
-	g_slist_free(serial_devices);
-	serial_devices = NULL;
+	g_slist_free(device_instances);
+	device_instances = NULL;
 
 }
 
@@ -346,9 +336,9 @@ void *hw_get_device_info(int device_index, int device_info_id)
 
 int hw_get_status(int device_index)
 {
-	struct serial_device_instance *sdi;
+	struct sigrok_device_instance *sdi;
 
-	if(!(sdi = get_serial_device_instance(serial_devices, device_index)))
+	if(!(sdi = get_sigrok_device_instance(device_instances, device_index)))
 		return ST_NOT_FOUND;
 
 	return sdi->status;
@@ -361,60 +351,58 @@ int *hw_get_capabilities(void)
 	return capabilities;
 }
 
-/* FIXME: Sample rate is now specified in Hz, not MHz. */
-int set_configuration_samplerate(struct serial_device_instance *sdi, float rate)
+
+int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t samplerate)
 {
 	uint32_t divider;
 
-	if(rate < 0.00001 || rate > 200)
+	if(samplerate < 0.00001 || samplerate > 200)
 		return SIGROK_ERR_BADVALUE;
 
-	if(rate  > CLOCK_RATE)
-	{
+	if(samplerate  > CLOCK_RATE) {
 		flag_reg |= FLAG_DEMUX;
-		divider = (uint8_t) (CLOCK_RATE * 2 / rate) - 1;
+		divider = (uint8_t) (CLOCK_RATE * 2 / samplerate) - 1;
 	}
-	else
-	{
+	else {
 		flag_reg &= FLAG_DEMUX;
-		divider = (uint8_t) (CLOCK_RATE / rate) - 1;
+		divider = (uint8_t) (CLOCK_RATE / samplerate) - 1;
 	}
 
-	g_message("setting sample rate to %.3f Mhz (divider %d, demux %s)", rate, divider,
+	g_message("setting samplerate to %"PRIu64" Hz (divider %d, demux %s)", samplerate, divider,
 			flag_reg & FLAG_DEMUX ? "on" : "off");
-	if(send_longcommand(sdi->fd, CMD_SET_DIVIDER, divider) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_DIVIDER, divider) != SIGROK_OK)
 		return SIGROK_NOK;
-	cur_sample_rate = rate;
+	cur_samplerate = samplerate;
 
 	return SIGROK_OK;
 }
 
 
-int hw_set_configuration(int device_index, int capability, char *value)
+int hw_set_configuration(int device_index, int capability, void *value)
 {
-	struct serial_device_instance *sdi;
+	struct sigrok_device_instance *sdi;
 	int ret;
+	uint64_t *tmp_u64;
 
-	if(!(sdi = get_serial_device_instance(serial_devices, device_index)))
+	if(!(sdi = get_sigrok_device_instance(device_instances, device_index)))
 		return SIGROK_NOK;
 
 	if(sdi->status != ST_ACTIVE)
 		return SIGROK_NOK;
 
-	if(capability == HWCAP_SAMPLERATE)
-		ret = set_configuration_samplerate(sdi, atof(value));
+	if(capability == HWCAP_SAMPLERATE) {
+		tmp_u64 = value;
+		ret = set_configuration_samplerate(sdi, *tmp_u64);
+	}
 	else if(capability == HWCAP_PROBECONFIG)
 		ret = configure_probes( (GSList *) value);
-	else if(capability == HWCAP_LIMIT_SAMPLES)
-	{
+	else if(capability == HWCAP_LIMIT_SAMPLES) {
 		limit_samples = strtoull(value, NULL, 10);
 		ret = SIGROK_OK;
 	}
-	else if(capability == HWCAP_CAPTURE_RATIO)
-	{
+	else if(capability == HWCAP_CAPTURE_RATIO) {
 		capture_ratio = strtol(value, NULL, 10);
-		if(capture_ratio < 0 || capture_ratio > 100)
-		{
+		if(capture_ratio < 0 || capture_ratio > 100) {
 			capture_ratio = 0;
 			ret = SIGROK_NOK;
 		}
@@ -444,16 +432,13 @@ int receive_data(GSource *source, gpointer user_data)
 		return FALSE;
 
 	sample[num_bytes++] = byte;
-	if(num_bytes == 4)
-	{
+	if(num_bytes == 4) {
 		/* got a full sample */
-		if(flag_reg & FLAG_RLE)
-		{
+		if(flag_reg & FLAG_RLE) {
 			/* in RLE mode -1 should never come in as a sample, because
 			 * bit 31 is the "count" flag */
 			/* TODO: endianness may be wrong here, could be sample[3] */
-			if(sample[0] & 0x80 && !(last_sample[0] & 0x80))
-			{
+			if(sample[0] & 0x80 && !(last_sample[0] & 0x80)) {
 				count = (int) (*sample) & 0x7fffffff;
 				buffer = g_malloc(count);
 				buflen = 0;
@@ -463,8 +448,7 @@ int receive_data(GSource *source, gpointer user_data)
 					buflen += 4;
 				}
 			}
-			else
-			{
+			else {
 				/* just a single sample, next sample will probably be a count
 				 * referring to this -- but this one is still a part of the stream
 				 */
@@ -472,8 +456,7 @@ int receive_data(GSource *source, gpointer user_data)
 				buflen = 4;
 			}
 		}
-		else
-		{
+		else {
 			/* no compression */
 			buffer = sample;
 			buflen = 4;
@@ -500,11 +483,11 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 {
 	struct datafeed_packet *packet;
 	struct datafeed_header *header;
-	struct serial_device_instance *sdi;
+	struct sigrok_device_instance *sdi;
 	char buf[5];
 	uint32_t data;
 
-	if(!(sdi = get_serial_device_instance(serial_devices, device_index)))
+	if(!(sdi = get_sigrok_device_instance(device_instances, device_index)))
 		return SIGROK_NOK;
 
 	if(sdi->status != ST_ACTIVE)
@@ -512,52 +495,52 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 
 	/* send flag register */
 	data = flag_reg;
-	if(send_longcommand(sdi->fd, CMD_SET_FLAGS, data) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_FLAGS, data) != SIGROK_OK)
 		return SIGROK_NOK;
 
 	/* send sample limit and pre/post-trigger capture ratio */
 	data = limit_samples / 4 << 16;
 	if(capture_ratio)
 		data |= (limit_samples - (limit_samples / 100 * capture_ratio)) / 4;
-	if(send_longcommand(sdi->fd, CMD_CAPTURE_SIZE, data) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_CAPTURE_SIZE, data) != SIGROK_OK)
 		return SIGROK_NOK;
 
 	/* trigger masks */
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_MASK_0, trigger_mask[0]) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_MASK_0, trigger_mask[0]) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_MASK_1, trigger_mask[1]) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_MASK_1, trigger_mask[1]) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_MASK_2, trigger_mask[2]) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_MASK_2, trigger_mask[2]) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_MASK_3, trigger_mask[3]) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_MASK_3, trigger_mask[3]) != SIGROK_OK)
 		return SIGROK_NOK;
 
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_VALUE_0, trigger_value[0]) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_VALUE_0, trigger_value[0]) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_VALUE_1, trigger_value[1]) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_VALUE_1, trigger_value[1]) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_VALUE_2, trigger_value[2]) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_VALUE_2, trigger_value[2]) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_VALUE_3, trigger_value[3]) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_VALUE_3, trigger_value[3]) != SIGROK_OK)
 		return SIGROK_NOK;
 
 	/* trigger configuration */
 	/* TODO: the start flag should only be on the last used stage I think... */
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_CONFIG_0, 0x00000001) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_0, 0x00000001) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_CONFIG_1, 0x00000001) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_1, 0x00000001) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_CONFIG_2, 0x00000001) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_2, 0x00000001) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->fd, CMD_SET_TRIGGER_CONFIG_3, 0x00000001) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_3, 0x00000001) != SIGROK_OK)
 		return SIGROK_NOK;
 
 	/* start acquisition on the device */
 	buf[0] = CMD_RUN;
-	if(write(sdi->fd, buf, 1) != 1)
+	if(write(sdi->serial->fd, buf, 1) != 1)
 		return SIGROK_NOK;
 
-	add_source_fd(sdi->fd, POLLIN, receive_data, session_device_id);
+	add_source_fd(sdi->serial->fd, POLLIN, receive_data, session_device_id);
 
 	/* send header packet to the session bus */
 	packet = g_malloc(sizeof(struct datafeed_packet));
@@ -569,7 +552,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	packet->payload = (unsigned char *) header;
 	header->feed_version = 1;
 	gettimeofday(&header->starttime, NULL);
-	header->rate = cur_sample_rate;
+	header->rate = cur_samplerate;
 	header->protocol_id = PROTO_RAW;
 	header->num_probes = NUM_PROBES;
 	session_bus(session_device_id, packet);
@@ -592,7 +575,7 @@ void hw_stop_acquisition(int device_index, gpointer session_device_id)
 
 
 struct device_plugin plugin_info = {
-	"Openbench Logic Sniffer",
+	"sump",
 	1,
 	hw_init,
 	hw_cleanup,
