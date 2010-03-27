@@ -1,0 +1,82 @@
+.TH SIGROK-CLI 1 "March 26, 2010"
+.SH "NAME"
+sigrok-cli \- Command-line client for the sigrok logic analyzer software
+.SH "SYNOPSIS"
+.B sigrok-cli \fR[\fB\-HDALSdptoafhV\fR] [\fB\-H\fR|\fB\-\-list-hardware-plugins\fR] [\fB\-D\fR|\fB\-\-list-devices\fR] [\fB\-A\fR|\fB\-\-list-analyzer-plugins] [\fB\-L\fR|\fB\-\-load-session-file\fR file] [\fB\-S\fR|\fB\-\-save-session-file\fR file] [\fB\-d\fR|\fB\-\-device\fR devid] [\fB\-p\fR|\fB\-\-probes\fR probelist] [\fB\-t\fR|\fB\-\-triggers\fR triggerlist] [\fB\-o\fR|\fB\-\-device-option\fR devopt] [\fB\-a\fR|\fB\-\-analyzers\fR analyzerlist] [\fB\-f\fR|\fB\-\-format\fR formatname] [\fB\-\-time\fR milliseconds] [\fB\-\-samples\fR numsamples] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR]
+.SH "DESCRIPTION"
+.B sigrok-cli
+is a cross-platform command line utility for the
+.B sigrok
+logic analyzer software.
+.SH "OPTIONS"
+.TP
+.B "\-H, \-\-list-hardware-plugins"
+TODO
+.TP
+.B "\-D, \-\-list-devices"
+TODO
+.TP
+.B "\-A, \-\-list-analyzer-plugins"
+TODO
+.TP
+.BR "\-L, \-\-load-session-file " <file>
+TODO
+.TP
+.BR "\-S, \-\-save-session-file " <file>
+TODO
+.TP
+.BR "\-d, \-\-device " <devid>
+TODO
+.TP
+.BR "\-p, \-\-probes " <probelist>
+TODO
+.TP
+.BR "\-t, \-\-triggers " <triggerlist>
+TODO
+.TP
+.BR "\-o, \-\-device-option " <devopt>
+TODO
+.TP
+.BR "\-a, \-\-analyzers " <analyzerlist>
+TODO
+.TP
+.BR "\-f, \-\-format " <formatname>
+TODO
+.TP
+.BR "\-\-time " <milliseconds>
+TODO
+.TP
+.BR "\-\-samples " <numsamples>
+TODO
+.TP
+.B "\-h, \-\-help"
+Show a help text and exit.
+.TP
+.B "\-V, \-\-version"
+Show version information and exit.
+.SH "EXAMPLES"
+In order to get exactly 100 samples from the (only) detected logic analyzer
+hardware, run the following command:
+.TP
+.B "  sigrok-cli --samples 100"
+.TP
+If you want to sample data for 3 seconds, use:
+.TP
+.B "  sigrok-cli --time 3000"
+.SH "EXIT STATUS"
+.B sigrok-cli
+exits with 0 on success, 1 on most failures.
+.SH "SEE ALSO"
+\fBsigrok-gui\fP(1)
+.SH "BUGS"
+Please report any bugs on the sigrok-devel mailing list
+.RB "(" sigrok-devel@lists.souceforge.net ")."
+.SH "LICENSE"
+.B sigrok-cli
+is covered by the GNU General Public License (GPL). Some portions are
+licensed under the "GPL v2 or later", some under "GPL v3 or later".
+.SH "AUTHORS"
+Please see the individual source code files.
+.PP
+This manual page was written by Uwe Hermann <uwe@hermann-uwe.de>.
+It is licensed under the terms of the GNU GPL (version 2 or later).

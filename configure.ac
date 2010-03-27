@@ -69,6 +69,7 @@ AC_TYPE_UINT64_T
 AC_CHECK_FUNCS([gettimeofday memset strchr strerror strncasecmp strtol strtoul strtoull])
 
 AC_CONFIG_FILES([Makefile
+		 doc/Makefile
 		 include/Makefile
 		 backend/Makefile
 		 hardware/Makefile
