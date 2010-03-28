@@ -339,17 +339,12 @@ struct session {
 	GSList *devices;
 	/* List of struct analyzer* */
 	GSList *analyzers;
-	/* Output file and file handle */
-	char *output_filename;
-	FILE *output_file;
-	/* Callback to process output */
-	GSList *output_callbacks;
+	/* datafeed callbacks */
+	GSList *datafeed_callbacks;
 	GTimeVal starttime;
-	/* Sample frequency expressed as 1s / freqdiv */
-	unsigned int freqdiv;
 };
 
-typedef void (*output_callback) (struct device *device,
+typedef void (*datafeed_callback) (struct device *device,
 				 struct datafeed_packet *packet);
 
 /* Session setup */
@@ -364,9 +359,8 @@ void session_pa_clear(void);
 void session_pa_add(struct analyzer *pa);
 
 /* Output setup */
-void session_output_clear(void);
-void session_output_add_file(char *filename);
-void session_output_add_callback(output_callback callback);
+void session_datafeed_clear(void);
+void session_datafeed_add_callback(datafeed_callback callback);
 
 /* Session control */
 int session_start(void);

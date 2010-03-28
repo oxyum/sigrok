@@ -99,35 +99,19 @@ void session_pa_add(struct analyzer *an)
 }
 
 
-void session_output_clear(void)
+void session_datafeed_clear(void)
 {
 
-	if(session->output_filename)
-	{
-		g_free(session->output_filename);
-		session->output_filename = NULL;
-	}
-
-	session->output_callbacks = NULL;
+	g_slist_free(session->datafeed_callbacks);
+	session->datafeed_callbacks = NULL;
 
 }
 
 
-void session_output_add_file(char *filename)
+void session_datafeed_add_callback(datafeed_callback callback)
 {
 
-	if(session->output_filename)
-		g_free(session->output_filename);
-
-	session->output_filename = g_strdup(filename);
-
-}
-
-
-void session_output_add_callback(output_callback callback)
-{
-
-	session->output_callbacks = g_slist_append(session->output_callbacks, callback);
+	session->datafeed_callbacks = g_slist_append(session->datafeed_callbacks, callback);
 
 }
 
@@ -155,9 +139,6 @@ void session_stop(void)
 	struct device *device;
 	GSList *l;
 
-	if(session->output_file)
-		fclose(session->output_file);
-
 	g_message("stopping acquisition");
 	for(l = session->devices; l; l = l->next)
 	{
@@ -171,13 +152,13 @@ void session_stop(void)
 void session_bus(struct device *device, struct datafeed_packet *packet)
 {
 	GSList *l;
-	output_callback cb;
+	datafeed_callback cb;
 
 	/* TODO: send packet through PA pipe, and send the output of that to
-	 * the callbacks
+	 * the callbacks as well
 	 */
 
-	for(l = session->output_callbacks; l; l = l->next)
+	for(l = session->datafeed_callbacks; l; l = l->next)
 	{
 		cb = l->data;
 		cb(device, packet);

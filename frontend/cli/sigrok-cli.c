@@ -234,7 +234,7 @@ void show_analyzer_list()
 }
 
 
-void datafeed_callback(struct device *device, struct datafeed_packet *packet)
+void datafeed_in(struct device *device, struct datafeed_packet *packet)
 {
 	static struct output *o = NULL;
 	static int probelist[65] = {0};
@@ -525,7 +525,7 @@ void run_session(void)
 	}
 
 	session_new();
-	session_output_add_callback(datafeed_callback);
+	session_datafeed_add_callback(datafeed_in);
 
 	device = g_slist_nth_data(devices, opt_device);
 	if(session_device_add(device) != SIGROK_OK)
