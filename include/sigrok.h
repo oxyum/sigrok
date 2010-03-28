@@ -259,8 +259,8 @@ enum {
 
 /* Device info IDs */
 enum {
-	/* String identifying this specific device in the system */
-	DI_IDENTIFIER,
+	/* struct sigrok_device_instance for this specific device */
+	DI_INSTANCE,
 	/* The number of probes connected to this device */
 	DI_NUM_PROBES,
 	/* Sample rates supported by this device, (struct samplerates) */

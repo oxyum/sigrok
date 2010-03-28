@@ -107,11 +107,12 @@ void show_hwplugin_list(void)
 
 void print_device_line(struct device *device)
 {
-	char *idstring;
+	struct sigrok_device_instance *sdi;
 
-	idstring = device->plugin->get_device_info(device->plugin_index, DI_IDENTIFIER);
-	printf("%s %s", device->plugin->name, idstring);
-	g_free(idstring);
+	sdi = device->plugin->get_device_info(device->plugin_index, DI_INSTANCE);
+	printf("%s %s", sdi->vendor, sdi->model);
+	if(sdi->version && sdi->version[0])
+		printf(" %s", sdi->version);
 	if(device->probes)
 		printf(" with %d probes", g_slist_length(device->probes));
 	printf("\n");

@@ -310,14 +310,17 @@ void hw_cleanup(void)
 
 void *hw_get_device_info(int device_index, int device_info_id)
 {
+	struct sigrok_device_instance *sdi;
 	void *info;
+
+	if( !(sdi = get_sigrok_device_instance(device_instances, device_index)) )
+		return NULL;
 
 	info = NULL;
 	switch(device_info_id)
 	{
-	case DI_IDENTIFIER:
-		info = g_malloc(16);
-		snprintf(info, 16, "unit %d", device_index);
+	case DI_INSTANCE:
+		info = sdi;
 		break;
 	case DI_NUM_PROBES:
 		info = GINT_TO_POINTER(NUM_PROBES);
