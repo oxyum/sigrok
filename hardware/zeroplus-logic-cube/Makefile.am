@@ -17,4 +17,17 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ## 
 
-SUBDIRS = common saleae-logic openbench-logic-sniffer zeroplus-logic-cube
+AM_CPPFLAGS = -I $(top_srcdir) \
+	-I $(top_srcdir)/include \
+	-I ../common \
+	-I $(top_srcdir)/backend
+LIBOBJS_EXTRA = $(LIBOBJS) \
+	-L$(top_srcdir)/hardware/common -lhw-common
+	-L$(top_srcdir)/backend -lbackend
+hwplugindir = $(HWPLUGIN_DIR)
+
+hwplugin_LTLIBRARIES = zeroplus-logic-cube.la
+zeroplus_logic_cube_la_SOURCES = zeroplus.c
+zeroplus_logic_cube_la_LIBADD = $(LIBOBJS_EXTRA)
+zeroplus_logic_cube_la_LDFLAGS = -module -avoid-version
+

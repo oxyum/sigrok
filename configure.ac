@@ -27,7 +27,8 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2 std-options])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Checks for programs.
-CFLAGS="-g -Wall -Wextra"
+#CFLAGS="-g -Wall -Wextra"
+CFLAGS="-g -Wall"
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
@@ -76,6 +77,7 @@ AC_CONFIG_FILES([Makefile
 		 hardware/common/Makefile
 		 hardware/saleae-logic/Makefile
 		 hardware/openbench-logic-sniffer/Makefile
+		 hardware/zeroplus-logic-cube/Makefile
 		 frontend/Makefile
 		 frontend/cli/Makefile
 		])
