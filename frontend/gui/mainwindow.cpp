@@ -372,7 +372,7 @@ void MainWindow::on_action_Save_as_triggered()
 	file.close();
 }
 
-void datafeed_callback(struct device *device, struct datafeed_packet *packet)
+void my_datafeed_callback(struct device *device, struct datafeed_packet *packet)
 {
 	static int num_probes = 0;
 	static int received_samples = 0;
@@ -459,7 +459,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	}
 
 	session_new();
-	session_output_add_callback(datafeed_callback);
+	session_datafeed_callback_add(my_datafeed_callback);
 	device = (struct device *)g_slist_nth_data(devices, opt_device);
 
 	snprintf(numBuf, 16, "%"PRIu64"", limit_samples);
