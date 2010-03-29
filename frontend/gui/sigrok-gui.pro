@@ -29,15 +29,18 @@ SOURCES      += main.cpp \
 	        mainwindow.cpp \
 	        channelrenderarea.cpp \
 	        configform.cpp \
-	        sampleiodevice.cpp
+	        sampleiodevice.cpp \
+	        channelform.cpp
 
 HEADERS      += mainwindow.h \
 	        channelrenderarea.h \
 	        configform.h \
-	        sampleiodevice.h
+	        sampleiodevice.h \
+	        channelform.h
 
 FORMS        += mainwindow.ui \
-	        configform.ui
+	        configform.ui \
+	        channelform.ui
 
 TRANSLATIONS  = locale/sigrok-gui_de_DE.ts
 
