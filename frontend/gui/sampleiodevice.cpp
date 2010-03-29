@@ -27,15 +27,20 @@ SampleIODevice::SampleIODevice()
 
 bool SampleIODevice::open(OpenMode openMode)
 {
+	/* TODO: Handle openMode parameter. */
 
+	/* TODO: Open sigrok backend stuff. */
+	
+	/* Call the parent's constructor. */
+	QIODevice::open(openMode);
 }
 
 qint64 SampleIODevice::readData(char *data, qint64 maxlen)
 {
-
+	/* TODO: Read a chunk of data. */
 }
 
 qint64 SampleIODevice::writeData(const char *data, qint64 len)
 {
-
+	/* TODO: Write a chunk of data. */
 }

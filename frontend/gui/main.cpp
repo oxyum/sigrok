@@ -26,12 +26,10 @@
 
 extern "C" {
 #include <stdint.h>
-#include <glib.h>
-#include "sigrok.h"
+#include <sigrok.h>
 }
 
 uint8_t *sample_buffer;
-
 MainWindow *w;
 
 int main(int argc, char *argv[])
@@ -54,7 +52,6 @@ int main(int argc, char *argv[])
 		std::cerr << "ERROR: Failed to init sigrok." << std::endl;
 		return 1;
 	}
-	std::cout << "The sigrok init was successful." << std::endl;
 
 	w->show();
 	return a.exec();
