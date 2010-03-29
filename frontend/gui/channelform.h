@@ -32,12 +32,19 @@ class ChannelForm : public QWidget {
 public:
 	ChannelForm(QWidget *parent = 0);
 	~ChannelForm();
+	void setChannelColor(QColor color);
+	QColor getChannelColor(void);
+	void setChannelNumber(int c);
+	int getChannelNumber(void);
 
 protected:
 	void changeEvent(QEvent *e);
 
 private:
 	Ui::ChannelForm *m_ui;
+	QColor channelColor;
+	int channelNumber;
+	// static int numTotalChannels;
 };
 
 #endif // SIGROK_CHANNELFORM_H

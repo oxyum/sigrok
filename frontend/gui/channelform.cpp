@@ -26,6 +26,17 @@ ChannelForm::ChannelForm(QWidget *parent) :
 	m_ui(new Ui::ChannelForm)
 {
 	m_ui->setupUi(this);
+
+	/* Set random colors for the channel names (for now). */
+	/* TODO: Channel graph color vs. label color? */
+	channelColor = QColor(2 + qrand() * 16);
+
+	/* Set title and color of the channel name QLineEdit. */
+	QLineEdit *l = m_ui->channelLineEdit;
+	l->setText(QString(tr("Channel %1")).arg(0 /* i */)); // FIXME
+	QPalette p = QPalette(QApplication::palette());
+	p.setColor(QPalette::Base, channelColor);
+	l->setPalette(p);
 }
 
 ChannelForm::~ChannelForm()
@@ -44,4 +55,24 @@ void ChannelForm::changeEvent(QEvent *e)
 	default:
 		break;
 	}
+}
+
+void ChannelForm::setChannelColor(QColor color)
+{
+	channelColor = color;
+}
+
+QColor ChannelForm::getChannelColor(void)
+{
+	return channelColor;
+}
+
+void ChannelForm::setChannelNumber(int c)
+{
+	channelNumber = c;
+}
+
+int ChannelForm::getChannelNumber(void)
+{
+	return channelNumber;
 }
