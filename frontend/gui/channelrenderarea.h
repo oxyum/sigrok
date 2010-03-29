@@ -66,6 +66,7 @@ public slots:
 	void setSampleEnd(uint64_t s);
 	void setZoomFactor(float z);
 	void generatePainterPath(void);
+	void setScrollBarValue(int value);
 
 private:
 	int channelNumber;

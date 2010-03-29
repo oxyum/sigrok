@@ -338,7 +338,14 @@ void MainWindow::on_action_Open_triggered()
 		channelRenderAreas[i]->setChannelNumber(i);
 		channelRenderAreas[i]->setNumSamples(file.size());
 		channelRenderAreas[i]->setSampleStart(0);
-		channelRenderAreas[i]->setSampleEnd(getNumSamples());
+		// channelRenderAreas[i]->setSampleEnd(getNumSamples());
+		channelRenderAreas[i]->setSampleEnd(100);
+
+		channelScrollBars[i]->setMinimum(0);
+		channelScrollBars[i]->setMaximum(99);
+		connect(channelScrollBars[i], SIGNAL(valueChanged(int)),
+			channelRenderAreas[i], SLOT(setScrollBarValue(int)));
+
 		channelRenderAreas[i]->update();
 	}
 
@@ -519,6 +526,12 @@ void MainWindow::on_action_Get_samples_triggered()
 		channelRenderAreas[i]->setNumSamples(numSamplesLocal);
 		channelRenderAreas[i]->setSampleStart(0);
 		channelRenderAreas[i]->setSampleEnd(numSamplesLocal);
+
+		channelScrollBars[i]->setMinimum(0);
+		channelScrollBars[i]->setMaximum(99);
+		connect(channelScrollBars[i], SIGNAL(valueChanged(int)),
+			channelRenderAreas[i], SLOT(setScrollBarValue(int)));
+
 		channelRenderAreas[i]->update();
 	}
 

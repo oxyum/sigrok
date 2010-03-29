@@ -21,6 +21,7 @@
 #include <QPainter>
 #include <QPen>
 #include <QColor>
+#include <QScrollBar>
 #include "channelrenderarea.h"
 #include "mainwindow.h"
 
@@ -141,9 +142,8 @@ void ChannelRenderArea::paintEvent(QPaintEvent *event)
 	// painter.fillRect(0, 0, this->width(), this->height(), QColor(Qt::gray));
 	// painter.setRenderHint(QPainter::Antialiasing, false);
 
+	// painter.scale(getZoomFactor(), 1.0);
 	painter.drawPath(*painterPath);
-
-	// painter.scale(getZoomFactor(), getZoomFactor());
 }
 
 void ChannelRenderArea::wheelEvent(QWheelEvent *event)
@@ -169,8 +169,6 @@ void ChannelRenderArea::wheelEvent(QWheelEvent *event)
 	setSampleEnd(sampleEndNew);
 
 #if 0
-	uint64_t sampleStartNew, sampleEndNew;
-
 	sampleStartNew = getSampleStart() + event->delta() / WHEEL_DELTA;
 	sampleEndNew = getSampleEnd() + event->delta() / WHEEL_DELTA;
 
@@ -257,4 +255,23 @@ void ChannelRenderArea::setZoomFactor(float z)
 float ChannelRenderArea::getZoomFactor(void)
 {
 	return zoomFactor;
+}
+
+void ChannelRenderArea::setScrollBarValue(int value)
+{
+	double mul = 0;
+	uint64_t newSampleStart, newSampleEnd;
+
+	mul = (double)value / (double)99;
+
+	newSampleStart = getNumSamples() * mul;
+	if (newSampleStart >= 100)
+		newSampleStart -= 100;
+	newSampleEnd = newSampleStart + 99; /* FIXME */
+	if (newSampleEnd > getNumSamples())
+		newSampleEnd = getNumSamples();
+
+	setSampleStart(newSampleStart);
+	setSampleEnd(newSampleEnd); /* FIXME */
+	repaint();
 }
