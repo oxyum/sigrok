@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>sigrok</string>
+   <string>sigrok-gui</string>
   </property>
   <property name="windowIcon">
    <iconset resource="sigrok-gui.qrc">

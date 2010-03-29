@@ -49,6 +49,11 @@ int main(int argc, char *argv[])
 	translator.load(QString("locale/sigrok-gui_") + locale);
 	a.installTranslator(&translator);
 
+	/* Set some application metadata. */
+	QApplication::setApplicationVersion(APP_VERSION);
+	QApplication::setApplicationName("sigrok-gui");
+	QApplication::setOrganizationDomain("http://www.sigrok.org");
+
 	w = new MainWindow;
 
 	if (sigrok_init() != SIGROK_OK) {
