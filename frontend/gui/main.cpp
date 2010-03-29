@@ -31,7 +31,6 @@ extern "C" {
 #include <stdint.h>
 #include <glib.h>
 #include "sigrok.h"
-#include "backend.h"
 
 #ifdef __cplusplus
 }

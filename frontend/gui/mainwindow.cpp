@@ -39,9 +39,6 @@ extern "C" {
 #include <glib.h>
 #include <gmodule.h>
 #include "sigrok.h"
-#include "backend.h"
-#include "device.h"
-#include "session.h"
 
 #ifdef __cplusplus
 }
@@ -224,8 +221,8 @@ void MainWindow::on_actionScan_triggered()
 
 	setCurrentLA(0 /* TODO */);
 
-	di_num_probes = device->plugin->get_device_info(device->plugin_index,
-							DI_NUM_PROBES);
+	di_num_probes = (char *)device->plugin->get_device_info(
+			device->plugin_index, DI_NUM_PROBES);
 	if (di_num_probes != NULL) {
 		setNumChannels(GPOINTER_TO_INT(di_num_probes));
 	} else {
@@ -239,7 +236,7 @@ void MainWindow::on_actionScan_triggered()
 	ui->labelChannels->setText(s);
 
 	di_samplerates = (uint64_t *)device->plugin->get_device_info(
-			device->plugin_index, DI_SAMPLE_RATES);
+			device->plugin_index, DI_SAMPLERATES);
 	if (!di_samplerates) {
 		/* TODO: Error handling. */
 	}
