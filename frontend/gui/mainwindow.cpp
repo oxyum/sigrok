@@ -339,8 +339,17 @@ void MainWindow::on_action_Open_triggered()
 
 		channelScrollBars[i]->setMinimum(0);
 		channelScrollBars[i]->setMaximum(99);
-		connect(channelScrollBars[i], SIGNAL(valueChanged(int)),
-			channelRenderAreas[i], SLOT(setScrollBarValue(int)));
+
+		/* TODO: Is there a better way to achieve this? */
+		for (int j = 0; j < getNumChannels(); ++j) {
+			/* Any scrollbar scrolls all channels for now. */
+			connect(channelScrollBars[i], SIGNAL(valueChanged(int)),
+				channelScrollBars[j], SLOT(setValue(int)));
+
+			/* The j-th scrollbar scrolls channel j. */
+			connect(channelScrollBars[i], SIGNAL(valueChanged(int)),
+				channelRenderAreas[j], SLOT(setScrollBarValue(int)));
+		}
 
 		channelRenderAreas[i]->update();
 	}
