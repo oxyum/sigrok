@@ -37,11 +37,26 @@
 extern struct hwcap_option hwcap_options[];
 
 gboolean debug = FALSE;
-GMainContext *gmaincontext = NULL;
-GMainLoop *gmainloop = NULL;
+int end_acquisition = FALSE;
 uint64_t limit_samples = 0;
 struct output_format *output_format = NULL;
 char *output_format_param = NULL;
+
+/* these live in hwplugin.c, for the frontend to override */
+extern source_callback_add source_cb_add;
+extern source_callback_remove source_cb_remove;
+
+struct source {
+	int fd;
+	int events;
+	int timeout;
+	receive_data_callback cb;
+	void *user_data;
+};
+
+struct source *sources = NULL;
+int num_sources = 0;
+int source_timeout = -1;
 
 static gboolean opt_version = FALSE;
 static gboolean opt_list_hwplugins = FALSE;
@@ -282,7 +297,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		printf("%s", output_buf);
 		if(limit_samples && received_samples < limit_samples)
 			printf("Device only sent %d samples.\n", received_samples);
-		g_main_loop_quit(gmainloop);
+		end_acquisition = TRUE;
 		free(o);
 		o = NULL;
 		break;
@@ -485,11 +500,61 @@ char **parse_triggerstring(struct device *device, char *triggerstring)
 }
 
 
+void remove_source(int fd)
+{
+	struct source *new_sources;
+	int old, new;
+
+	if(!sources)
+		return;
+
+	new_sources = calloc(1, sizeof(struct source) * num_sources);
+	for(old = 0; old < num_sources; old++)
+		if(sources[old].fd != fd)
+			memcpy(&new_sources[new++], &sources[old], sizeof(struct source));
+	if(old != new) {
+		free(sources);
+		sources = new_sources;
+		num_sources--;
+	}
+	else
+		/* target fd was not found */
+		free(new_sources);
+
+}
+
+
+void add_source(int fd, int events, int timeout, receive_data_callback callback, void *user_data)
+{
+	struct source *new_sources, *s;
+
+//	add_source_fd(fd, events, timeout, callback, user_data);
+
+	new_sources = calloc(1, sizeof(struct source) * (num_sources + 1));
+	if(sources) {
+		memcpy(new_sources, sources, sizeof(struct pollfd) * num_sources);
+		free(sources);
+	}
+	s = &new_sources[num_sources++];
+	s->fd = fd;
+	s->events = events;
+	s->timeout = timeout;
+	s->cb = callback;
+	s->user_data = user_data;
+	sources = new_sources;
+
+	if(timeout > 0 && timeout < source_timeout)
+		source_timeout = timeout;
+
+}
+
+
 void run_session(void)
 {
 	struct device *device;
 	struct probe *probe;
 	struct output_format **formats;
+	struct pollfd *fds;
 	GSList *devices;
 	int num_devices, max_probes, *capabilities, ret, i, j;
 	unsigned int time_msec;
@@ -525,7 +590,9 @@ void run_session(void)
 	}
 
 	session_new();
-	session_datafeed_add_callback(datafeed_in);
+	session_datafeed_callback_add(datafeed_in);
+	source_cb_remove = remove_source;
+	source_cb_add = add_source;
 
 	device = g_slist_nth_data(devices, opt_device);
 	if(session_device_add(device) != SIGROK_OK)
@@ -665,9 +732,29 @@ void run_session(void)
 		return;
 	}
 
-	gmaincontext = g_main_context_default();
-	gmainloop = g_main_loop_new(gmaincontext, FALSE);
-	g_main_loop_run(gmainloop);
+	fds = NULL;
+	while(!end_acquisition) {
+		if(fds)
+			free(fds);
+
+		/* construct poll()'s array */
+		fds = malloc(sizeof(struct pollfd) * num_sources);
+		for(i = 0; i < num_sources; i++) {
+			fds[i].fd = sources[i].fd;
+			fds[i].events = sources[i].events;
+		}
+
+		ret = poll(fds, num_sources, source_timeout);
+
+		for(i = 0; i < num_sources; i++) {
+			if(fds[i].revents > 0 || (ret == 0 && source_timeout == sources[i].timeout))
+				/* invoke the source's callback on an event, or if the poll timeout
+				 * out and this source asked for that timeout
+				 */
+				sources[i].cb(fds[i].fd, fds[i].revents, sources[i].user_data);
+		}
+	}
+	free(fds);
 
 	session_stop();
 	if(opt_save_session_filename)

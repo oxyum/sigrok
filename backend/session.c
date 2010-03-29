@@ -42,7 +42,7 @@ struct session *session_load(char *filename)
 struct session *session_new(void)
 {
 
-	session = g_malloc0(sizeof(struct session));
+	session = calloc(1, sizeof(struct session));
 
 	return session;
 }
@@ -99,7 +99,7 @@ void session_pa_add(struct analyzer *an)
 }
 
 
-void session_datafeed_clear(void)
+void session_datafeed_callback_clear(void)
 {
 
 	g_slist_free(session->datafeed_callbacks);
@@ -108,7 +108,7 @@ void session_datafeed_clear(void)
 }
 
 
-void session_datafeed_add_callback(datafeed_callback callback)
+void session_datafeed_callback_add(datafeed_callback callback)
 {
 
 	session->datafeed_callbacks = g_slist_append(session->datafeed_callbacks, callback);

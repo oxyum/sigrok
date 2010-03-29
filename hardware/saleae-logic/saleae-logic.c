@@ -49,9 +49,6 @@
 #define TRIGGER_FIRED			-1
 
 
-extern GMainContext *gmaincontext;
-
-
 /* there is only one model Saleae Logic, and this is what it supports */
 int capabilities[] = {
 	HWCAP_LOGIC_ANALYZER,
@@ -610,7 +607,7 @@ int hw_set_configuration(int device_index, int capability, void *value)
 }
 
 
-int receive_data(GSource *source, gpointer data)
+int receive_data(int fd, int revents, void *user_data)
 {
 	struct timeval tv;
 
@@ -786,7 +783,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 
 	lupfd = libusb_get_pollfds(usb_context);
 	for(i = 0; lupfd[i]; i++)
-		add_source_fd(lupfd[i]->fd, lupfd[i]->events, receive_data, NULL);
+		source_add(lupfd[i]->fd, lupfd[i]->events, -1, receive_data, NULL);
 	free(lupfd);
 
 	packet->type = DF_HEADER;

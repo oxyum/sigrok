@@ -307,7 +307,7 @@ struct gsource_fd {
 	GSource *timeout_source;
 };
 
-typedef int (*receive_data_callback) (GSource *source, gpointer data);
+typedef int (*receive_data_callback) (int fd, int revents, void *user_data);
 
 int load_hwplugins(void);
 GSList *list_hwplugins(void);
@@ -329,10 +329,16 @@ void serial_device_instance_free(struct serial_device_instance *serial);
 
 int find_hwcap(int *capabilities, int hwcap);
 struct hwcap_option *find_hwcap_option(int hwcap);
-void add_source_fd(int fd, int events, receive_data_callback callback,
-		   gpointer user_data);
+void source_remove(int fd);
+void source_add(int fd, int events, int timeout, receive_data_callback rcv_cb, void *user_data);
 
 /*--- session.c -------------------------------------------------------------*/
+
+typedef void (*source_callback_remove) (int fd);
+typedef void (*source_callback_add) (int fd, int events, int timeout,
+		receive_data_callback callback, void *user_data);
+typedef void (*datafeed_callback) (struct device *device,
+				 struct datafeed_packet *packet);
 
 struct session {
 	/* List of struct device* */
@@ -343,9 +349,6 @@ struct session {
 	GSList *datafeed_callbacks;
 	GTimeVal starttime;
 };
-
-typedef void (*datafeed_callback) (struct device *device,
-				 struct datafeed_packet *packet);
 
 /* Session setup */
 struct session *session_load(char *filename);
@@ -358,9 +361,9 @@ int session_device_add(struct device *device);
 void session_pa_clear(void);
 void session_pa_add(struct analyzer *pa);
 
-/* Output setup */
-void session_datafeed_clear(void);
-void session_datafeed_add_callback(datafeed_callback callback);
+/* Datafeed setup */
+void session_datafeed_callback_clear(void);
+void session_datafeed_callback_add(datafeed_callback callback);
 
 /* Session control */
 int session_start(void);

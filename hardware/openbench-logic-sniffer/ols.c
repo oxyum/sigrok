@@ -419,18 +419,17 @@ int hw_set_configuration(int device_index, int capability, void *value)
 }
 
 
-int receive_data(GSource *source, gpointer user_data)
+int receive_data(int fd, int revents, void *user_data)
 {
 	static char last_sample[4] = {0xff};
 	static int num_bytes = 0;
 	static unsigned char sample[4];
-	int fd, count, buflen, i;
+	int count, buflen, i;
 	struct datafeed_packet packet;
 	unsigned char byte, *buffer;
 
 	/* TODO: need to get a timeout in here -- can the GSource be changed in place? */
 
-	fd = ((struct gsource_fd *) source)->gpfd.fd;
 	if(read(fd, &byte, 1) != 1)
 		return FALSE;
 
@@ -543,7 +542,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	if(write(sdi->serial->fd, buf, 1) != 1)
 		return SIGROK_NOK;
 
-	add_source_fd(sdi->serial->fd, POLLIN, receive_data, session_device_id);
+	source_add(sdi->serial->fd, POLLIN, -1, receive_data, session_device_id);
 
 	/* send header packet to the session bus */
 	packet = g_malloc(sizeof(struct datafeed_packet));

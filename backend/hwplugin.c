@@ -26,8 +26,10 @@
 #include <gmodule.h>
 #include "sigrok.h"
 
-extern GMainContext *gmaincontext;
+source_callback_add source_cb_add = NULL;
+source_callback_remove source_cb_remove = NULL;
 
+/* the list of loaded plugins lives here */
 GSList *plugins;
 
 /* this enumerates which plugin capabilities correspond to user-settable options */
@@ -234,55 +236,23 @@ struct hwcap_option *find_hwcap_option(int hwcap)
 }
 
 
-gboolean gsource_fd_prepare(GSource *source, int *timeout)
+void source_remove(int fd)
 {
 
-	return FALSE;
+	if(source_cb_remove)
+		source_cb_remove(fd);
+
 }
 
 
-gboolean gsource_fd_check(GSource *source)
+void source_add(int fd, int events, int timeout, receive_data_callback rcv_cb, void *user_data)
 {
-	struct gsource_fd *sfd;
 
-	sfd = (struct gsource_fd *) source;
-	if(sfd->gpfd.revents)
-		return TRUE;
+	if(source_cb_add)
+		source_cb_add(fd, events, timeout, rcv_cb, user_data);
 
-	return FALSE;
 }
 
-
-gboolean gsource_fd_dispatch(GSource *source, GSourceFunc callback, gpointer data)
-{
-	int ret;
-
-	ret = ( (receive_data_callback) callback)(source, data);
-
-	return ret;
-}
-
-
-GSourceFuncs gsource_fd_funcs = {
-	gsource_fd_prepare,
-	gsource_fd_check,
-	gsource_fd_dispatch,
-	NULL
-};
-
-
-void add_source_fd(int fd, int events, receive_data_callback callback, gpointer user_data)
-{
-	struct gsource_fd *source;
-
-	source = (struct gsource_fd *) g_source_new(&gsource_fd_funcs, sizeof(struct gsource_fd));
-	g_source_set_callback((GSource *) source, (GSourceFunc) callback, user_data, NULL);
-	source->gpfd.fd = fd;
-	source->gpfd.events = events;
-	g_source_add_poll((GSource *) source, &(source->gpfd));
-	g_source_attach((GSource *) source, gmaincontext);
-
-}
 
 
 
