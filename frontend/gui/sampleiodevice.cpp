@@ -25,3 +25,17 @@ SampleIODevice::SampleIODevice()
 {
 }
 
+bool SampleIODevice::open(OpenMode openMode)
+{
+
+}
+
+qint64 SampleIODevice::readData(char *data, qint64 maxlen)
+{
+
+}
+
+qint64 SampleIODevice::writeData(const char *data, qint64 len)
+{
+
+}

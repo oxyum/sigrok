@@ -27,6 +27,11 @@ class SampleIODevice : public QIODevice
 {
 public:
 	SampleIODevice();
+	bool open(OpenMode openMode);
+
+protected:
+	qint64 readData(char *data, qint64 maxlen);
+	qint64 writeData(const char *data, qint64 len);
 };
 
 #endif // SIGROK_SAMPLEIODEVICE_H
