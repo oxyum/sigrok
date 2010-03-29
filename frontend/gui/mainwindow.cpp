@@ -27,6 +27,8 @@
 #include "ui_mainwindow.h"
 #include "configform.h"
 #include "ui_configform.h"
+#include "channelform.h"
+#include "ui_channelform.h"
 
 extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -70,37 +72,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupDockWidgets(void)
 {
-	QColor color;
-
 	/* TODO: Do not create new dockWidgets if we already have them. */
 
 	/* TODO: Kill any old dockWidgets before creating new ones? */
 
 	for (int i = 0; i < getNumChannels(); ++i) {
-		widgets[i] = new QWidget(this);
-		gridLayouts[i] = new QGridLayout(widgets[i]);
-
-		lineEdits[i] = new QLineEdit(this);
-		lineEdits[i]->setMaximumWidth(150);
-		lineEdits[i]->setText(QString(tr("Channel %1")).arg(i));
-		/* Use random colors for the channel names for now. */
-		QPalette p = QPalette(QApplication::palette());
-		color = QColor(2 + qrand() * 16);
-		p.setColor(QPalette::Base, color);
-		lineEdits[i]->setPalette(p);
-		gridLayouts[i]->addWidget(lineEdits[i], 0, 0);
-
-		channelRenderAreas[i] = new ChannelRenderArea(this);
-		channelRenderAreas[i]->setSizePolicy(QSizePolicy::Minimum,
-					QSizePolicy::MinimumExpanding);
-		channelRenderAreas[i]->setChannelNumber(i);
-		channelRenderAreas[i]->setChannelColor(color);
-		gridLayouts[i]->addWidget(channelRenderAreas[i], 0, 1);
-
-		channelScrollBars[i] = new QScrollBar(Qt::Horizontal);
-		channelScrollBars[i]->setMinimum(0);
-		channelScrollBars[i]->setMaximum(0);
-		gridLayouts[i]->addWidget(channelScrollBars[i], 1, 1);
+		channelForms[i] = new ChannelForm(this);
 
 		dockWidgets[i] = new QDockWidget(this);
 		dockWidgets[i]->setAllowedAreas(Qt::RightDockWidgetArea);
@@ -112,30 +89,30 @@ void MainWindow::setupDockWidgets(void)
 		if (configChannelTitleBarLayout == 0)
 			f |= QDockWidget::DockWidgetVerticalTitleBar;
 		dockWidgets[i]->setFeatures(f);
-		dockWidgets[i]->setWidget(widgets[i]);
+		dockWidgets[i]->setWidget(channelForms[i]);
 		addDockWidget(Qt::RightDockWidgetArea, dockWidgets[i]);
 
 		/* Update labels upon changes. */
-		QObject::connect(channelRenderAreas[i],
+		QObject::connect(channelForms[i],
 			SIGNAL(sampleStartChanged(QString)),
 			ui->labelSampleStart, SLOT(setText(QString)));
-		QObject::connect(channelRenderAreas[i],
+		QObject::connect(channelForms[i],
 			SIGNAL(sampleEndChanged(QString)),
 			ui->labelSampleEnd, SLOT(setText(QString)));
-		QObject::connect(channelRenderAreas[i],
+		QObject::connect(channelForms[i],
 			SIGNAL(zoomFactorChanged(QString)),
 			ui->labelZoomFactor, SLOT(setText(QString)));
 
 		/* Redraw channels upon changes. */
-		QObject::connect(channelRenderAreas[i],
+		QObject::connect(channelForms[i],
 			SIGNAL(sampleStartChanged(QString)),
-			channelRenderAreas[i], SLOT(generatePainterPath()));
-		QObject::connect(channelRenderAreas[i],
+			channelForms[i], SLOT(generatePainterPath()));
+		QObject::connect(channelForms[i],
 			SIGNAL(sampleEndChanged(QString)),
-			channelRenderAreas[i], SLOT(generatePainterPath()));
-		QObject::connect(channelRenderAreas[i],
+			channelForms[i], SLOT(generatePainterPath()));
+		QObject::connect(channelForms[i],
 			SIGNAL(zoomFactorChanged(QString)),
-			channelRenderAreas[i], SLOT(generatePainterPath()));
+			channelForms[i], SLOT(generatePainterPath()));
 
 		// dockWidgets[i]->show();
 #if 0
@@ -331,27 +308,29 @@ void MainWindow::on_action_Open_triggered()
 	ui->action_Get_samples->setEnabled(false);
 
 	for (int i = 0; i < getNumChannels(); ++i) {
-		channelRenderAreas[i]->setChannelNumber(i);
-		channelRenderAreas[i]->setNumSamples(file.size());
-		channelRenderAreas[i]->setSampleStart(0);
-		// channelRenderAreas[i]->setSampleEnd(getNumSamples());
-		channelRenderAreas[i]->setSampleEnd(100);
+		channelForms[i]->setChannelNumber(i);
+		channelForms[i]->setNumSamples(file.size());
+		channelForms[i]->setSampleStart(0);
+		// channelForms[i]->setSampleEnd(getNumSamples());
+		channelForms[i]->setSampleEnd(100);
 
-		channelScrollBars[i]->setMinimum(0);
-		channelScrollBars[i]->setMaximum(99);
+		QScrollBar *sc = channelForms[i]->m_ui->channelScrollBar;
+		sc->setMinimum(0);
+		sc->setMaximum(99);
 
 		/* TODO: Is there a better way to achieve this? */
 		for (int j = 0; j < getNumChannels(); ++j) {
 			/* Any scrollbar scrolls all channels for now. */
-			connect(channelScrollBars[i], SIGNAL(valueChanged(int)),
-				channelScrollBars[j], SLOT(setValue(int)));
+			QScrollBar *sc2 = channelForms[j]->m_ui->channelScrollBar;
+			connect(sc, SIGNAL(valueChanged(int)),
+				sc2, SLOT(setValue(int)));
 
 			/* The j-th scrollbar scrolls channel j. */
-			connect(channelScrollBars[i], SIGNAL(valueChanged(int)),
-				channelRenderAreas[j], SLOT(setScrollBarValue(int)));
+			connect(sc, SIGNAL(valueChanged(int)),
+				channelForms[j], SLOT(setScrollBarValue(int)));
 		}
 
-		channelRenderAreas[i]->update();
+		channelForms[i]->update();
 	}
 
 	/* FIXME */
@@ -527,30 +506,19 @@ void MainWindow::on_action_Get_samples_triggered()
 #endif
 
 	for (int i = 0; i < getNumChannels(); ++i) {
-		channelRenderAreas[i]->setChannelNumber(i);
-		channelRenderAreas[i]->setNumSamples(numSamplesLocal);
-		channelRenderAreas[i]->setSampleStart(0);
-		channelRenderAreas[i]->setSampleEnd(numSamplesLocal);
+		channelForms[i]->setChannelNumber(i);
+		channelForms[i]->setNumSamples(numSamplesLocal);
+		channelForms[i]->setSampleStart(0);
+		channelForms[i]->setSampleEnd(numSamplesLocal);
 
-		channelScrollBars[i]->setMinimum(0);
-		channelScrollBars[i]->setMaximum(99);
-		connect(channelScrollBars[i], SIGNAL(valueChanged(int)),
-			channelRenderAreas[i], SLOT(setScrollBarValue(int)));
+		QScrollBar *sc = channelForms[i]->m_ui->channelScrollBar;
+		sc->setMinimum(0);
+		sc->setMaximum(99);
+		connect(sc, SIGNAL(valueChanged(int)),
+			channelForms[i], SLOT(setScrollBarValue(int)));
 
-		channelRenderAreas[i]->update();
+		channelForms[i]->update();
 	}
-
-#if 0
-	/* FIXME */
-	s.sprintf("%"PRIu64"", (int)channelRenderAreas[0]->getSampleStart());
-	s.prepend(tr("Start sample: "));
-	ui->labelSampleStart->setText(s);
-
-	/* FIXME */
-	s.sprintf("%"PRIu64"", (int)channelRenderAreas[0]->getSampleEnd());
-	s.prepend(tr("End sample: "));
-	ui->labelSampleEnd->setText(s);
-#endif
 
 	/* Enable the relevant labels/buttons. */
 	ui->labelSampleStart->setEnabled(true);

@@ -88,7 +88,8 @@ void ChannelForm::changeEvent(QEvent *e)
 void ChannelForm::generatePainterPath(void)
 {
 	int current_x, current_y, oldval, newval;
-	int low = this->height() - 2, high = 2, ch = getChannelNumber();
+	int low = m_ui->renderAreaWidget->height() - 2, high = 2;
+	int ch = getChannelNumber();
 	uint64_t ss = getSampleStart(), se = getSampleEnd();
 
 	if (sample_buffer == NULL)
@@ -129,6 +130,7 @@ void ChannelForm::resizeEvent(QResizeEvent *event)
 
 void ChannelForm::paintEvent(QPaintEvent *event)
 {
+	// QPainter p(m_ui->renderAreaWidget);
 	QPainter p(this);
 
 	/* Quick hack to prevent compiler warning. */

@@ -36,6 +36,7 @@ class ChannelForm : public QWidget {
 public:
 	ChannelForm(QWidget *parent = 0);
 	~ChannelForm();
+	Ui::ChannelForm *m_ui;
 	void setChannelColor(QColor color);
 	QColor getChannelColor(void);
 	void setChannelNumber(int c);
@@ -68,7 +69,6 @@ protected:
 	void wheelEvent(QWheelEvent *event);
 
 private:
-	Ui::ChannelForm *m_ui;
 	QColor channelColor;
 	int channelNumber;
 	uint64_t sampleStart;
