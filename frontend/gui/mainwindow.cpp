@@ -28,10 +28,7 @@
 #include "configform.h"
 #include "ui_configform.h"
 
-#ifdef __cplusplus
 extern "C" {
-#endif
-
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -39,10 +36,7 @@ extern "C" {
 #include <glib.h>
 #include <gmodule.h>
 #include "sigrok.h"
-
-#ifdef __cplusplus
 }
-#endif
 
 GMainContext *gmaincontext = NULL;
 GMainLoop *gmainloop = NULL;

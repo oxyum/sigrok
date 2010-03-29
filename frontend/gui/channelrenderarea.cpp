@@ -25,19 +25,13 @@
 #include "channelrenderarea.h"
 #include "mainwindow.h"
 
-#ifdef __cplusplus
 extern "C" {
-#endif
-
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <stdint.h>
 #include <sigrok.h>
-
-#ifdef __cplusplus
 }
-#endif
 
 /* TODO: Should move elsewhere. */
 int getbit(uint8_t *buf, int numbyte, int chan)

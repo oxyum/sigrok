@@ -24,17 +24,11 @@
 #include <QLocale>
 #include "mainwindow.h"
 
-#ifdef __cplusplus
 extern "C" {
-#endif
-
 #include <stdint.h>
 #include <glib.h>
 #include "sigrok.h"
-
-#ifdef __cplusplus
 }
-#endif
 
 uint8_t *sample_buffer;
 
