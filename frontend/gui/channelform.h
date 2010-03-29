@@ -22,6 +22,10 @@
 #define SIGROK_CHANNELFORM_H
 
 #include <QtGui/QWidget>
+#include <QPainter>
+#include <QPen>
+#include <QWheelEvent>
+#include <stdint.h>
 
 namespace Ui {
 	class ChannelForm;
@@ -36,14 +40,42 @@ public:
 	QColor getChannelColor(void);
 	void setChannelNumber(int c);
 	int getChannelNumber(void);
+	void setNumSamples(uint64_t s);
+	uint64_t getNumSamples(void);
+	uint64_t getSampleStart(void);
+	uint64_t getSampleEnd(void);
+	float getZoomFactor(void);
+
+public slots:
+	void setSampleStart(uint64_t s);
+	void setSampleEnd(uint64_t s);
+	void setZoomFactor(float z);
+	void generatePainterPath(void);
+	void setScrollBarValue(int value);
+
+signals:
+	void sampleStartChanged(uint64_t);
+	void sampleStartChanged(QString);
+	void sampleEndChanged(uint64_t);
+	void sampleEndChanged(QString);
+	void zoomFactorChanged(float);
+	void zoomFactorChanged(QString);
 
 protected:
 	void changeEvent(QEvent *e);
+	void resizeEvent(QResizeEvent *event);
+	void paintEvent(QPaintEvent *event);
+	void wheelEvent(QWheelEvent *event);
 
 private:
 	Ui::ChannelForm *m_ui;
 	QColor channelColor;
 	int channelNumber;
+	uint64_t sampleStart;
+	uint64_t sampleEnd;
+	uint64_t numSamples;
+	float zoomFactor;
+	QPainterPath *painterPath;
 	// static int numTotalChannels;
 };
 
