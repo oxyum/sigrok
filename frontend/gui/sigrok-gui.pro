@@ -28,11 +28,13 @@ DEFINES      += APP_VERSION=\\\"$$VERSION\\\"
 SOURCES      += main.cpp \
 	        mainwindow.cpp \
 	        channelrenderarea.cpp \
-	        configform.cpp
+	        configform.cpp \
+	        sampleiodevice.cpp
 
 HEADERS      += mainwindow.h \
 	        channelrenderarea.h \
-	        configform.h
+	        configform.h \
+	        sampleiodevice.h
 
 FORMS        += mainwindow.ui \
 	        configform.ui
