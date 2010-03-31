@@ -26,6 +26,10 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-bzip2 std-options])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
+AH_TOP([#ifndef SGIROK_CONFIG_H
+#define SIGROK_CONFIG_H    /* To stop multiple inclusions. */])
+AH_BOTTOM([#endif /* SIGROK_CONFIG_H */])
+
 # Checks for programs.
 #CFLAGS="-g -Wall -Wextra"
 CFLAGS="-g -Wall"
