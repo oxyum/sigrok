@@ -19,12 +19,19 @@
 ##
 
 # FIXME: So far this is just a simple test for the Python embedding code.
-def sigrokdecode_count_transitions():
+def sigrokdecode_count_transitions(inbuf):
 	"""Counts the low->high and high->low transitions in the specified
 	   channel(s) of the signal."""
-	# TODO
-	print "Hello world."
-	return 12
 
-sigrokdecode_count_transitions()
+	outbuf = 'AB' # FIXME
+
+	# print len(inbuf)
+	# print type(inbuf)
+
+	# print inbuf
+	# print str(inbuf[0])
+	# print str(inbuf[1])
+
+	# return inbuf
+	return outbuf
 

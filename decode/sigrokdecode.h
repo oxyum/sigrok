@@ -25,8 +25,10 @@
 #include <Python.h>
 
 int sigrokdecode_init(void);
-int sigrokdecode_run_decoder(const char *filename, uint8_t *inbuf,
-			     uint8_t *outbuf);
+int sigrokdecode_load_decoder_file(const char *name);
+int sigrokdecode_run_decoder(const char *decodername, uint8_t *inbuf,
+			     uint64_t inbuflen, uint8_t **outbuf,
+			     uint64_t *outbuflen);
 int sigrokdecode_shutdown(void);
 
 #endif

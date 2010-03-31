@@ -21,36 +21,151 @@
 #include <stdio.h>
 #include <sigrokdecode.h>
 
+/**
+ * Initialize libsigrokdecode.
+ *
+ * @return 0 upon success, non-zero otherwise.
+ */
 int sigrokdecode_init(void)
 {
 	/* Py_Initialize() returns void and usually cannot fail. */
 	Py_Initialize();
 
+	/* FIXME */
+	PySys_SetPath("decode/scripts");
+
 	return 0;
 }
 
-int sigrokdecode_run_decoder(const char *filename, uint8_t *inbuf,
-			     uint8_t *outbuf)
+/**
+ * TODO
+ *
+ * @param name TODO
+ * @return 0 upon success, non-zero otherwise.
+ */
+int sigrokdecode_load_decoder_file(const char *name)
 {
-	FILE *f;
-	PyObject *py_file;
+	/* TODO */
+	return 0;
+}
+
+/**
+ * Run the specified decoder function.
+ *
+ * @param decodername TODO
+ * @param inbuf TODO
+ * @param inbuflen TODO
+ * @param outbuf TODO
+ * @param outbuflen TODO
+ * @return 0 upon success, non-zero otherwise.
+ */
+int sigrokdecode_run_decoder(const char *decodername, uint8_t *inbuf,
+			     uint64_t inbuflen, uint8_t **outbuf,
+			     uint64_t *outbuflen)
+{
+	const char *decoder_filename = "transitioncounter"; /* FIXME */
+	PyObject *py_name, *py_module, *py_func, *py_args;
+	PyObject *py_value, *py_result;
+	int ret;
 
 	/* TODO: Use #defines for the return codes. */
 
-	if ((py_file = PyFile_FromString((char *)filename, "r")) == NULL)
+	/* Return an error upon unusable input. */
+	if (decodername == NULL)
 		return -1;
-
-	if ((f = PyFile_AsFile(py_file)) == NULL)
+	if (inbuf == NULL)
 		return -2;
-
-	if (PyRun_SimpleFile(f, filename) != 0)
+	if (inbuflen == 0) /* No point in working on empty buffers. */
 		return -3;
+	if (outbuf == NULL)
+		return -4;
+	if (outbuflen == NULL)
+		return -5;
 
-	/* TODO: Use inbuf, outbuf. */
+	/* Get the name of the decoder module/file as Python string. */
+	if (!(py_name = PyString_FromString(decoder_filename))) {
+		PyErr_Print();
+		return -6;
+	}
+
+	/* "Import" the python file/module. */
+	if (!(py_module = PyImport_Import(py_name))) {
+		PyErr_Print();
+		Py_DECREF(py_name);
+		return -7;
+	}
+	Py_DECREF(py_name);
+
+	/* Get the decoder/function name as Python callable object. */
+	py_func = PyObject_GetAttrString(py_module, decodername);
+	if (!py_func || !PyCallable_Check(py_func)) {
+		if (PyErr_Occurred())
+			PyErr_Print();
+		Py_DECREF(py_module);
+		return -8;
+	}
+
+	/* Create a Python tuple of size 1. */
+	if (!(py_args = PyTuple_New(1))) {
+		PyErr_Print();
+		Py_DECREF(py_func);
+		Py_DECREF(py_module);
+		return -9;
+	}
+
+	/* Get the input buffer as Python "string" (byte array). */
+	/* TODO: int vs. uint64_t for 'inbuflen'? */
+	if (!(py_value = Py_BuildValue("s#", inbuf, inbuflen))) {
+		PyErr_Print();
+		Py_DECREF(py_args);
+		Py_DECREF(py_func);
+		Py_DECREF(py_module);
+		return -10;
+	}
+
+	if (PyTuple_SetItem(py_args, 0, py_value) != 0) {
+		PyErr_Print();
+		Py_DECREF(py_value);
+		Py_DECREF(py_args);
+		Py_DECREF(py_func);
+		Py_DECREF(py_module);
+		return -11;
+	}
+
+	if (!(py_result = PyObject_CallObject(py_func, py_args))) {
+		PyErr_Print();
+		Py_DECREF(py_value);
+		Py_DECREF(py_args);
+		Py_DECREF(py_func);
+		Py_DECREF(py_module);
+		return -12;
+	}
+
+	if ((ret = PyObject_AsCharBuffer(py_result, outbuf,
+					 (Py_ssize_t *)outbuflen))) {
+		PyErr_Print();
+		Py_DECREF(py_result);
+		Py_DECREF(py_value);
+		Py_DECREF(py_args);
+		Py_DECREF(py_func);
+		Py_DECREF(py_module);
+		return -13;
+	}
+
+	Py_DECREF(py_result);
+	// Py_DECREF(py_value);
+	Py_DECREF(py_args);
+	Py_DECREF(py_func);
+	Py_DECREF(py_module);
 
 	return 0;
 }
 
+/**
+ * Shutdown libsigrokdecode.
+ *
+ * @return 0 upon success, non-zero otherwise.
+ */
 int sigrokdecode_shutdown(void)
 {
 	/* Py_Finalize() returns void, any finalization errors are ignored. */

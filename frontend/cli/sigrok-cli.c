@@ -28,6 +28,7 @@
 #include <inttypes.h>
 #include <glib.h>
 #include <libusb.h>
+#include <sigrokdecode.h>
 #include "config.h"
 #include "sigrok.h"
 
@@ -787,6 +788,9 @@ void logger(const gchar *log_domain, GLogLevelFlags log_level, const gchar *mess
 
 int main(int argc, char **argv)
 {
+	int ret;
+	uint8_t *inbuf = NULL, *outbuf = NULL;
+	uint64_t outbuflen = 0;
 	GOptionContext *context;
 	GError *error;
 
@@ -794,6 +798,21 @@ int main(int argc, char **argv)
 	g_log_set_default_handler(logger, NULL);
 	if(getenv("SIGROK_DEBUG"))
 		debug = TRUE;
+
+#if 1
+	sigrokdecode_init();
+	inbuf = calloc(1000, 1);
+	inbuf[0] = 19; /* Just a quick test. */
+	inbuf[1] = 20;
+	ret = sigrokdecode_run_decoder("sigrokdecode_count_transitions",
+				       inbuf, 1000, &outbuf, &outbuflen);
+	if (outbuf != NULL) {
+		printf("outbuflen: %"PRIu64"\n", outbuflen);
+		printf("outbuf[0]: %d\n", outbuf[0]);
+		printf("outbuf[1]: %d\n", outbuf[1]);
+	}
+	sigrokdecode_shutdown();
+#endif
 
 	error = NULL;
 	context = g_option_context_new(NULL);
