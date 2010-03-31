@@ -802,8 +802,8 @@ int main(int argc, char **argv)
 #if 1
 	sigrokdecode_init();
 	inbuf = calloc(1000, 1);
-	inbuf[0] = 19; /* Just a quick test. */
-	inbuf[1] = 20;
+	inbuf[0] = 67; /* Just a quick test. */
+	inbuf[1] = 68;
 	ret = sigrokdecode_run_decoder("sigrokdecode_count_transitions",
 				       inbuf, 1000, &outbuf, &outbuflen);
 	if (outbuf != NULL) {
