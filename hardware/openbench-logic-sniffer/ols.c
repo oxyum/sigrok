@@ -26,7 +26,6 @@
 #include <unistd.h>
 #include <termios.h>
 #include <string.h>
-#include <poll.h>
 #include <sys/time.h>
 #include <inttypes.h>
 #include <glib.h>
@@ -174,7 +173,7 @@ int hw_init(char *deviceinfo)
 {
 	struct sigrok_device_instance *sdi;
 	GSList *ports, *l;
-	struct pollfd *fds;
+	GPollFD *fds;
 	struct termios term, *prev_termios;
 	int devcnt, final_devcnt, num_ports, fd, i;
 	char buf[8], **device_names;
@@ -186,7 +185,7 @@ int hw_init(char *deviceinfo)
 		ports = list_serial_ports();
 
 	num_ports = g_slist_length(ports);
-	fds = g_malloc0(num_ports * sizeof(struct pollfd));
+	fds = g_malloc0(num_ports * sizeof(GPollFD));
 	device_names = g_malloc(num_ports * (sizeof(char *)));
 	prev_termios = g_malloc(num_ports * sizeof(struct termios));
 	devcnt = 0;
@@ -195,7 +194,7 @@ int hw_init(char *deviceinfo)
 		 * since the device could be anywhere in a 5-byte command. Then send the ID command
 		 * (0x02). If the device responds with 4 bytes ("OLS1" or "SLA1"), we have a match.
 		 * Since it may take the device a while to respond at 115Kb/s, we do all the sending
-		 * first, then wait for all of them to respond with poll().
+		 * first, then wait for all of them to respond with g_poll().
 		 */
 		fd = open(l->data, O_RDWR | O_NONBLOCK);
 		if(fd != -1) {
@@ -207,7 +206,7 @@ int hw_init(char *deviceinfo)
 			buf[5] = CMD_ID;
 			if(write(fd, buf, 6) == 6) {
 				fds[devcnt].fd = fd;
-				fds[devcnt].events = POLLIN;
+				fds[devcnt].events = G_IO_IN;
 				device_names[devcnt] = l->data;
 				devcnt++;
 				g_message("probed device %s", (char *) l->data);
@@ -224,9 +223,9 @@ int hw_init(char *deviceinfo)
 	usleep(2000);
 
 	final_devcnt = 0;
-	poll(fds, devcnt, 1);
+	g_poll(fds, devcnt, 1);
 	for(i = 0; i < devcnt; i++) {
-		if(fds[i].revents == POLLIN) {
+		if(fds[i].revents == G_IO_IN) {
 			if(read(fds[i].fd, buf, 4) == 4) {
 				if(!strncmp(buf, "1SLO", 4) || !strncmp(buf, "1ALS", 4)) {
 					if(!strncmp(buf, "1SLO", 4))
@@ -542,7 +541,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	if(write(sdi->serial->fd, buf, 1) != 1)
 		return SIGROK_NOK;
 
-	source_add(sdi->serial->fd, POLLIN, -1, receive_data, session_device_id);
+	source_add(sdi->serial->fd, G_IO_IN, -1, receive_data, session_device_id);
 
 	/* send header packet to the session bus */
 	packet = g_malloc(sizeof(struct datafeed_packet));

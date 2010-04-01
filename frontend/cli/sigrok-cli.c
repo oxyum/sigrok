@@ -22,7 +22,6 @@
 #include <unistd.h>
 #include <termios.h>
 #include <string.h>
-#include <poll.h>
 #include <time.h>
 #include <sys/time.h>
 #include <inttypes.h>
@@ -533,7 +532,7 @@ void add_source(int fd, int events, int timeout, receive_data_callback callback,
 
 	new_sources = calloc(1, sizeof(struct source) * (num_sources + 1));
 	if(sources) {
-		memcpy(new_sources, sources, sizeof(struct pollfd) * num_sources);
+		memcpy(new_sources, sources, sizeof(GPollFD) * num_sources);
 		free(sources);
 	}
 	s = &new_sources[num_sources++];
@@ -555,7 +554,7 @@ void run_session(void)
 	struct device *device;
 	struct probe *probe;
 	struct output_format **formats;
-	struct pollfd *fds;
+	GPollFD *fds;
 	GSList *devices;
 	int num_devices, max_probes, *capabilities, ret, i, j;
 	unsigned int time_msec;
@@ -738,14 +737,14 @@ void run_session(void)
 		if(fds)
 			free(fds);
 
-		/* construct poll()'s array */
-		fds = malloc(sizeof(struct pollfd) * num_sources);
+		/* construct g_poll()'s array */
+		fds = malloc(sizeof(GPollFD) * num_sources);
 		for(i = 0; i < num_sources; i++) {
 			fds[i].fd = sources[i].fd;
 			fds[i].events = sources[i].events;
 		}
 
-		ret = poll(fds, num_sources, source_timeout);
+		ret = g_poll(fds, num_sources, source_timeout);
 
 		for(i = 0; i < num_sources; i++) {
 			if(fds[i].revents > 0 || (ret == 0 && source_timeout == sources[i].timeout))
