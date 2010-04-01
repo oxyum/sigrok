@@ -195,13 +195,13 @@ void device_trigger_set(struct device *device, int probenum, char *trigger);
 
 /* Hardware plugin capabilities */
 enum {
-	HWCAP_DUMMY,
+	HWCAP_DUMMY,		// used to terminate lists
 	HWCAP_LOGIC_ANALYZER,
-	HWCAP_SAMPLERATE,
-	HWCAP_PROBECONFIG,
-	HWCAP_CAPTURE_RATIO,
-	HWCAP_LIMIT_MSEC,
-	HWCAP_LIMIT_SAMPLES,
+	HWCAP_SAMPLERATE,       // change sample rate
+	HWCAP_PROBECONFIG,      // configure probe mask
+	HWCAP_CAPTURE_RATIO,    // set pre-trigger / post-trigger ratio
+	HWCAP_LIMIT_MSEC,	// set a time limit for sample acquisition
+	HWCAP_LIMIT_SAMPLES,	// set a limit on number of samples
 };
 
 struct hwcap_option {
