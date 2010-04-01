@@ -236,7 +236,7 @@ int session_save(char *filename)
 
 	/* metadata */
 	strcpy(metafile, "sigrok-meta-XXXXXX");
-	if( (tmpfile = mkstemp(metafile)) == -1)
+	if( (tmpfile = g_mkstemp(metafile)) == -1)
 		return SIGROK_NOK;
 	close(tmpfile);
 	make_metadata(metafile);
