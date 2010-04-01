@@ -24,9 +24,10 @@ sigrok_cli_SOURCES = sigrok-cli.c
 sigrok_cli_CPPFLAGS = -I $(top_srcdir)/include \
 		      -I $(top_srcdir)/backend \
 		      -I $(top_srcdir)/decode \
-		      `python-config --includes`
+		      $(CPPFLAGS_PYTHON)
 
 sigrok_cli_LDADD = $(LIBOBJS) \
 		   -L$(top_srcdir)/backend -lbackend \
-		   -L$(top_srcdir)/decode -lsigrokdecode
+		   -L$(top_srcdir)/decode -lsigrokdecode \
+		   $(LDFLAGS_PYTHON)
 

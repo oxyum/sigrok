@@ -24,8 +24,8 @@ lib_LTLIBRARIES = libsigrokdecode.la
 
 libsigrokdecode_la_SOURCES = decode.c
 
-libsigrokdecode_la_CPPFLAGS = `python-config --includes`
-libsigrokdecode_la_LDFLAGS = `python-config --ldflags`
+libsigrokdecode_la_CPPFLAGS = $(CPPFLAGS_PYTHON)
+libsigrokdecode_la_LDFLAGS = $(LDFLAGS_PYTHON)
 
 include_HEADERS = sigrokdecode.h
 

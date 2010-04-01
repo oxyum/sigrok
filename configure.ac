@@ -56,6 +56,30 @@ PKG_CHECK_MODULES([libzip], [libzip >= 0.8],
 	[CFLAGS="$CFLAGS $libzip_CFLAGS";
 	LIBS="$LIBS $libzip_LIBS"])
 
+# Python support.
+CPPFLAGS_PYTHON=""
+LDFLAGS_PYTHON=""
+case "$build" in
+*linux* | *darwin*)
+	# We know that Linux and Darwin / Mac OS X have 'python-config'.
+	CPPFLAGS_PYTHON="$(python-config --includes)"
+	LDFLAGS_PYTHON="$(python-config --ldflags)"
+	;;
+*mingw*)
+	# We currently hardcode the paths to the Python 2.6 default install
+	# location as there's no 'python-config' script on Windows, it seems.
+	CPPFLAGS_PYTHON="-I/c/Python26/include"
+	LDFLAGS_PYTHON="-L/c/Python26/libs -lpython26"
+	;;
+*)
+	# Everything else is untested, we just hope 'python-config' works.
+	CPPFLAGS_PYTHON="$(python-config --includes)"
+	LDFLAGS_PYTHON="$(python-config --ldflags)"
+	;;
+esac
+AC_SUBST(CPPFLAGS_PYTHON)
+AC_SUBST(LDFLAGS_PYTHON)
+
 # Checks for header files.
 # These are already checked: inttypes.h stdint.h stdlib.h string.h unistd.h.
 AC_CHECK_HEADERS([fcntl.h sys/time.h termios.h])
@@ -88,8 +112,8 @@ AC_CONFIG_FILES([Makefile
 		 frontend/cli/Makefile
 		])
 
-AC_SUBST(HWPLUGIN_DIR,'$(libdir)/sigrok')
-AC_SUBST(FIRMWARE_DIR,'$(datadir)/sigrok')
+AC_SUBST(HWPLUGIN_DIR, '$(libdir)/sigrok')
+AC_SUBST(FIRMWARE_DIR, '$(datadir)/sigrok')
 AC_SUBST(MAKEFLAGS, '--no-print-directory --silent')
 AC_SUBST(AM_LIBTOOLFLAGS, '--silent')
 
