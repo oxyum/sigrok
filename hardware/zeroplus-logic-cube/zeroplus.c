@@ -26,30 +26,44 @@
 #include <libusb.h>
 #include "config.h"
 #include "sigrok.h"
+#include "analyzer.h"
 
 #define USB_VENDOR				0x0c12
-#define USB_PRODUCT			0x700e
 #define USB_VENDOR_NAME		"Zeroplus"
 #define USB_MODEL_NAME			"Logic Cube"
 #define USB_MODEL_VERSION		""
 
 #define USB_INTERFACE			0
 #define USB_CONFIGURATION		1
-#define NUM_PROBES				16
 #define NUM_TRIGGER_STAGES		4
 #define TRIGGER_TYPES			"01"
 
-/* delay in ms */
-#define NUM_SIMUL_TRANSFERS	10
-#define MAX_EMPTY_TRANSFERS	NUM_SIMUL_TRANSFERS * 2
+typedef struct {
+	unsigned short pid;
+	char model_name[64];
+	unsigned int channels;
+	unsigned int sample_depth; // in Ksamples/channel
+	unsigned int max_sampling_freq;
+} model_t;
 
+/* Note -- 16032, 16064 and 16128 *usually* -- but not always -- have the same 128K sample depth */
+model_t zeroplus_models[] = {
+	{0x7009, "LAP-C(16064)",  16, 64,   100},
+	{0x700A, "LAP-C(16128)",  16, 128,  200},
+	{0x700B, "LAP-C(32128)",  32, 128,  200},
+	{0x700C, "LAP-C(321000)", 32, 1024, 200},
+	{0x700D, "LAP-C(322000)", 32, 2048, 200},
+	{0x700E, "LAP-C(16032)",  16, 32,   100},
+	{0x7016, "LAP-C(162000)", 16, 2048, 200},
+};
 
-/* there is only one model Saleae Logic, and this is what it supports */
 int capabilities[] = {
 	HWCAP_LOGIC_ANALYZER,
 	HWCAP_SAMPLERATE,
-
+	HWCAP_PROBECONFIG,
+	HWCAP_CAPTURE_RATIO,
 	/* these are really implemented in the driver, not the hardware */
+
 	HWCAP_LIMIT_SAMPLES,
 	0
 };
@@ -59,16 +73,42 @@ GSList *device_instances = NULL;
 
 libusb_context *usb_context = NULL;
 
-struct samplerates samplerates = {
+/* The hardware supports more sample rates than these, but these are the options
+   hardcoded into the vendor's Windows GUI */
+
+// XXX we shouldn't support 150MHz and 200MHz on devices that don't go up that high
+uint64_t supported_samplerates[] = {
 	100,
+	500,
+	KHZ(1),
+	KHZ(5),
+	KHZ(25),
+	KHZ(50),
+	KHZ(100),
+	KHZ(200),
+	KHZ(400),
+	KHZ(800),
+	MHZ(1),
+	MHZ(10),
+	MHZ(25),
+	MHZ(50),
+	MHZ(80),
 	MHZ(100),
-	1,
-	NULL
+	MHZ(150),
+	MHZ(200),
+	0
+};
+
+struct samplerates samplerates = {
+	0,0,0,
+	supported_samplerates
 };
 
 /* TODO: all of these should go in a device-specific struct */
 uint64_t cur_samplerate = 0;
 uint64_t limit_samples = 0;
+uint8_t num_channels = 16; // XXX this is not getting initialized before it is needed :(
+uint64_t memory_size = 0;
 uint8_t probe_mask = 0, \
 		trigger_mask[NUM_TRIGGER_STAGES] = {0}, \
 		trigger_value[NUM_TRIGGER_STAGES] = {0}, \
@@ -77,13 +117,26 @@ uint8_t probe_mask = 0, \
 
 int hw_set_configuration(int device_index, int capability, void *value);
 
+static unsigned int get_memory_size(int type)
+{
+        if (type == MEMORY_SIZE_8K)
+                return 8*1024;
+        else if (type == MEMORY_SIZE_64K)
+                return 64*1024;
+        else if (type == MEMORY_SIZE_128K)
+                return 128*1024;
+        else if (type == MEMORY_SIZE_512K)
+                return 512*1024;
+        else
+                return 0;
+}
 
 struct sigrok_device_instance *zp_open_device(int device_index)
 {
 	struct sigrok_device_instance *sdi;
 	libusb_device **devlist;
 	struct libusb_device_descriptor des;
-	int err, i;
+	int err, i, j;
 
 	if(!(sdi = get_sigrok_device_instance(device_instances, device_index)))
 		return NULL;
@@ -98,9 +151,21 @@ struct sigrok_device_instance *zp_open_device(int device_index)
 				continue;
 			}
 
-			if(des.idVendor == USB_VENDOR && des.idProduct == USB_PRODUCT) {
+			if(des.idVendor == USB_VENDOR) {
 				if(libusb_get_bus_number(devlist[i]) == sdi->usb->bus &&
 						libusb_get_device_address(devlist[i]) == sdi->usb->address) {
+							for (j = 0; j < sizeof(zeroplus_models) / sizeof(zeroplus_models[0]); j++) {
+								if (des.idProduct == zeroplus_models[j].pid) {
+									g_message("Found PID=%04X (%s)", des.idProduct, zeroplus_models[j].model_name);
+									num_channels = zeroplus_models[j].channels;
+									memory_size = zeroplus_models[j].sample_depth * 1024;
+									break;
+								}
+							}
+							if (num_channels == 0) {
+								g_warning("Unknown ZeroPlus device %04X", des.idProduct);
+								continue;
+							}
 					/* found it */
 					if( !(err = libusb_open(devlist[i], &(sdi->usb->devhdl))) ) {
 						sdi->status = ST_ACTIVE;
@@ -202,7 +267,7 @@ int hw_init(char *deviceinfo)
 		return 0;
 	}
 
-	/* find all Saleae Logic devices and upload firmware to all of them */
+	/* find all ZeroPlus analyzers and add them to device list */
 	devcnt = 0;
 	libusb_get_device_list(usb_context, &devlist);
 	for(i = 0; devlist[i]; i++) {
@@ -212,7 +277,7 @@ int hw_init(char *deviceinfo)
 			continue;
 		}
 
-		if(des.idVendor == USB_VENDOR && des.idProduct == USB_PRODUCT) {
+		if(des.idVendor == USB_VENDOR) {
 			/* definitely a Zeroplus */
 			/* TODO: any way to detect specific model/version in the zeroplus range? */
 			sdi = sigrok_device_instance_new(devcnt, ST_INACTIVE,
@@ -246,6 +311,22 @@ int hw_opendev(int device_index)
 		g_warning("Unable to claim interface: %d", err);
 		return SIGROK_NOK;
 	}
+	analyzer_reset(sdi->usb->devhdl);
+	analyzer_initialize(sdi->usb->devhdl);
+	analyzer_configure(sdi->usb->devhdl);
+
+	analyzer_set_memory_size(MEMORY_SIZE_512K);
+//	analyzer_set_freq(g_freq, g_freq_scale);
+	analyzer_set_trigger_count(1);
+//	analyzer_set_ramsize_trigger_address((((100 - g_pre_trigger) * get_memory_size(g_memory_size)) / 100) >> 2);
+	analyzer_set_ramsize_trigger_address((100 * get_memory_size(MEMORY_SIZE_512K) / 100) >> 2);
+
+/*	if (g_double_mode == 1)
+		analyzer_set_compression(COMPRESSION_DOUBLE);
+	else if (g_compression == 1)
+		analyzer_set_compression(COMPRESSION_ENABLE);
+	else */
+		analyzer_set_compression(COMPRESSION_NONE);
 
 	if(cur_samplerate == 0) {
 		/* sample rate hasn't been set; default to the slowest it has */
@@ -303,7 +384,7 @@ void *hw_get_device_info(int device_index, int device_info_id)
 		info = sdi;
 		break;
 	case DI_NUM_PROBES:
-		info = GINT_TO_POINTER(NUM_PROBES);
+		info = GINT_TO_POINTER(num_channels);
 		break;
 	case DI_SAMPLERATES:
 		info = &samplerates;
@@ -338,191 +419,91 @@ int *hw_get_capabilities(void)
 	return capabilities;
 }
 
-
-/* TODO: this is very specific to the saleae logic */
+// XXX this will set the same samplerate for all devices
 int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t samplerate)
 {
-	uint8_t divider;
-	int ret, result;
-	unsigned char buf[2];
+	if (samplerate > MHZ(1))
+		analyzer_set_freq(samplerate / MHZ(1), FREQ_SCALE_MHZ);
+	else if (samplerate > KHZ(1))
+		analyzer_set_freq(samplerate / KHZ(1), FREQ_SCALE_KHZ);
+	else
+		analyzer_set_freq(samplerate , FREQ_SCALE_HZ);
 
-	if(samplerate < samplerates.low || samplerate < samplerates.high)
-		return SIGROK_ERR_BADVALUE;
-
-	divider = (uint8_t) (48 / (float) (samplerate/1000000)) - 1;
-
-	g_message("setting sample rate to %"PRIu64" Hz (divider %d)", samplerate, divider);
-	buf[0] = 0x01;
-	buf[1] = divider;
-	ret = libusb_bulk_transfer(sdi->usb->devhdl, 1 | LIBUSB_ENDPOINT_OUT, buf, 2, &result, 500);
-	if(ret != 0) {
-		g_warning("failed to set samplerate: %d", ret);
-		return SIGROK_NOK;
-	}
 	cur_samplerate = samplerate;
 
 	return SIGROK_OK;
 }
 
-
 int hw_set_configuration(int device_index, int capability, void *value)
 {
 	struct sigrok_device_instance *sdi;
-	int ret;
 	uint64_t *tmp_u64;
 
 	if( !(sdi = get_sigrok_device_instance(device_instances, device_index)) )
 		return SIGROK_NOK;
 
-	if(capability == HWCAP_SAMPLERATE) {
-		tmp_u64 = value;
-		ret = set_configuration_samplerate(sdi, *tmp_u64);
-	}
-	else if(capability == HWCAP_PROBECONFIG)
-		ret = configure_probes( (GSList *) value);
-	else if(capability == HWCAP_LIMIT_SAMPLES) {
-		limit_samples = strtoull(value, NULL, 10);
-		ret = SIGROK_OK;
-	}
-	else
-		ret = SIGROK_NOK;
+	switch (capability) {
+		case HWCAP_SAMPLERATE:
+			tmp_u64 = value;
+			return set_configuration_samplerate(sdi, *tmp_u64);
 
-	return ret;
+		case HWCAP_PROBECONFIG:
+			return configure_probes( (GSList *) value);
+
+		case HWCAP_LIMIT_SAMPLES:
+			limit_samples = strtoull(value, NULL, 10);
+			return SIGROK_OK;
+
+		default:
+			return SIGROK_NOK;
+	}
 }
-
-
-int receive_data(int fd, int revents, void *user_data)
-{
-	struct timeval tv;
-
-	tv.tv_sec = tv.tv_usec = 0;
-	libusb_handle_events_timeout(usb_context, &tv);
-
-	return TRUE;
-}
-
-
-void receive_transfer(struct libusb_transfer *transfer)
-{
-	static int num_samples = 0;
-	static int empty_transfer_count = 0;
-
-	struct datafeed_packet packet;
-	void *user_data;
-	int cur_buflen;
-	unsigned char *cur_buf, *new_buf;
-
-	if(transfer == NULL) {
-		/* hw_stop_acquisition() telling us to stop */
-		num_samples = -1;
-	}
-
-	if(num_samples == -1) {
-		/* acquisition has already ended, just free any queued up transfer that come in */
-		libusb_free_transfer(transfer);
-	}
-	else {
-		g_message("receive_transfer(): status %d received %d bytes", transfer->status, transfer->actual_length);
-
-		/* save the incoming transfer before reusing the transfer struct */
-		cur_buf = transfer->buffer;
-		cur_buflen = transfer->actual_length;
-		user_data = transfer->user_data;
-
-		/* fire off a new request */
-		new_buf = g_malloc(4096);
-		transfer->buffer = new_buf;
-		transfer->length = 4096;
-		if(libusb_submit_transfer(transfer) != 0) {
-			/* TODO: stop session? */
-			g_warning("eek");
-		}
-
-		if(cur_buflen == 0) {
-			empty_transfer_count++;
-			if(empty_transfer_count > MAX_EMPTY_TRANSFERS) {
-				/* the FX2 gave up... end the acquisition, the frontend will work
-				 * out that the samplecount is short
-				 */
-				packet.type = DF_END;
-				session_bus(user_data, &packet);
-				num_samples = -1;
-			}
-			return;
-		}
-		else
-			empty_transfer_count = 0;
-
-		/* send the incoming transfer to the session bus */
-		packet.type = DF_LOGIC8;
-		packet.length = cur_buflen;
-		packet.payload = cur_buf;
-		session_bus(user_data, &packet);
-		g_free(cur_buf);
-
-		num_samples += cur_buflen;
-		if(num_samples > limit_samples)
-		{
-			/* end the acquisition */
-			packet.type = DF_END;
-			session_bus(user_data, &packet);
-			num_samples = -1;
-		}
-	}
-
-}
-
 
 int hw_start_acquisition(int device_index, gpointer session_device_id)
 {
 	struct sigrok_device_instance *sdi;
-	struct datafeed_packet *packet;
-	struct datafeed_header *header;
-	struct libusb_transfer *transfer;
-	const struct libusb_pollfd **lupfd;
-	int size, i;
+	struct datafeed_packet packet;
+	struct datafeed_header header;
+	int res;
 	unsigned char *buf;
 
 	if( !(sdi = get_sigrok_device_instance(device_instances, device_index)))
 		return SIGROK_NOK;
 
-	packet = g_malloc(sizeof(struct datafeed_packet));
-	header = g_malloc(sizeof(struct datafeed_header));
-	if(!packet || !header)
+	analyzer_start(sdi->usb->devhdl);
+	g_message("Waiting for data");
+	analyzer_wait_data(sdi->usb->devhdl);
+
+	g_message("Stop address    = 0x%x", analyzer_get_stop_address(sdi->usb->devhdl));
+	g_message("Now address     = 0x%x", analyzer_get_now_address(sdi->usb->devhdl));
+	g_message("Trigger address = 0x%x", analyzer_get_trigger_address(sdi->usb->devhdl));
+
+	packet.type = DF_HEADER;
+	packet.length = sizeof(struct datafeed_header);
+	packet.payload = (unsigned char *) &header;
+	header.feed_version = 1;
+	gettimeofday(&header.starttime, NULL);
+	header.rate = cur_samplerate;
+	header.protocol_id = PROTO_RAW;
+	header.num_probes = num_channels;
+	session_bus(session_device_id, &packet);
+
+	buf = g_malloc(memory_size * 4);
+	if (!buf)
 		return SIGROK_NOK;
 
-	/* start with 2K transfer, subsequently increased to 4K */
-	size = 2048;
-	for(i = 0; i < NUM_SIMUL_TRANSFERS; i++) {
-		buf = g_malloc(size);
-		transfer = libusb_alloc_transfer(0);
-		libusb_fill_bulk_transfer(transfer, sdi->usb->devhdl, 2 | LIBUSB_ENDPOINT_IN, buf, size,
-				receive_transfer, session_device_id, 40);
-		if(libusb_submit_transfer(transfer) != 0) {
-			/* TODO: free them all */
-			libusb_free_transfer(transfer);
-			g_free(buf);
-			return SIGROK_NOK;
-		}
-		size = 4096;
-	}
+	res = analyzer_read(sdi->usb->devhdl, buf, memory_size * 4);
+	g_message("Tried to read %llx bytes, actually read %x bytes", memory_size * 4, res);
 
-	lupfd = libusb_get_pollfds(usb_context);
-	for(i = 0; lupfd[i]; i++)
-		source_add(lupfd[i]->fd, lupfd[i]->events, -1, receive_data, NULL);
-	free(lupfd);
+	/* send the incoming transfer to the session bus */
+	packet.type = DF_LOGIC8;
+	packet.length = memory_size * 4; // XXX
+	packet.payload = buf;
+	session_bus(session_device_id, &packet);
+	g_free(buf);
 
-	packet->type = DF_HEADER;
-	packet->length = sizeof(struct datafeed_header);
-	packet->payload = (unsigned char *) header;
-	header->feed_version = 1;
-	gettimeofday(&header->starttime, NULL);
-	header->rate = cur_samplerate;
-	header->protocol_id = PROTO_RAW;
-	header->num_probes = NUM_PROBES;
-	session_bus(session_device_id, packet);
-	g_free(header);
-	g_free(packet);
+	packet.type = DF_END;
+	session_bus(session_device_id, &packet);
 
 	return SIGROK_OK;
 }
@@ -532,14 +513,16 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 void hw_stop_acquisition(int device_index, gpointer session_device_id)
 {
 	struct datafeed_packet packet;
+	struct sigrok_device_instance *sdi;
 
 	packet.type = DF_END;
 	session_bus(session_device_id, &packet);
 
-	receive_transfer(NULL);
+	if( !(sdi = get_sigrok_device_instance(device_instances, device_index)))
+		return; // XXX cry?
 
+	analyzer_reset(sdi->usb->devhdl);
 	/* TODO: need to cancel and free any queued up transfers */
-
 }
 
 

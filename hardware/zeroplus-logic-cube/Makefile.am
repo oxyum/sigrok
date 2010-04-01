@@ -27,7 +27,7 @@ LIBOBJS_EXTRA = $(LIBOBJS) \
 hwplugindir = $(HWPLUGIN_DIR)
 
 hwplugin_LTLIBRARIES = zeroplus-logic-cube.la
-zeroplus_logic_cube_la_SOURCES = zeroplus.c
+zeroplus_logic_cube_la_SOURCES = zeroplus.c gl_usb.c analyzer.c
 zeroplus_logic_cube_la_LIBADD = $(LIBOBJS_EXTRA)
 zeroplus_logic_cube_la_LDFLAGS = -module -avoid-version
 
