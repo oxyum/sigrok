@@ -37,7 +37,7 @@
 #define NUM_TRIGGER_STAGES		4
 #define TRIGGER_TYPES			"01"
 
-#define PACKET_SIZE				256 // ??
+#define PACKET_SIZE				2048 // ??
 
 typedef struct {
 	unsigned short pid;
@@ -423,6 +423,7 @@ int *hw_get_capabilities(void)
 // XXX this will set the same samplerate for all devices
 int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t samplerate)
 {
+	g_message("%s(%llu)", __FUNCTION__, samplerate);
 	if (samplerate > MHZ(1))
 		analyzer_set_freq(samplerate / MHZ(1), FREQ_SCALE_MHZ);
 	else if (samplerate > KHZ(1))
@@ -490,20 +491,21 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	header.num_probes = num_channels;
 	session_bus(session_device_id, &packet);
 
-	buf = g_malloc(memory_size * 4);
+	buf = g_malloc(PACKET_SIZE);
 	if (!buf)
 		return SIGROK_NOK;
-
-	res = analyzer_read(sdi->usb->devhdl, buf, memory_size * 4);
-	g_message("Tried to read %llx bytes, actually read %x bytes", memory_size * 4, res);
-
+	analyzer_read_start(sdi->usb->devhdl);
 	/* send the incoming transfer to the session bus */
 	for(packet_num = 0; packet_num < (memory_size * 4 / PACKET_SIZE); packet_num++) {
+		res = analyzer_read_data(sdi->usb->devhdl, buf, PACKET_SIZE);
+//		g_message("Tried to read %llx bytes, actually read %x bytes", PACKET_SIZE, res);
+
 		packet.type = DF_LOGIC32;
 		packet.length = PACKET_SIZE;
-		packet.payload = buf + packet_num * PACKET_SIZE;
+		packet.payload = buf;
 		session_bus(session_device_id, &packet);		
 	}
+	analyzer_read_stop(sdi->usb->devhdl);
 	g_free(buf);
 
 	packet.type = DF_END;

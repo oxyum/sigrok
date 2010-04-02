@@ -319,24 +319,25 @@ void analyzer_wait(libusb_device_handle *devh, int set, int unset)
 	}
 }
 
-int analyzer_read(libusb_device_handle *devh, void *buffer, unsigned int size)
+void analyzer_read_start(libusb_device_handle *devh)
 {
 	int i;
-
-	if (size > 0x800000)
-		size = 0x800000;
 
 	analyzer_write_status(devh, 3, STATUS_FLAG_20 | STATUS_FLAG_READ);
 
 	for (i = 0; i < 8; i++)
-		(void)gl_reg_read(devh, 0xa0);
+		(void)gl_reg_read(devh, READ_RAM_STATUS);
+}
 
-	int res = gl_read_bulk(devh, buffer, size);
+int analyzer_read_data(libusb_device_handle *devh, void *buffer, unsigned int size)
+{
+	return gl_read_bulk(devh, buffer, size);
+}
 
+void analyzer_read_stop(libusb_device_handle *devh)
+{
 	analyzer_write_status(devh, 3, STATUS_FLAG_20);
 	analyzer_write_status(devh, 3, STATUS_FLAG_NONE);
-
-	return res;
 }
 
 void analyzer_start(libusb_device_handle *devh)

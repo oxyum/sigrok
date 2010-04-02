@@ -89,7 +89,9 @@ int analyzer_decompress(void *input, unsigned int input_len, void *output, unsig
 void analyzer_reset(libusb_device_handle *devh);
 void analyzer_initialize(libusb_device_handle *devh);
 void analyzer_wait(libusb_device_handle *devh, int set, int unset);
-int analyzer_read(libusb_device_handle *devh, void *buffer, unsigned int size);
+void analyzer_read_start(libusb_device_handle *devh);
+int analyzer_read_data(libusb_device_handle *devh, void *buffer, unsigned int size);
+void analyzer_read_stop(libusb_device_handle *devh);
 void analyzer_start(libusb_device_handle *devh);
 void analyzer_configure(libusb_device_handle *devh);
 
