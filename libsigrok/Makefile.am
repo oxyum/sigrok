@@ -17,17 +17,31 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ## 
 
-bin_PROGRAMS = sigrok-cli
+AM_CPPFLAGS = -I $(top_srcdir)/libsigrok \
+	-DFIRMWARE_DIR='"$(FIRMWARE_DIR)"'
 
-sigrok_cli_SOURCES = sigrok-cli.c
+lib_LTLIBRARIES = libbackend.la
 
-sigrok_cli_CPPFLAGS = -I $(top_srcdir)/include \
-		      -I $(top_srcdir)/backend \
-		      -I $(top_srcdir)/decode \
-		      $(CPPFLAGS_PYTHON)
+libbackend_la_SOURCES = \
+	backend.c \
+	datastore.c \
+	device.c \
+	session.c \
+	hwplugin.c \
+	filter.c \
+	hardware/common/ezusb.c \
+	hardware/common/serial.c \
+	hardware/openbench-logic-sniffer/ols.c \
+	hardware/saleae-logic/saleae-logic.c \
+	hardware/zeroplus-logic-cube/analyzer.c \
+	hardware/zeroplus-logic-cube/analyzer.h \
+	hardware/zeroplus-logic-cube/gl_usb.c \
+	hardware/zeroplus-logic-cube/gl_usb.h \
+	hardware/zeroplus-logic-cube/zeroplus.c \
+	output/output_text.c \
+	output/output.c
 
-sigrok_cli_LDADD = $(LIBOBJS) \
-		   -L$(top_srcdir)/backend -lbackend \
-		   -L$(top_srcdir)/decode -lsigrokdecode \
-		   $(LDFLAGS_PYTHON)
+libbackend_la_LIBADD = $(LIBOBJS)
+
+include_HEADERS = sigrok.h
 

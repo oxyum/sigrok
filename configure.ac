@@ -99,12 +99,10 @@ AC_CHECK_FUNCS([gettimeofday memset strchr strerror strncasecmp strtol strtoul s
 
 AC_CONFIG_FILES([Makefile
 		 doc/Makefile
-		 decode/Makefile
-		 decode/scripts/Makefile
-		 include/Makefile
-		 backend/Makefile
-		 frontend/Makefile
-		 frontend/cli/Makefile
+		 libsigrok/Makefile
+		 libsigrokdecode/Makefile
+		 libsigrokdecode/scripts/Makefile
+		 cli/Makefile
 		])
 
 AC_SUBST(FIRMWARE_DIR, '$(datadir)/sigrok')

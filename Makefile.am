@@ -19,5 +19,5 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = doc decode include backend frontend
+SUBDIRS = doc libsigrok libsigrokdecode cli
 
