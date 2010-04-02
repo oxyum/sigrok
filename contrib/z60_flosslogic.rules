@@ -33,4 +33,8 @@ ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0498", MODE="664", GROUP="plugdev"
 # http://www.saleae.com/logic/
 ATTRS{idVendor}=="0925", ATTRS{idProduct}=="3881", MODE="664", GROUP="plugdev"
 
+# ZEROPLUS Logic Cube LAP-C series
+# http://www.zeroplus.com.tw/logic-analyzer_en/products.php#top_c
+ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="700e", MODE="664", GROUP="plugdev"
+
 LABEL="sigrok_rules_end"
