@@ -190,7 +190,7 @@ static int data_binary(struct output *o, char *data_in, uint64_t length_in, char
 			}
 		}
 	} else
-		g_message("short buffer (length_in=%d)", length_in);
+		g_message("short buffer (length_in=%"PRIu64")", length_in);
 
 	*data_out = outbuf;
 	*length_out = strlen(outbuf);

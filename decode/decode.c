@@ -141,7 +141,7 @@ int sigrokdecode_run_decoder(const char *decodername, uint8_t *inbuf,
 		return -12;
 	}
 
-	if ((ret = PyObject_AsCharBuffer(py_result, outbuf,
+	if ((ret = PyObject_AsCharBuffer(py_result, (const char **)outbuf,
 					 (Py_ssize_t *)outbuflen))) {
 		PyErr_Print();
 		Py_DECREF(py_result);
