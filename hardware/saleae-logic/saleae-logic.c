@@ -49,7 +49,7 @@
 
 
 /* there is only one model Saleae Logic, and this is what it supports */
-int capabilities[] = {
+static int capabilities[] = {
 	HWCAP_LOGIC_ANALYZER,
 	HWCAP_SAMPLERATE,
 
@@ -59,7 +59,7 @@ int capabilities[] = {
 };
 
 /* list of struct sigrok_device_instance, maintained by opendev() and closedev() */
-GSList *device_instances = NULL;
+static GSList *device_instances = NULL;
 
 /* since we can't keep track of a Saleae Logic device after upgrading the
  * firmware -- it re-enumerates into a different device address after the
@@ -68,9 +68,9 @@ GSList *device_instances = NULL;
  */
 GTimeVal firmware_updated = {0};
 
-libusb_context *usb_context = NULL;
+static libusb_context *usb_context = NULL;
 
-uint64_t supported_samplerates[] = {
+static uint64_t supported_samplerates[] = {
 	KHZ(200),
 	KHZ(250),
 	KHZ(500),
@@ -84,7 +84,7 @@ uint64_t supported_samplerates[] = {
 	0
 };
 
-struct samplerates samplerates = {
+static struct samplerates samplerates = {
 	KHZ(200),
 	MHZ(24),
 	0,
@@ -92,9 +92,9 @@ struct samplerates samplerates = {
 };
 
 /* TODO: all of these should go in a device-specific struct */
-uint64_t cur_sample_rate = 0;
-uint64_t limit_samples = 0;
-uint8_t probe_mask = 0, \
+static uint64_t cur_sample_rate = 0;
+static uint64_t limit_samples = 0;
+static uint8_t probe_mask = 0, \
 		trigger_mask[NUM_TRIGGER_STAGES] = {0}, \
 		trigger_value[NUM_TRIGGER_STAGES] = {0}, \
 		trigger_buffer[NUM_TRIGGER_STAGES] = {0};;
@@ -304,7 +304,7 @@ int upload_firmware(libusb_device *dev)
 }
 
 
-void close_device(struct sigrok_device_instance *sdi)
+static void close_device(struct sigrok_device_instance *sdi)
 {
 
 	if(sdi->usb->devhdl)
@@ -320,7 +320,7 @@ void close_device(struct sigrok_device_instance *sdi)
 }
 
 
-int configure_probes(GSList *probes)
+static int configure_probes(GSList *probes)
 {
 	struct probe *probe;
 	GSList *l;
@@ -606,7 +606,7 @@ static int hw_set_configuration(int device_index, int capability, void *value)
 }
 
 
-int receive_data(int fd, int revents, void *user_data)
+static int receive_data(int fd, int revents, void *user_data)
 {
 	struct timeval tv;
 

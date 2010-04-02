@@ -71,7 +71,7 @@
 #define FLAG_RLE				0x0100
 
 
-int capabilities[] = {
+static int capabilities[] = {
 	HWCAP_LOGIC_ANALYZER,
 	HWCAP_SAMPLERATE,
 	HWCAP_CAPTURE_RATIO,
@@ -79,7 +79,7 @@ int capabilities[] = {
 	0
 };
 
-struct samplerates samplerates = {
+static struct samplerates samplerates = {
 	1,
 	MHZ(200),
 	1,
@@ -87,16 +87,16 @@ struct samplerates samplerates = {
 };
 
 /* list of struct serial_device_instance  */
-GSList *device_instances = NULL;
+static GSList *device_instances = NULL;
 
 /* current state of the flag register */
 uint32_t flag_reg = 0;
 
-uint64_t cur_samplerate = 0;
-uint64_t limit_samples = 0;
+static uint64_t cur_samplerate = 0;
+static uint64_t limit_samples = 0;
 /* pre/post trigger capture ratio, in percentage. 0 means no pre-trigger data. */
 int capture_ratio = 0;
-uint32_t probe_mask = 0, trigger_mask[4] = {0}, trigger_value[4] = {0};
+static uint32_t probe_mask = 0, trigger_mask[4] = {0}, trigger_value[4] = {0};
 
 
 
@@ -129,8 +129,7 @@ int send_longcommand(int fd, uint8_t command, uint32_t data)
 	return SIGROK_OK;
 }
 
-
-int configure_probes(GSList *probes)
+static int configure_probes(GSList *probes)
 {
 	struct probe *probe;
 	GSList *l;
@@ -437,7 +436,7 @@ static int hw_set_configuration(int device_index, int capability, void *value)
 }
 
 
-int receive_data(int fd, int revents, void *user_data)
+static int receive_data(int fd, int revents, void *user_data)
 {
 	static int num_transfers = 0;
 	static int num_bytes = 0;

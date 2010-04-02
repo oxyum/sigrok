@@ -58,7 +58,7 @@ model_t zeroplus_models[] = {
 	{0x7016, "LAP-C(162000)", 16, 2048, 200},
 };
 
-int capabilities[] = {
+static int capabilities[] = {
 	HWCAP_LOGIC_ANALYZER,
 	HWCAP_SAMPLERATE,
 	HWCAP_PROBECONFIG,
@@ -70,15 +70,15 @@ int capabilities[] = {
 };
 
 /* list of struct sigrok_device_instance, maintained by opendev() and closedev() */
-GSList *device_instances = NULL;
+static GSList *device_instances = NULL;
 
-libusb_context *usb_context = NULL;
+static libusb_context *usb_context = NULL;
 
 /* The hardware supports more sample rates than these, but these are the options
    hardcoded into the vendor's Windows GUI */
 
 // XXX we shouldn't support 150MHz and 200MHz on devices that don't go up that high
-uint64_t supported_samplerates[] = {
+static uint64_t supported_samplerates[] = {
 	100,
 	500,
 	KHZ(1),
@@ -100,17 +100,17 @@ uint64_t supported_samplerates[] = {
 	0
 };
 
-struct samplerates samplerates = {
+static struct samplerates samplerates = {
 	0,0,0,
 	supported_samplerates
 };
 
 /* TODO: all of these should go in a device-specific struct */
-uint64_t cur_samplerate = 0;
-uint64_t limit_samples = 0;
+static uint64_t cur_samplerate = 0;
+static uint64_t limit_samples = 0;
 uint8_t num_channels = 32; // XXX this is not getting initialized before it is needed :(
 uint64_t memory_size = 0;
-uint8_t probe_mask = 0, \
+static uint8_t probe_mask = 0, \
 		trigger_mask[NUM_TRIGGER_STAGES] = {0}, \
 		trigger_value[NUM_TRIGGER_STAGES] = {0}, \
 		trigger_buffer[NUM_TRIGGER_STAGES] = {0};;
@@ -194,7 +194,7 @@ struct sigrok_device_instance *zp_open_device(int device_index)
 }
 
 
-void close_device(struct sigrok_device_instance *sdi)
+static void close_device(struct sigrok_device_instance *sdi)
 {
 
 	if(sdi->usb->devhdl)
@@ -210,7 +210,7 @@ void close_device(struct sigrok_device_instance *sdi)
 }
 
 
-int configure_probes(GSList *probes)
+static int configure_probes(GSList *probes)
 {
 	struct probe *probe;
 	GSList *l;
