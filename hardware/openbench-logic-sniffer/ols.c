@@ -36,7 +36,7 @@
 #define TRIGGER_TYPES			"01"
 #define SERIAL_SPEED			B115200
 /* TODO: SERIAL_ bits, parity, stop bit */
-#define CLOCK_RATE				100
+#define CLOCK_RATE				100000000
 
 
 /* command opcodes */
@@ -100,10 +100,24 @@ uint32_t probe_mask = 0, trigger_mask[4] = {0}, trigger_value[4] = {0};
 
 
 
+int send_shortcommand(int fd, uint8_t command)
+{
+	char buf[1];
+
+	g_message("ols: sending cmd 0x%.2x", command);
+	buf[0] = command;
+	if(write(fd, buf, 1) != 1)
+		return SIGROK_NOK;
+
+	return SIGROK_OK;
+}
+
+
 int send_longcommand(int fd, uint8_t command, uint32_t data)
 {
 	char buf[5];
 
+	g_message("ols: sending cmd 0x%.2x data 0x%.8x", command, data);
 	buf[0] = command;
 	buf[1] = data & 0xff;
 	buf[2] = data & 0xff00 >> 8;
@@ -114,6 +128,7 @@ int send_longcommand(int fd, uint8_t command, uint32_t data)
 
 	return SIGROK_OK;
 }
+
 
 int configure_probes(GSList *probes)
 {
@@ -249,7 +264,7 @@ int hw_init(char *deviceinfo)
 
 	g_free(fds);
 	g_free(device_names);
-	g_free(prev_termios);
+ 	g_free(prev_termios);
 	g_slist_free(ports);
 
 	return final_devcnt;
@@ -330,6 +345,9 @@ void *hw_get_device_info(int device_index, int device_info_id)
 	case DI_TRIGGER_TYPES:
 		info = (char *) TRIGGER_TYPES;
 		break;
+	case DI_CUR_SAMPLE_RATE:
+		info = &cur_samplerate;
+		break;
 	}
 
 	return info;
@@ -358,7 +376,7 @@ int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t sa
 {
 	uint32_t divider;
 
-	if(samplerate < 0.00001 || samplerate > 200)
+	if(samplerate < samplerates.low || samplerate > samplerates.high)
 		return SIGROK_ERR_BADVALUE;
 
 	if(samplerate  > CLOCK_RATE) {
@@ -369,8 +387,9 @@ int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t sa
 		flag_reg &= FLAG_DEMUX;
 		divider = (uint8_t) (CLOCK_RATE / samplerate) - 1;
 	}
+	divider <<= 8;
 
-	g_message("setting samplerate to %"PRIu64" Hz (divider %d, demux %s)", samplerate, divider,
+	g_message("setting samplerate to %"PRIu64" Hz (divider %u, demux %s)", samplerate, divider,
 			flag_reg & FLAG_DEMUX ? "on" : "off");
 	if(send_longcommand(sdi->serial->fd, CMD_SET_DIVIDER, divider) != SIGROK_OK)
 		return SIGROK_NOK;
@@ -420,60 +439,80 @@ int hw_set_configuration(int device_index, int capability, void *value)
 
 int receive_data(int fd, int revents, void *user_data)
 {
-	static char last_sample[4] = {0xff};
+	static int num_transfers = 0;
 	static int num_bytes = 0;
+	static char last_sample[4] = {0xff};
 	static unsigned char sample[4];
 	int count, buflen, i;
 	struct datafeed_packet packet;
 	unsigned char byte, *buffer;
 
-	/* TODO: need to get a timeout in here -- can the GSource be changed in place? */
+	if(num_transfers++ == 0) {
+		/* first time round, means the device started sending data, and will not
+		 * stop until done. if it stops sending for longer than it takes to send
+		 * a byte, that means it's finished. we'll double that to 30ms to be sure...
+		 */
+		source_remove(fd);
+		source_add(fd, POLLIN, 30, receive_data, user_data);
+	}
 
-	if(read(fd, &byte, 1) != 1)
-		return FALSE;
+	/* TODO: / 4 depends on # of channels used */
+	if(revents == POLLIN && num_transfers / 4 <= limit_samples){
+		if(read(fd, &byte, 1) != 1)
+			return FALSE;
 
-	sample[num_bytes++] = byte;
-	if(num_bytes == 4) {
-		/* got a full sample */
-		if(flag_reg & FLAG_RLE) {
-			/* in RLE mode -1 should never come in as a sample, because
-			 * bit 31 is the "count" flag */
-			/* TODO: endianness may be wrong here, could be sample[3] */
-			if(sample[0] & 0x80 && !(last_sample[0] & 0x80)) {
-				count = (int) (*sample) & 0x7fffffff;
-				buffer = g_malloc(count);
-				buflen = 0;
-				for(i = 0; i < count; i++)
-				{
-					memcpy(buffer + buflen , last_sample, 4);
-					buflen += 4;
+		sample[num_bytes++] = byte;
+		if(num_bytes == 4) {
+			g_message("got sample 0x%.2x%.2x%.2x%.2x", sample[3], sample[2], sample[1], sample[0]);
+			/* got a full sample */
+			if(flag_reg & FLAG_RLE) {
+				/* in RLE mode -1 should never come in as a sample, because
+				 * bit 31 is the "count" flag */
+				/* TODO: endianness may be wrong here, could be sample[3] */
+				if(sample[0] & 0x80 && !(last_sample[0] & 0x80)) {
+					count = (int) (*sample) & 0x7fffffff;
+					buffer = g_malloc(count);
+					buflen = 0;
+					for(i = 0; i < count; i++)
+					{
+						memcpy(buffer + buflen , last_sample, 4);
+						buflen += 4;
+					}
+				}
+				else {
+					/* just a single sample, next sample will probably be a count
+					 * referring to this -- but this one is still a part of the stream
+					 */
+					buffer = sample;
+					buflen = 4;
 				}
 			}
 			else {
-				/* just a single sample, next sample will probably be a count
-				 * referring to this -- but this one is still a part of the stream
-				 */
+				/* no compression */
 				buffer = sample;
 				buflen = 4;
 			}
-		}
-		else {
-			/* no compression */
-			buffer = sample;
-			buflen = 4;
-		}
 
-		/* send it all to the session bus */
-		packet.type = DF_LOGIC32;
-		packet.length = buflen;
-		packet.payload = buffer;
+			/* send it all to the session bus */
+			packet.type = DF_LOGIC32;
+			packet.length = buflen;
+			packet.payload = buffer;
+			session_bus(user_data, &packet);
+			if(buffer == sample)
+				memcpy(last_sample, buffer, 4);
+			else
+				g_free(buffer);
+
+			num_bytes = 0;
+		}
+	}
+	else {
+		/* this is the main loop telling us a timeout was reached -- we're done */
+		tcflush(fd, TCIOFLUSH);
+		close(fd);
+		packet.type = DF_END;
+		packet.length = 0;
 		session_bus(user_data, &packet);
-		if(buffer == sample)
-			memcpy(last_sample, buffer, 4);
-		else
-			g_free(buffer);
-
-		num_bytes = 0;
 	}
 
 	return TRUE;
@@ -485,7 +524,6 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	struct datafeed_packet *packet;
 	struct datafeed_header *header;
 	struct sigrok_device_instance *sdi;
-	char buf[5];
 	uint32_t data;
 
 	if(!(sdi = get_sigrok_device_instance(device_instances, device_index)))
@@ -494,8 +532,12 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	if(sdi->status != ST_ACTIVE)
 		return SIGROK_NOK;
 
+	/* reset again */
+	if(send_longcommand(sdi->serial->fd, CMD_RESET, 0) != SIGROK_OK)
+		return SIGROK_NOK;
+
 	/* send flag register */
-	data = flag_reg;
+	data = flag_reg << 24;
 	if(send_longcommand(sdi->serial->fd, CMD_SET_FLAGS, data) != SIGROK_OK)
 		return SIGROK_NOK;
 
@@ -503,42 +545,44 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	data = limit_samples / 4 << 16;
 	if(capture_ratio)
 		data |= (limit_samples - (limit_samples / 100 * capture_ratio)) / 4;
+	data = 0x00190019;
 	if(send_longcommand(sdi->serial->fd, CMD_CAPTURE_SIZE, data) != SIGROK_OK)
 		return SIGROK_NOK;
 
 	/* trigger masks */
 	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_MASK_0, trigger_mask[0]) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_MASK_1, trigger_mask[1]) != SIGROK_OK)
-		return SIGROK_NOK;
-	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_MASK_2, trigger_mask[2]) != SIGROK_OK)
-		return SIGROK_NOK;
-	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_MASK_3, trigger_mask[3]) != SIGROK_OK)
-		return SIGROK_NOK;
+//	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_MASK_1, trigger_mask[1]) != SIGROK_OK)
+//		return SIGROK_NOK;
+//	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_MASK_2, trigger_mask[2]) != SIGROK_OK)
+//		return SIGROK_NOK;
+//	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_MASK_3, trigger_mask[3]) != SIGROK_OK)
+//		return SIGROK_NOK;
 
 	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_VALUE_0, trigger_value[0]) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_VALUE_1, trigger_value[1]) != SIGROK_OK)
-		return SIGROK_NOK;
-	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_VALUE_2, trigger_value[2]) != SIGROK_OK)
-		return SIGROK_NOK;
-	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_VALUE_3, trigger_value[3]) != SIGROK_OK)
-		return SIGROK_NOK;
+//	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_VALUE_1, trigger_value[1]) != SIGROK_OK)
+//		return SIGROK_NOK;
+//	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_VALUE_2, trigger_value[2]) != SIGROK_OK)
+//		return SIGROK_NOK;
+//	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_VALUE_3, trigger_value[3]) != SIGROK_OK)
+//		return SIGROK_NOK;
 
 	/* trigger configuration */
 	/* TODO: the start flag should only be on the last used stage I think... */
-	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_0, 0x00000001) != SIGROK_OK)
+	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_0, 0x00000008) != SIGROK_OK)
 		return SIGROK_NOK;
-	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_1, 0x00000001) != SIGROK_OK)
-		return SIGROK_NOK;
-	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_2, 0x00000001) != SIGROK_OK)
-		return SIGROK_NOK;
-	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_3, 0x00000001) != SIGROK_OK)
-		return SIGROK_NOK;
+//	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_1, 0x00000000) != SIGROK_OK)
+//		return SIGROK_NOK;
+//	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_2, 0x00000000) != SIGROK_OK)
+//		return SIGROK_NOK;
+//	if(send_longcommand(sdi->serial->fd, CMD_SET_TRIGGER_CONFIG_3, 0x00000000) != SIGROK_OK)
+//		return SIGROK_NOK;
+
+	set_configuration_samplerate(sdi, cur_samplerate);
 
 	/* start acquisition on the device */
-	buf[0] = CMD_RUN;
-	if(write(sdi->serial->fd, buf, 1) != 1)
+	if(send_shortcommand(sdi->serial->fd, CMD_RUN) != SIGROK_OK)
 		return SIGROK_NOK;
 
 	source_add(sdi->serial->fd, G_IO_IN, -1, receive_data, session_device_id);
@@ -569,6 +613,7 @@ void hw_stop_acquisition(int device_index, gpointer session_device_id)
 	struct datafeed_packet packet;
 
 	packet.type = DF_END;
+	packet.length = 0;
 	session_bus(session_device_id, &packet);
 
 }
