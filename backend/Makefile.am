@@ -18,7 +18,6 @@
 ## 
 
 AM_CPPFLAGS = -I $(top_srcdir)/include \
-	-DHWPLUGIN_DIR='"$(HWPLUGIN_DIR)"' \
 	-DFIRMWARE_DIR='"$(FIRMWARE_DIR)"'
 
 lib_LTLIBRARIES = libbackend.la
