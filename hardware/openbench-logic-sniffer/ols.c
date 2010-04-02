@@ -264,7 +264,7 @@ int hw_init(char *deviceinfo)
 
 	g_free(fds);
 	g_free(device_names);
- 	g_free(prev_termios);
+	g_free(prev_termios);
 	g_slist_free(ports);
 
 	return final_devcnt;
@@ -453,11 +453,11 @@ int receive_data(int fd, int revents, void *user_data)
 		 * a byte, that means it's finished. we'll double that to 30ms to be sure...
 		 */
 		source_remove(fd);
-		source_add(fd, POLLIN, 30, receive_data, user_data);
+		source_add(fd, G_IO_IN, 30, receive_data, user_data);
 	}
 
 	/* TODO: / 4 depends on # of channels used */
-	if(revents == POLLIN && num_transfers / 4 <= limit_samples){
+	if(revents == G_IO_IN && num_transfers / 4 <= limit_samples){
 		if(read(fd, &byte, 1) != 1)
 			return FALSE;
 
