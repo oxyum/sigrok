@@ -323,8 +323,8 @@ int analyzer_read(libusb_device_handle *devh, void *buffer, unsigned int size)
 {
 	int i;
 
-	if (size > 0x80000)
-		size = 0x80000;
+	if (size > 0x800000)
+		size = 0x800000;
 
 	analyzer_write_status(devh, 3, STATUS_FLAG_20 | STATUS_FLAG_READ);
 

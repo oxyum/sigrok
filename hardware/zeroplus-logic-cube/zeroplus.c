@@ -37,6 +37,8 @@
 #define NUM_TRIGGER_STAGES		4
 #define TRIGGER_TYPES			"01"
 
+#define PACKET_SIZE				256 // ??
+
 typedef struct {
 	unsigned short pid;
 	char model_name[64];
@@ -106,7 +108,7 @@ struct samplerates samplerates = {
 /* TODO: all of these should go in a device-specific struct */
 uint64_t cur_samplerate = 0;
 uint64_t limit_samples = 0;
-uint8_t num_channels = 16; // XXX this is not getting initialized before it is needed :(
+uint8_t num_channels = 32; // XXX this is not getting initialized before it is needed :(
 uint64_t memory_size = 0;
 uint8_t probe_mask = 0, \
 		trigger_mask[NUM_TRIGGER_STAGES] = {0}, \
@@ -464,6 +466,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	struct datafeed_packet packet;
 	struct datafeed_header header;
 	int res;
+	int packet_num;
 	unsigned char *buf;
 
 	if( !(sdi = get_sigrok_device_instance(device_instances, device_index)))
@@ -495,10 +498,12 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 	g_message("Tried to read %llx bytes, actually read %x bytes", memory_size * 4, res);
 
 	/* send the incoming transfer to the session bus */
-	packet.type = DF_LOGIC8;
-	packet.length = memory_size * 4; // XXX
-	packet.payload = buf;
-	session_bus(session_device_id, &packet);
+	for(packet_num = 0; packet_num < (memory_size * 4 / PACKET_SIZE); packet_num++) {
+		packet.type = DF_LOGIC32;
+		packet.length = PACKET_SIZE;
+		packet.payload = buf + packet_num * PACKET_SIZE;
+		session_bus(session_device_id, &packet);		
+	}
 	g_free(buf);
 
 	packet.type = DF_END;
