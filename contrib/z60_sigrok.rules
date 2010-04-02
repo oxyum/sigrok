@@ -35,6 +35,25 @@ ATTRS{idVendor}=="0925", ATTRS{idProduct}=="3881", MODE="664", GROUP="plugdev"
 
 # ZEROPLUS Logic Cube LAP-C series
 # http://www.zeroplus.com.tw/logic-analyzer_en/products.php#top_c
+# There are various devices in the ZEROPLUS Logic Cube LAP-C series:
+# 0x7009: LAP-C(16064)
+# 0x700a: LAP-C(16128)
+# 0x700b: LAP-C(32128)
+# 0x700c: LAP-C(321000)
+# 0x700d: LAP-C(322000)
+# 0x700e: LAP-C(16032)
+# 0x7016: LAP-C(162000)
+ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="7009", MODE="664", GROUP="plugdev"
+ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="700a", MODE="664", GROUP="plugdev"
+ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="700b", MODE="664", GROUP="plugdev"
+ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="700c", MODE="664", GROUP="plugdev"
+ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="700d", MODE="664", GROUP="plugdev"
 ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="700e", MODE="664", GROUP="plugdev"
+ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="7016", MODE="664", GROUP="plugdev"
+
+# Openbench Logic Sniffer
+# http://www.gadgetfactory.net/gf/project/butterflylogic/
+# http://dangerousprototypes.com/open-logic-sniffer/
+ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="000a", MODE="664", GROUP="plugdev"
 
 LABEL="sigrok_rules_end"
