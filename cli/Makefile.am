@@ -21,13 +21,12 @@ bin_PROGRAMS = sigrok-cli
 
 sigrok_cli_SOURCES = sigrok-cli.c
 
-sigrok_cli_CPPFLAGS = -I $(top_srcdir)/libsigrok/include \
-		      -I $(top_srcdir)/libsigrok \
+sigrok_cli_CPPFLAGS = -I $(top_srcdir)/libsigrok \
 		      -I $(top_srcdir)/libsigrokdecode \
 		      $(CPPFLAGS_PYTHON)
 
 sigrok_cli_LDADD = $(LIBOBJS) \
-		   -L$(top_srcdir)/libsigrok -lbackend \
+		   -L$(top_srcdir)/libsigrok -lsigrok \
 		   -L$(top_srcdir)/libsigrokdecode -lsigrokdecode \
 		   $(LDFLAGS_PYTHON)
 
