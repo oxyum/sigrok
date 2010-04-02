@@ -98,6 +98,7 @@ AC_TYPE_UINT64_T
 AC_CHECK_FUNCS([gettimeofday memset strchr strerror strncasecmp strtol strtoul strtoull])
 
 AC_CONFIG_FILES([Makefile
+		 contrib/Makefile
 		 doc/Makefile
 		 libsigrok/Makefile
 		 libsigrokdecode/Makefile
