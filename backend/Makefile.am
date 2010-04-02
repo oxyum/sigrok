@@ -24,11 +24,11 @@ AM_CPPFLAGS = -I $(top_srcdir)/include \
 lib_LTLIBRARIES = libbackend.la
 
 libbackend_la_SOURCES = \
-	backend.c backend.h \
-	datastore.c datastore.h \
-	device.c device.h \
-	session.c session.h \
-	hwplugin.c hwplugin.h \
+	backend.c \
+	datastore.c \
+	device.c \
+	session.c \
+	hwplugin.c \
 	filter.c \
 	../hardware/common/ezusb.c \
 	../hardware/common/serial.c \
