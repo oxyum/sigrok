@@ -116,7 +116,7 @@ uint8_t probe_mask = 0, \
 		trigger_buffer[NUM_TRIGGER_STAGES] = {0};;
 
 
-int hw_set_configuration(int device_index, int capability, void *value);
+static int hw_set_configuration(int device_index, int capability, void *value);
 
 static unsigned int get_memory_size(int type)
 {
@@ -256,7 +256,7 @@ int configure_probes(GSList *probes)
  * API callbacks
  */
 
-int hw_init(char *deviceinfo)
+static int hw_init(char *deviceinfo)
 {
 	struct sigrok_device_instance *sdi;
 	struct libusb_device_descriptor des;
@@ -297,7 +297,7 @@ int hw_init(char *deviceinfo)
 }
 
 
-int hw_opendev(int device_index)
+static int hw_opendev(int device_index)
 {
 	struct sigrok_device_instance *sdi;
 	int err;
@@ -339,7 +339,7 @@ int hw_opendev(int device_index)
 }
 
 
-void hw_closedev(int device_index)
+static void hw_closedev(int device_index)
 {
 	struct sigrok_device_instance *sdi;
 
@@ -349,7 +349,7 @@ void hw_closedev(int device_index)
 }
 
 
-void hw_cleanup(void)
+static void hw_cleanup(void)
 {
 	GSList *l;
 
@@ -370,7 +370,7 @@ void hw_cleanup(void)
 }
 
 
-void *hw_get_device_info(int device_index, int device_info_id)
+static void *hw_get_device_info(int device_index, int device_info_id)
 {
 	struct sigrok_device_instance *sdi;
 	void *info;
@@ -402,7 +402,7 @@ void *hw_get_device_info(int device_index, int device_info_id)
 }
 
 
-int hw_get_status(int device_index)
+static int hw_get_status(int device_index)
 {
 	struct sigrok_device_instance *sdi;
 
@@ -414,7 +414,7 @@ int hw_get_status(int device_index)
 }
 
 
-int *hw_get_capabilities(void)
+static int *hw_get_capabilities(void)
 {
 
 	return capabilities;
@@ -436,7 +436,7 @@ int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t sa
 	return SIGROK_OK;
 }
 
-int hw_set_configuration(int device_index, int capability, void *value)
+static int hw_set_configuration(int device_index, int capability, void *value)
 {
 	struct sigrok_device_instance *sdi;
 	uint64_t *tmp_u64;
@@ -461,7 +461,7 @@ int hw_set_configuration(int device_index, int capability, void *value)
 	}
 }
 
-int hw_start_acquisition(int device_index, gpointer session_device_id)
+static int hw_start_acquisition(int device_index, gpointer session_device_id)
 {
 	struct sigrok_device_instance *sdi;
 	struct datafeed_packet packet;
@@ -516,7 +516,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 
 
 /* this stops acquisition on ALL devices, ignoring device_index */
-void hw_stop_acquisition(int device_index, gpointer session_device_id)
+static void hw_stop_acquisition(int device_index, gpointer session_device_id)
 {
 	struct datafeed_packet packet;
 	struct sigrok_device_instance *sdi;

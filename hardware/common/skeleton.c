@@ -19,67 +19,67 @@
 
 #include "sigrok.h"
 
-int hw_init(char *deviceinfo)
+static int hw_init(char *deviceinfo)
 {
 
 }
 
 
-int hw_opendev(int device_index)
+static int hw_opendev(int device_index)
 {
 
 }
 
 
-void hw_closedev(int device_index)
+static void hw_closedev(int device_index)
 {
 
 }
 
 
-void hw_cleanup(void)
+static void hw_cleanup(void)
 {
 
 }
 
 
-char *hw_get_identifier(int device_index)
+static char *hw_get_identifier(int device_index)
 {
 
 }
 
 
-char *hw_get_device_info(int device_index, int device_info_id)
+static char *hw_get_device_info(int device_index, int device_info_id)
 {
 
 }
 
 
-int hw_get_status(int device_index)
+static int hw_get_status(int device_index)
 {
 
 }
 
 
-int *hw_get_capabilities(void)
+static int *hw_get_capabilities(void)
 {
 
 }
 
 
-int hw_set_configuration(int device_index, int capability, char *value)
+static int hw_set_configuration(int device_index, int capability, char *value)
 {
 
 }
 
 
-int hw_start_acquisition(int device_index, gpointer session_device_id)
+static int hw_start_acquisition(int device_index, gpointer session_device_id)
 {
 
 }
 
 
-void hw_stop_acquisition(int device_index, gpointer session_device_id)
+static void hw_stop_acquisition(int device_index, gpointer session_device_id)
 {
 
 }

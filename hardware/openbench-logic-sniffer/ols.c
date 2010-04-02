@@ -184,7 +184,7 @@ int configure_probes(GSList *probes)
 }
 
 
-int hw_init(char *deviceinfo)
+static int hw_init(char *deviceinfo)
 {
 	struct sigrok_device_instance *sdi;
 	GSList *ports, *l;
@@ -271,7 +271,7 @@ int hw_init(char *deviceinfo)
 }
 
 
-int hw_opendev(int device_index)
+static int hw_opendev(int device_index)
 {
 	struct sigrok_device_instance *sdi;
 
@@ -288,7 +288,7 @@ int hw_opendev(int device_index)
 }
 
 
-void hw_closedev(int device_index)
+static void hw_closedev(int device_index)
 {
 	struct sigrok_device_instance *sdi;
 
@@ -304,7 +304,7 @@ void hw_closedev(int device_index)
 }
 
 
-void hw_cleanup(void)
+static void hw_cleanup(void)
 {
 	GSList *l;
 	struct sigrok_device_instance *sdi;
@@ -322,7 +322,7 @@ void hw_cleanup(void)
 }
 
 
-void *hw_get_device_info(int device_index, int device_info_id)
+static void *hw_get_device_info(int device_index, int device_info_id)
 {
 	struct sigrok_device_instance *sdi;
 	void *info;
@@ -354,7 +354,7 @@ void *hw_get_device_info(int device_index, int device_info_id)
 }
 
 
-int hw_get_status(int device_index)
+static int hw_get_status(int device_index)
 {
 	struct sigrok_device_instance *sdi;
 
@@ -365,14 +365,14 @@ int hw_get_status(int device_index)
 }
 
 
-int *hw_get_capabilities(void)
+static int *hw_get_capabilities(void)
 {
 
 	return capabilities;
 }
 
 
-int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t samplerate)
+static int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t samplerate)
 {
 	uint32_t divider;
 
@@ -399,7 +399,7 @@ int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t sa
 }
 
 
-int hw_set_configuration(int device_index, int capability, void *value)
+static int hw_set_configuration(int device_index, int capability, void *value)
 {
 	struct sigrok_device_instance *sdi;
 	int ret;
@@ -519,7 +519,7 @@ int receive_data(int fd, int revents, void *user_data)
 }
 
 
-int hw_start_acquisition(int device_index, gpointer session_device_id)
+static int hw_start_acquisition(int device_index, gpointer session_device_id)
 {
 	struct datafeed_packet *packet;
 	struct datafeed_header *header;
@@ -608,7 +608,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 }
 
 
-void hw_stop_acquisition(int device_index, gpointer session_device_id)
+static void hw_stop_acquisition(int device_index, gpointer session_device_id)
 {
 	struct datafeed_packet packet;
 

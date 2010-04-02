@@ -101,7 +101,7 @@ uint8_t probe_mask = 0, \
 int trigger_stage = TRIGGER_FIRED;
 
 
-int hw_set_configuration(int device_index, int capability, void *value);
+static int hw_set_configuration(int device_index, int capability, void *value);
 
 
 /* returns 1 if the device's configuration profile match the Logic firmware's
@@ -372,7 +372,7 @@ int configure_probes(GSList *probes)
  * API callbacks
  */
 
-int hw_init(char *deviceinfo)
+static int hw_init(char *deviceinfo)
 {
 	struct sigrok_device_instance *sdi;
 	struct libusb_device_descriptor des;
@@ -427,7 +427,7 @@ int hw_init(char *deviceinfo)
 }
 
 
-int hw_opendev(int device_index)
+static int hw_opendev(int device_index)
 {
 	GTimeVal cur_time;
 	struct sigrok_device_instance *sdi;
@@ -469,7 +469,7 @@ int hw_opendev(int device_index)
 }
 
 
-void hw_closedev(int device_index)
+static void hw_closedev(int device_index)
 {
 	struct sigrok_device_instance *sdi;
 
@@ -479,7 +479,7 @@ void hw_closedev(int device_index)
 }
 
 
-void hw_cleanup(void)
+static void hw_cleanup(void)
 {
 	GSList *l;
 
@@ -500,7 +500,7 @@ void hw_cleanup(void)
 }
 
 
-void *hw_get_device_info(int device_index, int device_info_id)
+static void *hw_get_device_info(int device_index, int device_info_id)
 {
 	struct sigrok_device_instance *sdi;
 	void *info;
@@ -532,7 +532,7 @@ void *hw_get_device_info(int device_index, int device_info_id)
 }
 
 
-int hw_get_status(int device_index)
+static int hw_get_status(int device_index)
 {
 	struct sigrok_device_instance *sdi;
 
@@ -544,14 +544,14 @@ int hw_get_status(int device_index)
 }
 
 
-int *hw_get_capabilities(void)
+static int *hw_get_capabilities(void)
 {
 
 	return capabilities;
 }
 
 
-int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t samplerate)
+static int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t samplerate)
 {
 	uint8_t divider;
 	int ret, result, i;
@@ -580,7 +580,7 @@ int set_configuration_samplerate(struct sigrok_device_instance *sdi, uint64_t sa
 }
 
 
-int hw_set_configuration(int device_index, int capability, void *value)
+static int hw_set_configuration(int device_index, int capability, void *value)
 {
 	struct sigrok_device_instance *sdi;
 	int ret;
@@ -746,7 +746,7 @@ void receive_transfer(struct libusb_transfer *transfer)
 }
 
 
-int hw_start_acquisition(int device_index, gpointer session_device_id)
+static int hw_start_acquisition(int device_index, gpointer session_device_id)
 {
 	struct sigrok_device_instance *sdi;
 	struct datafeed_packet *packet;
@@ -802,7 +802,7 @@ int hw_start_acquisition(int device_index, gpointer session_device_id)
 
 
 /* this stops acquisition on ALL devices, ignoring device_index */
-void hw_stop_acquisition(int device_index, gpointer session_device_id)
+static void hw_stop_acquisition(int device_index, gpointer session_device_id)
 {
 	struct datafeed_packet packet;
 
