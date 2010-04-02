@@ -18,5 +18,5 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-EXTRA_DIST = gnuplot_usbeesx.gpi z60_flosslogic.rules
+EXTRA_DIST = gnuplot_usbeesx.gpi z60_sigrok.rules
 
