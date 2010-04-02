@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <sigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
 #include <stdio.h>
-#include <sigrokdecode.h>
 
 /**
  * Initialize libsigrokdecode.

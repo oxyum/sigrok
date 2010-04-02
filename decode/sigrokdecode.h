@@ -21,8 +21,8 @@
 #ifndef LIBSIGROKDECODE_SIGROKDECODE_H
 #define LIBSIGROKDECODE_SIGROKDECODE_H
 
+#include <Python.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
 #include <stdint.h>
-#include <Python.h>
 
 int sigrokdecode_init(void);
 int sigrokdecode_load_decoder_file(const char *name);

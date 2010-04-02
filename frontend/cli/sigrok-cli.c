@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -26,7 +27,6 @@
 #include <inttypes.h>
 #include <glib.h>
 #include <libusb.h>
-#include <sigrokdecode.h>
 #include "config.h"
 #include "sigrok.h"
 
