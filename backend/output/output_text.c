@@ -163,30 +163,33 @@ static int data_binary(struct output *o, char *data_in, uint64_t length_in, char
 		outbuf[0] = 0;
 
 	bpl_offset = 0;
-	for(offset = 0; offset <= length_in - ctx->unitsize; offset += ctx->unitsize) {
-		memcpy(&sample, data_in + offset, ctx->unitsize);
-		for(p = 0; p < ctx->num_enabled_probes; p++) {
-			if(sample & ((uint64_t) 1 << p))
-				ctx->linebuf[p * ctx->linebuf_len + bpl_offset] = '1';
-			else
-				ctx->linebuf[p * ctx->linebuf_len + bpl_offset] = '0';
-		}
-		bpl_offset++;
-		ctx->spl_cnt++;
-
-		/* space every 8th bit */
-		if((ctx->spl_cnt & 7) == 0) {
-			for(p = 0; p < ctx->num_enabled_probes; p++)
-				ctx->linebuf[p * ctx->linebuf_len + bpl_offset] = ' ';
+	if(length_in > ctx->unitsize) {
+		for(offset = 0; offset <= length_in - ctx->unitsize; offset += ctx->unitsize) {
+			memcpy(&sample, data_in + offset, ctx->unitsize);
+			for(p = 0; p < ctx->num_enabled_probes; p++) {
+				if(sample & ((uint64_t) 1 << p))
+					ctx->linebuf[p * ctx->linebuf_len + bpl_offset] = '1';
+				else
+					ctx->linebuf[p * ctx->linebuf_len + bpl_offset] = '0';
+			}
 			bpl_offset++;
-		}
+			ctx->spl_cnt++;
 
-		/* end of line */
-		if(ctx->spl_cnt >= ctx->samples_per_line) {
-			flush_linebufs(ctx, o->device->probes, outbuf);
-			bpl_offset = ctx->spl_cnt = 0;
+			/* space every 8th bit */
+			if((ctx->spl_cnt & 7) == 0) {
+				for(p = 0; p < ctx->num_enabled_probes; p++)
+					ctx->linebuf[p * ctx->linebuf_len + bpl_offset] = ' ';
+				bpl_offset++;
+			}
+
+			/* end of line */
+			if(ctx->spl_cnt >= ctx->samples_per_line) {
+				flush_linebufs(ctx, o->device->probes, outbuf);
+				bpl_offset = ctx->spl_cnt = 0;
+			}
 		}
-	}
+	} else
+		g_message("short buffer (length_in=%d)", length_in);
 
 	*data_out = outbuf;
 	*length_out = strlen(outbuf);
