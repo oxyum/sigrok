@@ -146,7 +146,7 @@ void datastore_put(struct datastore *ds, void *data, unsigned int length,
 
 /*--- debug.c ---------------------------------------------------------------*/
 
-void hexdump(gpointer address, int length);
+void hexdump(unsigned char *address, int length);
 
 /*--- device.c --------------------------------------------------------------*/
 
