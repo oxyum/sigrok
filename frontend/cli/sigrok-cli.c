@@ -542,7 +542,7 @@ void add_source(int fd, int events, int timeout, receive_data_callback callback,
 	s->user_data = user_data;
 	sources = new_sources;
 
-	if(timeout > 0 && timeout < source_timeout)
+	if(timeout != source_timeout  && timeout > 0 && (source_timeout == -1 || timeout < source_timeout))
 		source_timeout = timeout;
 
 }
