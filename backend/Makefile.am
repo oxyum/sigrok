@@ -18,18 +18,29 @@
 ## 
 
 AM_CPPFLAGS = -I $(top_srcdir)/include \
-	-DHWPLUGIN_DIR='"$(HWPLUGIN_DIR)"'
+	-DHWPLUGIN_DIR='"$(HWPLUGIN_DIR)"' \
+	-DFIRMWARE_DIR='"$(FIRMWARE_DIR)"'
 
-noinst_LIBRARIES = libbackend.a
+lib_LTLIBRARIES = libbackend.la
 
-libbackend_a_SOURCES = \
+libbackend_la_SOURCES = \
 	backend.c backend.h \
 	datastore.c datastore.h \
 	device.c device.h \
 	session.c session.h \
 	hwplugin.c hwplugin.h \
 	filter.c \
+	../hardware/common/ezusb.c \
+	../hardware/common/serial.c \
+	../hardware/openbench-logic-sniffer/ols.c \
+	../hardware/saleae-logic/saleae-logic.c \
+	../hardware/zeroplus-logic-cube/analyzer.c \
+	../hardware/zeroplus-logic-cube/analyzer.h \
+	../hardware/zeroplus-logic-cube/gl_usb.c \
+	../hardware/zeroplus-logic-cube/gl_usb.h \
+	../hardware/zeroplus-logic-cube/zeroplus.c \
 	output/output_text.c \
 	output/output.c
-libbackend_a_LIBADD = $(LIBOBJS)
+
+libbackend_la_LIBADD = $(LIBOBJS)
 

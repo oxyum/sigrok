@@ -38,54 +38,15 @@ struct hwcap_option hwcap_options[] = {
 	{ 0, 0, NULL, NULL }
 };
 
+extern struct device_plugin saleae_logic_plugin_info;
+extern struct device_plugin ols_plugin_info;
+extern struct device_plugin zeroplus_logic_cube_plugin_info;
 
 int load_hwplugins(void)
 {
-	struct device_plugin *plugin;
-	GModule *module;
-	DIR *plugindir;
-	struct dirent *de;
-	int l;
-	gchar *module_path;
-
-	if(!g_module_supported())
-		return SIGROK_NOK;
-
-	plugindir = opendir(HWPLUGIN_DIR);
-	if(plugindir == NULL)
-	{
-		g_warning("Hardware plugin directory %s not found.", HWPLUGIN_DIR);
-		return SIGROK_NOK;
-	}
-
-	while( (de = readdir(plugindir)) )
-	{
-		l = strlen(de->d_name);
-		if(l > 3 && !strncmp(de->d_name + l - 3, ".la", 3))
-		{
-			/* it's a libtool archive */
-			l = strlen(HWPLUGIN_DIR) + strlen(de->d_name) + 2;
-			module_path = g_malloc(l);
-			snprintf(module_path, l, "%s/%s", HWPLUGIN_DIR, de->d_name);
-			g_debug("loading %s", module_path);
-			module = g_module_open(module_path, G_MODULE_BIND_LOCAL);
-			if(module)
-			{
-				if(g_module_symbol(module, "plugin_info", (gpointer *) &plugin))
-					plugins = g_slist_append(plugins, plugin);
-				else
-				{
-					g_warning("failed to find plugin info: %s", g_module_error());
-					g_module_close(module);
-				}
-			}
-			else
-			{
-				g_warning("failed to load module: %s", g_module_error());
-			}
-			g_free(module_path);
-		}
-	}
+	plugins = g_slist_append(plugins, (gpointer *)&saleae_logic_plugin_info);
+	plugins = g_slist_append(plugins, (gpointer *)&ols_plugin_info);
+	plugins = g_slist_append(plugins, (gpointer *)&zeroplus_logic_cube_plugin_info);
 
 	return SIGROK_OK;
 }

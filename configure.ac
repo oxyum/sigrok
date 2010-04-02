@@ -103,11 +103,6 @@ AC_CONFIG_FILES([Makefile
 		 decode/scripts/Makefile
 		 include/Makefile
 		 backend/Makefile
-		 hardware/Makefile
-		 hardware/common/Makefile
-		 hardware/saleae-logic/Makefile
-		 hardware/openbench-logic-sniffer/Makefile
-		 hardware/zeroplus-logic-cube/Makefile
 		 frontend/Makefile
 		 frontend/cli/Makefile
 		])

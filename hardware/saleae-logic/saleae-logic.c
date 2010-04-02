@@ -817,7 +817,7 @@ static void hw_stop_acquisition(int device_index, gpointer session_device_id)
 
 
 
-struct device_plugin plugin_info = {
+struct device_plugin saleae_logic_plugin_info = {
 	"saleae-logic",
 	1,
 	hw_init,
