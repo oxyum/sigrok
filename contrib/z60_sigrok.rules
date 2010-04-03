@@ -23,18 +23,22 @@ SUBSYSTEM!="usb|usb_device", GOTO="sigrok_rules_end"
 
 # CWAV USBee SX
 # http://www.usbee.com/sx.html
+# lsusb: "08a9:0009" (no string for the vendor name available)
 ATTRS{idVendor}=="08a9", ATTRS{idProduct}=="0009", MODE="664", GROUP="plugdev"
 
 # Braintechnology USB-LPS
 # http://www.braintechnology.de/braintechnology/usb_lps.html
+# lsusb: "16d0:0498" (no string for the vendor name available)
 ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0498", MODE="664", GROUP="plugdev"
 
 # Saleae Logic
 # http://www.saleae.com/logic/
+# lsusb: "0925:3881 Lakeview Research"
 ATTRS{idVendor}=="0925", ATTRS{idProduct}=="3881", MODE="664", GROUP="plugdev"
 
 # ZEROPLUS Logic Cube LAP-C series
 # http://www.zeroplus.com.tw/logic-analyzer_en/products.php#top_c
+# lsusb: "0c12:700e Zeroplus"
 # There are various devices in the ZEROPLUS Logic Cube LAP-C series:
 # 0x7009: LAP-C(16064)
 # 0x700a: LAP-C(16128)
@@ -54,6 +58,12 @@ ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="7016", MODE="664", GROUP="plugdev"
 # Openbench Logic Sniffer
 # http://www.gadgetfactory.net/gf/project/butterflylogic/
 # http://dangerousprototypes.com/open-logic-sniffer/
+# lsusb: "04d8:000a Microchip Technology, Inc."
 ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="000a", MODE="664", GROUP="plugdev"
+
+# Intronix Logicport LA1034
+# http://www.pctestinstruments.com/
+# lsusb: "0403:dc48 Future Technology Devices International, Ltd"
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="dc48", MODE="664", GROUP="plugdev"
 
 LABEL="sigrok_rules_end"
