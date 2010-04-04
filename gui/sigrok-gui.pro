@@ -45,9 +45,9 @@ TRANSLATIONS  = locale/sigrok-gui_de_DE.ts
 CONFIG       += link_pkgconfig
 PKGCONFIG     = gmodule-2.0 glib-2.0 libusb-1.0 libzip
 
-LIBS         += -L../../backend -lbackend 
+LIBS         += -L../libsigrok -lsigrok
 
-INCLUDEPATH  += ../../include ../../backend
+INCLUDEPATH  += ../libsigrok
 
 RESOURCES    += sigrok-gui.qrc
 
@@ -61,6 +61,4 @@ macx {
 	#FILETYPES.files = ../lib/libsigrok.dylib
 	#FILETYPES.path = Contents/Frameworks
 	#QMAKE_BUNDLE_DATA += FILETYPES
-} else {
-	LIBS += -Wl,--export-dynamic
 }
