@@ -104,7 +104,7 @@ void ChannelForm::generatePainterPath(void)
 	painterPath->moveTo(current_x, current_y);
 
 	for (uint64_t i = ss + 1; i < se; ++i) {
-		current_x += 2;
+		current_x += getZoomFactor();
 		newval = getbit(sample_buffer, i, ch);
 		if (oldval != newval) {
 			painterPath->lineTo(current_x, current_y);
@@ -155,13 +155,16 @@ void ChannelForm::wheelEvent(QWheelEvent *event)
 	uint64_t sampleStartNew, sampleEndNew;
 	float zoomFactorNew;
 
-	/* FIXME: Make this constant user-configurable. */
-	zoomFactorNew = getZoomFactor()
-			+ 0.01 * (event->delta() / WHEEL_DELTA);
+	if ((event->delta() / WHEEL_DELTA) == 1)
+		zoomFactorNew = getZoomFactor() * 2;
+	else if ((event->delta() / WHEEL_DELTA) == -1)
+		zoomFactorNew = getZoomFactor() / 2;
+	else
+		zoomFactorNew = getZoomFactor();
+
 	if (zoomFactorNew < 0)
 		zoomFactorNew = 0;
-	if (zoomFactorNew > 2)
-		zoomFactorNew = 2; /* FIXME: Don't hardcode. */
+
 	setZoomFactor(zoomFactorNew);
 
 	sampleStartNew = 0; /* FIXME */
