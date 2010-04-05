@@ -671,7 +671,7 @@ void run_session(void)
 				{
 					if(!strcmp(hwcap_options[i].shortname, opt_devoption[i]))
 					{
-						ret = SIGROK_NOK;
+						ret = SIGROK_ERR;
 						if(hwcap_options[i].type == T_UINT64) {
 							tmp_u64 = strtoull(val, NULL, 10);
 							ret = device->plugin->set_configuration(device->plugin_index, hwcap_options[j].capability, &tmp_u64);
