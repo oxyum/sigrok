@@ -387,7 +387,7 @@ void my_datafeed_callback(struct device *device, struct datafeed_packet *packet)
 
 		printf("Acquisition with %d/%d probes at %"PRIu64"MHz "
 		       "starting at %s (%"PRIu64" samples)\n",
-		       num_enabled_probes, num_probes, header->rate,
+		       num_enabled_probes, num_probes, header->samplerate,
 		       ctime(&header->starttime.tv_sec), limit_samples);
 
 		// linebuf = g_malloc0(num_probes * linebuf_len);

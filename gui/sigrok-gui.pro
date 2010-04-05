@@ -45,7 +45,7 @@ TRANSLATIONS  = locale/sigrok-gui_de_DE.ts
 CONFIG       += link_pkgconfig
 PKGCONFIG     = gmodule-2.0 glib-2.0 libusb-1.0 libzip
 
-LIBS         += -L../libsigrok -lsigrok
+LIBS         += -L../libsigrok/.libs -lsigrok
 
 INCLUDEPATH  += ../libsigrok
 

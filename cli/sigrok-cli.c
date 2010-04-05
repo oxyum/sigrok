@@ -214,7 +214,7 @@ void show_device_detail(void)
 			}
 			if(hwo->capability == HWCAP_SAMPLERATE) {
 				printf("    %s", hwo->shortname);
-				/* supported sample rates */
+				/* supported samplerates */
 				samplerates = device->plugin->get_device_info(device->plugin_index, DI_SAMPLERATES);
 				if(samplerates) {
 					if(samplerates->step) {
@@ -223,7 +223,7 @@ void show_device_detail(void)
 						printf("%s)\n", nice_freq(samplerates->step, 0));
 					}
 					else {
-						printf(" - supported sample rates:\n");
+						printf(" - supported samplerates:\n");
 						for(i = 0; samplerates->list[i]; i++) {
 							printf("    %6s\n", nice_freq(samplerates->list[i], 6));
 						}
@@ -706,7 +706,7 @@ void run_session(void)
 		else {
 			if(val && !strncasecmp(val, "s", 1))
 				time_msec *= 1000;
-			tmp_u64 = *((uint64_t *) device->plugin->get_device_info(device->plugin_index, DI_CUR_SAMPLE_RATE));
+			tmp_u64 = *((uint64_t *) device->plugin->get_device_info(device->plugin_index, DI_CUR_SAMPLERATE));
 			limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
 		}
 	}
