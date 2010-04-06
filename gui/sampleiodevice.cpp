@@ -21,8 +21,19 @@
 #include "sampleiodevice.h"
 #include <QIODevice>
 
+extern "C" {
+#include <sigrok.h>
+#include <glib.h>
+}
+
 SampleIODevice::SampleIODevice()
 {
+	/* TODO */
+}
+
+SampleIODevice::~SampleIODevice()
+{
+	/* TODO */
 }
 
 bool SampleIODevice::open(OpenMode openMode)
@@ -30,9 +41,11 @@ bool SampleIODevice::open(OpenMode openMode)
 	/* TODO: Handle openMode parameter. */
 
 	/* TODO: Open sigrok backend stuff. */
-	
+
 	/* Call the parent's constructor. */
 	QIODevice::open(openMode);
+
+	return true;
 }
 
 qint64 SampleIODevice::readData(char *data, qint64 maxlen)
@@ -43,4 +56,16 @@ qint64 SampleIODevice::readData(char *data, qint64 maxlen)
 qint64 SampleIODevice::writeData(const char *data, qint64 len)
 {
 	/* TODO: Write a chunk of data. */
+}
+
+bool SampleIODevice::isSequential() const
+{
+	/* The sample stream is sequential (no seeking possible). */
+	return true;
+}
+
+qint64 SampleIODevice::bytesAvailable() const
+{
+	// return 100 /* FIXME */ + QIODevice::bytesAvailable();
+	return QIODevice::bytesAvailable();
 }
