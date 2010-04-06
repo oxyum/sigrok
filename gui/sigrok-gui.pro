@@ -45,11 +45,28 @@ TRANSLATIONS  = locale/sigrok-gui_de_DE.ts
 CONFIG       += link_pkgconfig
 PKGCONFIG     = gmodule-2.0 glib-2.0 libusb-1.0 libzip
 
-LIBS         += -L/usr/local/lib -L../libsigrok/.libs -lsigrok
+LIBS         += -L/usr/local/lib -L../libsigrok/.libs -L../libsigrokdecode \
+		-lsigrok -lsigrokdecode
 
-INCLUDEPATH  += /usr/local/include ../libsigrok
+INCLUDEPATH  += /usr/local/include ../libsigrok ../libsigrokdecode
 
 RESOURCES    += sigrok-gui.qrc
+
+# Python
+win32 {
+	# We currently hardcode the paths to the Python 2.6 default install
+	# location as there's no 'python-config' script on Windows, it seems.
+	LIBS        += -L/c/Python26/libs -lpython26
+	INCLUDEPATH += -I/c/Python26/include
+} else {
+	# Linux and Mac OS X have 'python-config', let's hope the rest too...
+	LIBS        += $$system(python-config --ldflags)
+	# Yuck. We have to use 'sed' magic here as 'python-config' returns
+	# the include paths with prefixed '-I' but the qmake INCLUDEPATH
+	# variable expects them _without_ the prefixed '-I' (and adds
+	# those itself).
+	INCLUDEPATH += $$system(python-config --includes | sed s/-I//g)
+}
 
 win32 {
 	RC_FILE = sigrok-gui.rc
