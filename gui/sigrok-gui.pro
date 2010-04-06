@@ -52,6 +52,13 @@ INCLUDEPATH  += /usr/local/include ../libsigrok ../libsigrokdecode
 
 RESOURCES    += sigrok-gui.qrc
 
+# Installation
+target.path   = /usr/local/bin
+locale.path   = /usr/local/share/sigrok/translations
+locale.files  = locale/*.qm
+locale.extra  = lrelease sigrok-gui.pro
+INSTALLS     += target locale
+
 # Python
 win32 {
 	# We currently hardcode the paths to the Python 2.6 default install
