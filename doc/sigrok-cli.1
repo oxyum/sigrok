@@ -1,53 +1,146 @@
-.TH SIGROK-CLI 1 "March 26, 2010"
+.TH SIGROK-CLI 1 "April 7, 2010"
 .SH "NAME"
 sigrok-cli \- Command-line client for the sigrok logic analyzer software
 .SH "SYNOPSIS"
-.B sigrok-cli \fR[\fB\-HDALSdptoafhV\fR] [\fB\-H\fR|\fB\-\-list-hardware-plugins\fR] [\fB\-D\fR|\fB\-\-list-devices\fR] [\fB\-A\fR|\fB\-\-list-analyzer-plugins] [\fB\-L\fR|\fB\-\-load-session-file\fR file] [\fB\-S\fR|\fB\-\-save-session-file\fR file] [\fB\-d\fR|\fB\-\-device\fR devid] [\fB\-p\fR|\fB\-\-probes\fR probelist] [\fB\-t\fR|\fB\-\-triggers\fR triggerlist] [\fB\-o\fR|\fB\-\-device-option\fR devopt] [\fB\-a\fR|\fB\-\-analyzers\fR analyzerlist] [\fB\-f\fR|\fB\-\-format\fR formatname] [\fB\-\-time\fR milliseconds] [\fB\-\-samples\fR numsamples] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR]
+.B sigrok-cli \fR[\fB\-HDALSdptoafhV\fR] [\fB\-H\fR|\fB\-\-list-hardware-plugins\fR] [\fB\-D\fR|\fB\-\-list-devices\fR] [\fB\-A\fR|\fB\-\-list-analyzer-plugins] [\fB\-L\fR|\fB\-\-load-session-file\fR file] [\fB\-S\fR|\fB\-\-save-session-file\fR file] [\fB\-d\fR|\fB\-\-device\fR devid] [\fB\-p\fR|\fB\-\-probes\fR probelist] [\fB\-t\fR|\fB\-\-triggers\fR triggerlist] [\fB\-o\fR|\fB\-\-device-option\fR devopt] [\fB\-a\fR|\fB\-\-analyzers\fR analyzerlist] [\fB\-f\fR|\fB\-\-format\fR formatname] [\fB\-\-time\fR ms] [\fB\-\-samples\fR numsamples] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR]
 .SH "DESCRIPTION"
 .B sigrok-cli
 is a cross-platform command line utility for the
 .B sigrok
 logic analyzer software.
+.PP
+The command-line frontend for sigrok cannot display graphical output, but is
+still sufficient to run through the whole process of hardware initialization,
+acquisition, protocol analysis and saving the session.
+.PP
+It is useful for running on remote or embedded systems, netbooks, PDAs,
+and for various other use-cases. It can display samples on standard output or
+save them in various file formats.
 .SH "OPTIONS"
 .TP
 .B "\-H, \-\-list-hardware-plugins"
-TODO
+Output a list of all logic analyzer hardware plugins available in sigrok.
 .TP
 .B "\-D, \-\-list-devices"
-TODO
+List all logic analyzer devices found on the system.
 .TP
 .B "\-A, \-\-list-analyzer-plugins"
-TODO
+Output a list of all available protocol analysis plugins.
 .TP
 .BR "\-L, \-\-load-session-file " <file>
-TODO
+Session file to load previously acquired data from. Any devices or protocols
+listed in the file will be reused, unless overridden by other command-line
+arguments.
 .TP
 .BR "\-S, \-\-save-session-file " <file>
-TODO
+Save session to file.
 .TP
 .BR "\-d, \-\-device " <devid>
-TODO
+The device to use for acquisition, specified by ID as reported by
+.BR "\-\-list-devices" .
 .TP
 .BR "\-p, \-\-probes " <probelist>
-TODO
+A comma-separated list of probes to be used in the session.
+.sp
+The default is to use all the probes available on a device. You can name
+a probe like this:
+.BR "1=CLK" .
+A range of probes can also be given, in the form
+.BR "1-5" .
+.sp
+Example:
+.sp
+ $
+.B "sigrok-cli --samples 100 --probes 1=CLK,2-4,7"
+.br
+ CLK:11111111 11111111 11111111 11111111 [...]
+   2:11111111 11111111 11111111 11111111 [...]
+   3:11111111 11111111 11111111 11111111 [...]
+   4:11111111 11111111 11111111 11111111 [...]
+   7:11111111 11111111 11111111 11111111 [...]
 .TP
 .BR "\-t, \-\-triggers " <triggerlist>
-TODO
+A comma-separated list of triggers to use, of the form
+.BR "<probe>=<trigger>" .
+You can use the name or number of the probe, and the trigger itself is a
+series of characters:
+.sp
+.BR "0 or 1" :
+A low or high value on the pin.
+.br
+.BR "r or f" :
+A rising or falling value on the pin. An
+.B r
+effectively corresponds to
+.BR 01 .
+.br
+.BR "c" :
+Any kind of change on a pin. 
+.sp
+Not every device supports all of these trigger types. Use the
+.B "-d <device-id>"
+argument (with no other arguments) to see which triggers your device supports.
 .TP
 .BR "\-o, \-\-device-option " <devopt>
-TODO
+Set a device-specific option. The argument takes the form of
+.BR "option=value" .
+Currently the only option supported is
+.BR samplerate ,
+with the argument being the samplerate in Hz.
+.sp
+The
+.B \-\-device-option
+argument can be used multiple times as needed.
 .TP
 .BR "\-a, \-\-analyzers " <analyzerlist>
-TODO
+A string listing the sequence of protocol analysis plugins the signal should
+go through. Each element of the sequence consists of the plugin's name, with
+a pipe
+.RB ( | )
+symbol separating the elements.
 .TP
 .BR "\-f, \-\-format " <formatname>
-TODO
+Set the output format to use.
+.sp
+Supported formats currently include
+.BR bin ,
+.BR hex ,
+.BR vcd ", and"
+.BR gnuplot .
+.sp
+The
+.B bin
+or
+.B hex
+formats, for an ASCII binary/digit or ASCII hexadecimal
+display, can be optionally followed by a length argument specifying the number
+of samples (in bits). Thus
+.B hex128
+would display 128 bits per line, in hexadecimal:
+.sp
+ 1:ffff ffff ffff ffff ffff ffff ffff ffff
+ 2:ff00 ff00 ff00 ff00 ff00 ff00 ff00 ff00
+.sp
+The lines always start with the probe number (or name, if defined), followed by a colon. If no format is specified, it defaults to
+.BR bin64 ,
+like this:
+.sp
+ 1:11111111 11111111 11111111 11111111 [...]
+ 2:11111111 00000000 11111111 00000000 [...]
 .TP
-.BR "\-\-time " <milliseconds>
-TODO
+.BR "\-\-time " <ms>
+Sample for
+.B <ms>
+milliseconds, then quit. You can optionally follow the number by
+.B s
+to state the number of seconds to sample instead. For example,
+.B "--time 2s"
+will sample for two seconds.
 .TP
 .BR "\-\-samples " <numsamples>
-TODO
+Acquire
+.B <numsamples>
+samples, then quit.
 .TP
 .B "\-h, \-\-help"
 Show a help text and exit.
@@ -63,6 +156,10 @@ hardware, run the following command:
 If you want to sample data for 3 seconds, use:
 .TP
 .B "  sigrok-cli --time 3000"
+.TP
+Alternatively, you can also use:
+.TP
+.B "  sigrok-cli --time 3s"
 .SH "EXIT STATUS"
 .B sigrok-cli
 exits with 0 on success, 1 on most failures.
