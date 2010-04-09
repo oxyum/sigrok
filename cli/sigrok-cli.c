@@ -90,7 +90,7 @@ static GOptionEntry optargs[] =
 	{ "time", 0, 0, G_OPTION_ARG_STRING, &opt_time, "How long to sample (ms)", NULL },
 	{ "samples", 0, 0, G_OPTION_ARG_STRING, &opt_samples, "Number of samples to acquire", NULL },
 
-	{ NULL }
+	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 
 };
 
@@ -235,7 +235,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 {
 	static struct output *o = NULL;
 	static int probelist[65] = {0};
-	static int received_samples = 0;
+	static uint64_t received_samples = 0;
 	static int unitsize = 0;
 	struct probe *probe;
 	struct datafeed_header *header;
@@ -278,7 +278,8 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		o->format->event(o, DF_END, &output_buf, &output_len);
 		printf("%s", output_buf);
 		if(limit_samples && received_samples < limit_samples)
-			printf("Device only sent %d samples.\n", received_samples);
+			printf("Device only sent %" PRIu64 " samples.\n",
+			       received_samples);
 		end_acquisition = TRUE;
 		free(o);
 		o = NULL;
@@ -749,6 +750,9 @@ void run_session(void)
 
 void logger(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
 {
+	/* QUICK FIX */
+	log_domain = log_domain;
+	user_data = user_data;
 
 	if(log_level & (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_WARNING))
 	{

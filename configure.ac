@@ -31,8 +31,7 @@ AH_TOP([#ifndef SGIROK_CONFIG_H
 AH_BOTTOM([#endif /* SIGROK_CONFIG_H */])
 
 # Checks for programs.
-#CFLAGS="-g -Wall -Wextra"
-CFLAGS="-g -Wall"
+CFLAGS="-g -Wall -Wextra"
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
