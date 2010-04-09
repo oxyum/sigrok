@@ -157,24 +157,6 @@ void show_device_list(void)
 
 }
 
-
-char *nice_freq(uint64_t freq, int pad)
-{
-	static char str[32];
-
-	if(freq >= GHZ(1))
-		snprintf(str, 31, "%*"PRIu64" GHz", pad, freq / 1000000000);
-	else if(freq >= MHZ(1))
-		snprintf(str, 31, "%*"PRIu64" MHz", pad, freq / 1000000);
-	else if(freq >= KHZ(1))
-		snprintf(str, 31, "%*"PRIu64" KHz", pad, freq / 1000);
-	else
-		snprintf(str, 31, "%*"PRIu64" Hz", pad, freq);
-
-	return str;
-}
-
-
 void show_device_detail(void)
 {
 	struct device *device;
@@ -218,14 +200,15 @@ void show_device_detail(void)
 				samplerates = device->plugin->get_device_info(device->plugin_index, DI_SAMPLERATES);
 				if(samplerates) {
 					if(samplerates->step) {
-						printf(" (%s - ", nice_freq(samplerates->low, 0));
-						printf("%s in steps of ", nice_freq(samplerates->high, 0));
-						printf("%s)\n", nice_freq(samplerates->step, 0));
+						printf(" (%s - %s in steps of %s)\n",
+							sigrok_samplerate_string(samplerates->low),
+							sigrok_samplerate_string(samplerates->high),
+							sigrok_samplerate_string(samplerates->step));
 					}
 					else {
 						printf(" - supported samplerates:\n");
 						for(i = 0; samplerates->list[i]; i++) {
-							printf("    %6s\n", nice_freq(samplerates->list[i], 6));
+							printf("    %7s\n", sigrok_samplerate_string(samplerates->list[i]));
 						}
 					}
 				}
