@@ -785,14 +785,16 @@ int main(int argc, char **argv)
 		debug = TRUE;
 
 #if 1
-#define BUFLEN 500000
+#define BUFLEN 5000
 	sigrokdecode_init();
 
 	inbuf = calloc(BUFLEN, 1);
 	for (i = 0; i < BUFLEN; i++) /* Fill array with some values. */
-		inbuf[i] = i % 256;
+		// inbuf[i] = i % 256;
+		inbuf[i] = (uint8_t)(rand() % 256);
 
-	ret = sigrokdecode_run_decoder("sigrokdecode_count_transitions",
+	// ret = sigrokdecode_run_decoder("sigrokdecode_count_transitions",
+	ret = sigrokdecode_run_decoder("sigrokdecode_i2c",
 				       inbuf, BUFLEN, &outbuf, &outbuflen);
 
 	printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
