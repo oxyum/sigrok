@@ -773,7 +773,7 @@ void logger(const gchar *log_domain, GLogLevelFlags log_level, const gchar *mess
 
 int main(int argc, char **argv)
 {
-	int ret;
+	int ret, i;
 	uint8_t *inbuf = NULL, *outbuf = NULL;
 	uint64_t outbuflen = 0;
 	GOptionContext *context;
@@ -785,17 +785,18 @@ int main(int argc, char **argv)
 		debug = TRUE;
 
 #if 1
+#define BUFLEN 500000
 	sigrokdecode_init();
-	inbuf = calloc(1000, 1);
-	inbuf[0] = 67; /* Just a quick test. */
-	inbuf[1] = 68;
+
+	inbuf = calloc(BUFLEN, 1);
+	for (i = 0; i < BUFLEN; i++) /* Fill array with some values. */
+		inbuf[i] = i % 256;
+
 	ret = sigrokdecode_run_decoder("sigrokdecode_count_transitions",
-				       inbuf, 1000, &outbuf, &outbuflen);
-	if (outbuf != NULL) {
-		printf("outbuflen: %"PRIu64"\n", outbuflen);
-		printf("outbuf[0]: %d\n", outbuf[0]);
-		printf("outbuf[1]: %d\n", outbuf[1]);
-	}
+				       inbuf, BUFLEN, &outbuf, &outbuflen);
+
+	printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
+
 	sigrokdecode_shutdown();
 #endif
 
