@@ -103,16 +103,17 @@ symbol separating the elements.
 Set the output format to use.
 .sp
 Supported formats currently include
-.BR bin ,
+.BR bits ,
 .BR hex ,
+.BR binary ,
 .BR vcd ", and"
 .BR gnuplot .
 .sp
 The
-.B bin
+.B bits
 or
 .B hex
-formats, for an ASCII binary/digit or ASCII hexadecimal
+formats, for an ASCII bit display or ASCII hexadecimal
 display, can be optionally followed by a length argument specifying the number
 of samples (in bits). Thus
 .B hex128
@@ -122,7 +123,7 @@ would display 128 bits per line, in hexadecimal:
  2:ff00 ff00 ff00 ff00 ff00 ff00 ff00 ff00
 .sp
 The lines always start with the probe number (or name, if defined), followed by a colon. If no format is specified, it defaults to
-.BR bin64 ,
+.BR bits64 ,
 like this:
 .sp
  1:11111111 11111111 11111111 11111111 [...]
