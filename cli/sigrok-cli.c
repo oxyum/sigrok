@@ -31,7 +31,7 @@
 #include "sigrok.h"
 
 #define SIGROK_CLI_VERSION "0.1"
-#define DEFAULT_OUTPUT_FORMAT "bin64"
+#define DEFAULT_OUTPUT_FORMAT "bits64"
 
 extern struct hwcap_option hwcap_options[];
 
@@ -784,7 +784,7 @@ int main(int argc, char **argv)
 	if(getenv("SIGROK_DEBUG"))
 		debug = TRUE;
 
-#if 1
+#if 0
 #define BUFLEN 5000
 	sigrokdecode_init();
 
