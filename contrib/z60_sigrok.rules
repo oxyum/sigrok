@@ -18,18 +18,38 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
+##
+## Please keep this list sorted alphabetically by vendor/device name.
+##
+
 ACTION!="add|change", GOTO="sigrok_rules_end"
 SUBSYSTEM!="usb|usb_device", GOTO="sigrok_rules_end"
+
+# ASIX SIGMA
+# http://tools.asix.net/dbg_sigma.htm
+# lsusb: "a600:a000 Asix"
+ATTRS{idVendor}=="a600", ATTRS{idProduct}=="a000", MODE="664", GROUP="plugdev"
+
+# Braintechnology USB-LPS
+# http://www.braintechnology.de/braintechnology/usb_lps.html
+# lsusb: "16d0:0498" (no string for the vendor name available)
+ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0498", MODE="664", GROUP="plugdev"
 
 # CWAV USBee SX
 # http://www.usbee.com/sx.html
 # lsusb: "08a9:0009" (no string for the vendor name available)
 ATTRS{idVendor}=="08a9", ATTRS{idProduct}=="0009", MODE="664", GROUP="plugdev"
 
-# Braintechnology USB-LPS
-# http://www.braintechnology.de/braintechnology/usb_lps.html
-# lsusb: "16d0:0498" (no string for the vendor name available)
-ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0498", MODE="664", GROUP="plugdev"
+# Intronix Logicport LA1034
+# http://www.pctestinstruments.com/
+# lsusb: "0403:dc48 Future Technology Devices International, Ltd"
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="dc48", MODE="664", GROUP="plugdev"
+
+# Openbench Logic Sniffer
+# http://www.gadgetfactory.net/gf/project/butterflylogic/
+# http://dangerousprototypes.com/open-logic-sniffer/
+# lsusb: "04d8:000a Microchip Technology, Inc."
+ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="000a", MODE="664", GROUP="plugdev"
 
 # Saleae Logic
 # http://www.saleae.com/logic/
@@ -54,21 +74,5 @@ ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="700c", MODE="664", GROUP="plugdev"
 ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="700d", MODE="664", GROUP="plugdev"
 ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="700e", MODE="664", GROUP="plugdev"
 ATTRS{idVendor}=="0c12", ATTRS{idProduct}=="7016", MODE="664", GROUP="plugdev"
-
-# Openbench Logic Sniffer
-# http://www.gadgetfactory.net/gf/project/butterflylogic/
-# http://dangerousprototypes.com/open-logic-sniffer/
-# lsusb: "04d8:000a Microchip Technology, Inc."
-ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="000a", MODE="664", GROUP="plugdev"
-
-# Intronix Logicport LA1034
-# http://www.pctestinstruments.com/
-# lsusb: "0403:dc48 Future Technology Devices International, Ltd"
-ATTRS{idVendor}=="0403", ATTRS{idProduct}=="dc48", MODE="664", GROUP="plugdev"
-
-# ASIX SIGMA
-# http://tools.asix.net/dbg_sigma.htm
-# lsusb: "a600:a000 Asix"
-ATTRS{idVendor}=="a600", ATTRS{idProduct}=="a000", MODE="664", GROUP="plugdev"
 
 LABEL="sigrok_rules_end"
