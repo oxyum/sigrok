@@ -318,7 +318,12 @@ void MainWindow::on_action_Open_triggered()
 		sc->setMinimum(0);
 		sc->setMaximum(99);
 
+		/* The i-th scrollbar scrolls channel i. */
+		connect(sc, SIGNAL(valueChanged(int)),
+			channelForms[i], SLOT(setScrollBarValue(int)));
+
 		/* TODO: Is there a better way to achieve this? */
+#if 0
 		for (int j = 0; j < getNumChannels(); ++j) {
 			/* Any scrollbar scrolls all channels for now. */
 			QScrollBar *sc2 = channelForms[j]->m_ui->channelScrollBar;
@@ -329,6 +334,7 @@ void MainWindow::on_action_Open_triggered()
 			connect(sc, SIGNAL(valueChanged(int)),
 				channelForms[j], SLOT(setScrollBarValue(int)));
 		}
+#endif
 
 		channelForms[i]->update();
 	}
