@@ -6,7 +6,7 @@ The sigrok project aims at creating a portable, cross-platform,
 Free/Libre/Open-Source logic analyzer software that supports various
 (usually USB-based) logic analyzer hardware products.
 
-There will be a shared library with common code, a command line utility for
+There are two shared libraries with common code, a command line utility for
 basic usage and easy scriptability, as well as an intuitive GUI.
 
 
@@ -15,7 +15,7 @@ Status and API
 
 The sigrok project is currently work in progress.
 
-IMPORTANT: The API of the library is NOT yet considered stable! Please do
+IMPORTANT: The API of the libraries is NOT yet considered stable! Please do
            not rely on it, yet! Changes to function names, macro names etc.
            can happen at any time without prior notice!
 
@@ -23,10 +23,14 @@ IMPORTANT: The API of the library is NOT yet considered stable! Please do
 Requirements
 ------------
 
+ - git
+ - gcc, g++, make, ...
+ - autoconf, automake, libtool, pkg-config
  - libglib >= 2.0
- - libusb >= 1.0.5
+ - libusb >= 1.0.5 (for most logic analyzer hardware)
  - libzip >= 0.8
- - Python (for protocol decoder scripts)
+ - libftdi (for some logic analyzer hardware)
+ - Python >= 2.5 (for protocol decoder scripts)
  - Qt + Qt Creator >= 4.5 (for building/editing the GUI) 
 
 
@@ -42,7 +46,7 @@ In order to get the sigrok source code and built it, run:
 
 For building the GUI:
 
- $ cd frontend/gui
+ $ cd gui
  $ qmake
  $ make
 
@@ -64,6 +68,12 @@ There are two mailing lists for sigrok:
 
  https://lists.sourceforge.net/lists/listinfo/sigrok-devel
  https://lists.sourceforge.net/lists/listinfo/sigrok-commits
+
+
+IRC
+---
+
+You can find the sigrok developers in the #sigrok IRC channel on Freenode.
 
 
 Website
