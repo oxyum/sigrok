@@ -66,4 +66,9 @@ ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="000a", MODE="664", GROUP="plugdev"
 # lsusb: "0403:dc48 Future Technology Devices International, Ltd"
 ATTRS{idVendor}=="0403", ATTRS{idProduct}=="dc48", MODE="664", GROUP="plugdev"
 
+# ASIX SIGMA
+# http://tools.asix.net/dbg_sigma.htm
+# lsusb: "a600:a000 Asix"
+ATTRS{idVendor}=="a600", ATTRS{idProduct}=="a000", MODE="664", GROUP="plugdev"
+
 LABEL="sigrok_rules_end"
