@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <QDebug>
 #include "channelform.h"
 #include "ui_channelform.h"
 #include <stdint.h>
@@ -110,6 +111,9 @@ void ChannelForm::generatePainterPath(void)
 	oldval = getbit(sample_buffer, 0, ch);
 	current_y = (oldval) ? high : low;
 	painterPath->moveTo(current_x, current_y);
+
+	qDebug() << "generatePainterPath() for ch" << getChannelNumber()
+		 << "(" << ss << " - " << se << ")";
 
 	for (uint64_t i = ss + 1; i < se; ++i) {
 		current_x += step;
@@ -263,6 +267,11 @@ int ChannelForm::getScrollBarValue(void)
 
 void ChannelForm::setScrollBarValue(int value)
 {
+	if (scrollBarValue == value)
+		return;
+
+	qDebug("Re-generating ch%d (value = %d)", getChannelNumber(), value);
+
 	scrollBarValue = value;
 	generatePainterPath();
 }
