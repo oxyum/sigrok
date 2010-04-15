@@ -88,11 +88,11 @@ void ChannelForm::changeEvent(QEvent *e)
 
 void ChannelForm::generatePainterPath(void)
 {
-	int current_x, current_y, oldval, newval;
+	double old_x, current_x, step;
+	int current_y, oldval, newval, x_change_visible;
 	int low = m_ui->renderAreaWidget->height() - 2, high = 2;
 	int ch = getChannelNumber();
 	uint64_t ss, se;
-	double step;
 
 	if (sample_buffer == NULL)
 		return;
@@ -102,11 +102,11 @@ void ChannelForm::generatePainterPath(void)
 
 	ss = getNumSamples() * ((double)getScrollBarValue() / (double)100);
 	se = ss + getNumSamples() / getZoomFactor();
-	if (se > getNumSamples())
+	step = (double)width() / (double)(se - ss);
+	if (se > getNumSamples()) /* Do this _after_ calculating 'step'! */
 		se = getNumSamples();
-	step = width() / (se - ss);
 
-	current_x = 0;
+	old_x = current_x = 0;
 	oldval = getbit(sample_buffer, 0, ch);
 	current_y = (oldval) ? high : low;
 	painterPath->moveTo(current_x, current_y);
@@ -114,10 +114,12 @@ void ChannelForm::generatePainterPath(void)
 	for (uint64_t i = ss + 1; i < se; ++i) {
 		current_x += step;
 		newval = getbit(sample_buffer, i, ch);
-		if (oldval != newval) {
+		x_change_visible = (uint64_t)current_x > (uint64_t)old_x;
+		if (oldval != newval && x_change_visible) {
 			painterPath->lineTo(current_x, current_y);
 			current_y = (newval) ? high : low;
 			painterPath->lineTo(current_x, current_y);
+			old_x = current_x;
 			oldval = newval;
 		}
 	}
