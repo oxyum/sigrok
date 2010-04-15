@@ -144,6 +144,8 @@ void ChannelForm::resizeEvent(QResizeEvent *event)
 
 void ChannelForm::paintEvent(QPaintEvent *event)
 {
+	// qDebug() << "Paint event on ch" << getChannelNumber();
+
 	// QPainter p(m_ui->renderAreaWidget);
 	QPainter p(this);
 
@@ -158,7 +160,7 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 	p.setPen(pen);
 
 	// p.fillRect(0, 0, this->width(), this->height(), QColor(Qt::gray));
-	// p.setRenderHint(QPainter::Antialiasing, false);
+	p.setRenderHint(QPainter::Antialiasing, false);
 
 	// p.scale(getZoomFactor(), 1.0);
 	p.drawPath(*painterPath);
