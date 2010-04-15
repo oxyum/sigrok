@@ -112,8 +112,8 @@ void ChannelForm::generatePainterPath(void)
 	current_y = (oldval) ? high : low;
 	painterPath->moveTo(current_x, current_y);
 
-	qDebug() << "generatePainterPath() for ch" << getChannelNumber()
-		 << "(" << ss << " - " << se << ")";
+	// qDebug() << "generatePainterPath() for ch" << getChannelNumber()
+	// 	 << "(" << ss << " - " << se << ")";
 
 	for (uint64_t i = ss + 1; i < se; ++i) {
 		current_x += step;
@@ -270,7 +270,7 @@ void ChannelForm::setScrollBarValue(int value)
 	if (scrollBarValue == value)
 		return;
 
-	qDebug("Re-generating ch%d (value = %d)", getChannelNumber(), value);
+	// qDebug("Re-generating ch%d (value = %d)", getChannelNumber(), value);
 
 	scrollBarValue = value;
 	generatePainterPath();

@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <QDebug>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QProgressDialog>
@@ -319,18 +320,9 @@ void MainWindow::on_action_Open_triggered()
 		connect(sc, SIGNAL(valueChanged(int)),
 			channelForms[i], SLOT(setScrollBarValue(int)));
 
-		/* TODO: Is there a better way to achieve this? */
-#if 1
-		for (int j = 0; j < getNumChannels(); ++j) {
-			if (i == j)
-				continue;
-
-			/* Any scrollbar scrolls all channels for now. */
-			QScrollBar *sc2 = channelForms[j]->m_ui->channelScrollBar;
-			connect(sc, SIGNAL(valueChanged(int)),
-				sc2, SLOT(setValue(int)));
-		}
-#endif
+		/* If any of the scrollbars change, update all of them. */
+		connect(sc, SIGNAL(valueChanged(int)),
+			w, SLOT(updateScrollBars(int)));
 
 		channelForms[i]->update();
 	}
@@ -616,3 +608,21 @@ void MainWindow::configChannelTitleBarLayoutChanged(int index)
 	for (int i = 0; i < getNumChannels(); ++i)
 		dockWidgets[i]->setFeatures(f);
 }
+
+void MainWindow::updateScrollBars(int value)
+{
+	static int lock = 0;
+
+	/* TODO: There must be a better way to do this. */
+	if (lock == 1)
+		return;
+
+	lock = 1;
+	for (int i = 0; i < getNumChannels(); ++i) {
+		// qDebug("updating scrollbar %d", i);
+		channelForms[i]->m_ui->channelScrollBar->setValue(value);
+		// qDebug("updating scrollbar %d (DONE)", i);
+	}
+	lock = 0;
+}
+

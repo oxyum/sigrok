@@ -82,6 +82,7 @@ private slots:
 	void on_actionPreferences_triggered();
 	void on_actionAbout_Qt_triggered();
 	void on_actionAbout_triggered();
+	void updateScrollBars(int value);
 };
 
 extern MainWindow *w;
