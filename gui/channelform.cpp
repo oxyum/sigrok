@@ -53,7 +53,7 @@ ChannelForm::ChannelForm(QWidget *parent) :
 	numSamples = 0;
 	sampleStart = 0;
 	sampleEnd = 0;
-	zoomFactor = 1.0;
+	zoomFactor = 32.0;
 	scrollBarValue = 0;
 	painterPath = new QPainterPath();
 
