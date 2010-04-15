@@ -37,7 +37,7 @@ extern "C" {
 #include <stdint.h>
 #include <glib.h>
 #include <gmodule.h>
-#include "sigrok.h"
+#include <sigrok.h>
 }
 
 GMainContext *gmaincontext = NULL;
