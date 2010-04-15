@@ -1,8 +1,4 @@
 # autotools cruft
-AUTHORS
-INSTALL
-NEWS
-ChangeLog
 aclocal.m4
 autom4te.cache
 autoscan.log
@@ -35,3 +31,9 @@ Makefile.in
 *.lo
 *.la
 .libs/
+
+# GUI
+gui/Makefile.Debug
+gui/Makefile.Release
+gui/sigrok-gui.pro.user
+
