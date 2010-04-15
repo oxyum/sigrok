@@ -54,6 +54,10 @@ ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="000a", MODE="664", GROUP="plugdev"
 # Saleae Logic
 # http://www.saleae.com/logic/
 # lsusb: "0925:3881 Lakeview Research"
+#
+# EE Electronics XLA/ESLA100 (clone of the Saleae Logic)
+# http://eeelec.com/xla/
+# lsusb: "0925:3881 Lakeview Research"
 ATTRS{idVendor}=="0925", ATTRS{idProduct}=="3881", MODE="664", GROUP="plugdev"
 
 # ZEROPLUS Logic Cube LAP-C series
