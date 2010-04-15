@@ -90,7 +90,7 @@ void ChannelForm::generatePainterPath(void)
 {
 	double old_x, current_x, step;
 	int current_y, oldval, newval, x_change_visible;
-	int low = m_ui->renderAreaWidget->height() - 2, high = 2;
+	int low = m_ui->renderAreaWidget->height() - 2, high = 20;
 	int ch = getChannelNumber();
 	uint64_t ss, se;
 
@@ -158,6 +158,14 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 
 	// p.scale(getZoomFactor(), 1.0);
 	p.drawPath(*painterPath);
+
+	for (int i = 0; i < width(); i += width() / 100)
+		p.drawLine(i, 12, i, 15);
+
+	for (int i = width() / 10; i < width(); i += width() / 10) {
+		p.drawText(i, 10, QString::number(i));
+		p.drawLine(i, 11, i, 17);
+	}
 }
 
 void ChannelForm::wheelEvent(QWheelEvent *event)
