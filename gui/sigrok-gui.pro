@@ -63,8 +63,8 @@ INSTALLS     += target locale
 win32 {
 	# We currently hardcode the paths to the Python 2.6 default install
 	# location as there's no 'python-config' script on Windows, it seems.
-	LIBS        += -L/c/Python26/libs -lpython26
-	INCLUDEPATH += /c/Python26/include
+	LIBS        += -Lc:\Python26\libs -lpython26
+	INCLUDEPATH += c:\Python26\include
 } else {
 	# Linux and Mac OS X have 'python-config', let's hope the rest too...
 	LIBS        += $$system(python-config --ldflags)
