@@ -53,6 +53,7 @@ ChannelForm::ChannelForm(QWidget *parent) :
 	sampleStart = 0;
 	sampleEnd = 0;
 	zoomFactor = 1.0;
+	scrollBarValue = 0;
 	painterPath = new QPainterPath();
 
 	/* Set random colors for the channel names (for now). */
@@ -90,7 +91,8 @@ void ChannelForm::generatePainterPath(void)
 	int current_x, current_y, oldval, newval;
 	int low = m_ui->renderAreaWidget->height() - 2, high = 2;
 	int ch = getChannelNumber();
-	uint64_t ss = getSampleStart(), se = getSampleEnd();
+	uint64_t ss, se;
+	double step;
 
 	if (sample_buffer == NULL)
 		return;
@@ -98,13 +100,19 @@ void ChannelForm::generatePainterPath(void)
 	delete painterPath;
 	painterPath = new QPainterPath();
 
+	ss = getNumSamples() * ((double)getScrollBarValue() / (double)100);
+	se = ss + getNumSamples() / getZoomFactor();
+	if (se > getNumSamples())
+		se = getNumSamples();
+	step = width() / (se - ss);
+
 	current_x = 0;
 	oldval = getbit(sample_buffer, 0, ch);
 	current_y = (oldval) ? high : low;
 	painterPath->moveTo(current_x, current_y);
 
 	for (uint64_t i = ss + 1; i < se; ++i) {
-		current_x += getZoomFactor();
+		current_x += step;
 		newval = getbit(sample_buffer, i, ch);
 		if (oldval != newval) {
 			painterPath->lineTo(current_x, current_y);
@@ -116,7 +124,7 @@ void ChannelForm::generatePainterPath(void)
 	painterPath->lineTo(current_x, current_y);
 
 	/* Force a redraw. */
-	this->update();
+	update();
 }
 
 void ChannelForm::resizeEvent(QResizeEvent *event)
@@ -152,7 +160,6 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 
 void ChannelForm::wheelEvent(QWheelEvent *event)
 {
-	uint64_t sampleStartNew, sampleEndNew;
 	float zoomFactorNew;
 
 	if ((event->delta() / WHEEL_DELTA) == 1)
@@ -162,37 +169,12 @@ void ChannelForm::wheelEvent(QWheelEvent *event)
 	else
 		zoomFactorNew = getZoomFactor();
 
-	if (zoomFactorNew < 0)
-		zoomFactorNew = 0;
+	if (zoomFactorNew < 1)
+		zoomFactorNew = 1;
 
 	setZoomFactor(zoomFactorNew);
 
-	sampleStartNew = 0; /* FIXME */
-	sampleEndNew = getNumSamples() * zoomFactorNew;
-	if (sampleEndNew > getNumSamples())
-		sampleEndNew = getNumSamples();
-
-	setSampleStart(sampleStartNew);
-	setSampleEnd(sampleEndNew);
-
-#if 0
-	sampleStartNew = getSampleStart() + event->delta() / WHEEL_DELTA;
-	sampleEndNew = getSampleEnd() + event->delta() / WHEEL_DELTA;
-
-	/* TODO: More checks. */
-
-#if 1
-	if (sampleStartNew < 0 || sampleEndNew < 0)
-		return;
-	if (sampleStartNew > 512 * 1000 || sampleEndNew > 512 * 1000 /* FIXME */)
-		return;
-#endif
-
-	setSampleStart(sampleStartNew);
-	setSampleEnd(sampleEndNew); /* FIXME: Use len? */
-#endif
-
-	repaint();
+	/* TODO: Config option to scroll (instead of zoom) via the wheel. */
 }
 
 void ChannelForm::setChannelColor(QColor color)
@@ -264,21 +246,13 @@ float ChannelForm::getZoomFactor(void)
 	return zoomFactor;
 }
 
+int ChannelForm::getScrollBarValue(void)
+{
+	return scrollBarValue;
+}
+
 void ChannelForm::setScrollBarValue(int value)
 {
-	double mul = 0;
-	uint64_t newSampleStart, newSampleEnd;
-
-	mul = (double)value / (double)99;
-
-	newSampleStart = getNumSamples() * mul;
-	if (newSampleStart >= 100)
-		newSampleStart -= 100;
-	newSampleEnd = newSampleStart + 99; /* FIXME */
-	if (newSampleEnd > getNumSamples())
-		newSampleEnd = getNumSamples();
-
-	setSampleStart(newSampleStart);
-	setSampleEnd(newSampleEnd); /* FIXME */
-	repaint();
+	scrollBarValue = value;
+	generatePainterPath();
 }

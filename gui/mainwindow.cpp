@@ -310,9 +310,6 @@ void MainWindow::on_action_Open_triggered()
 	for (int i = 0; i < getNumChannels(); ++i) {
 		channelForms[i]->setChannelNumber(i);
 		channelForms[i]->setNumSamples(file.size());
-		channelForms[i]->setSampleStart(0);
-		// channelForms[i]->setSampleEnd(getNumSamples());
-		channelForms[i]->setSampleEnd(100);
 
 		QScrollBar *sc = channelForms[i]->m_ui->channelScrollBar;
 		sc->setMinimum(0);

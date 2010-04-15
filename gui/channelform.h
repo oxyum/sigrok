@@ -46,6 +46,7 @@ public:
 	uint64_t getSampleStart(void);
 	uint64_t getSampleEnd(void);
 	float getZoomFactor(void);
+	int getScrollBarValue(void);
 
 public slots:
 	void setSampleStart(uint64_t s);
@@ -77,6 +78,7 @@ private:
 	float zoomFactor;
 	QPainterPath *painterPath;
 	// static int numTotalChannels;
+	int scrollBarValue;
 };
 
 #endif // SIGROK_CHANNELFORM_H
