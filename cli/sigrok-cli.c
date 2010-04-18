@@ -240,7 +240,8 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		o->format = output_format;
 		o->device = device;
 		o->param = output_format_param;
-		o->format->init(o);
+		if (o->format->init)
+			o->format->init(o);
 
 		header = (struct datafeed_header *)packet->payload;
 		num_enabled_probes = 0;
@@ -261,8 +262,13 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		break;
 	case DF_END:
 		g_message("received DF_END");
-		o->format->event(o, DF_END, &output_buf, &output_len);
-		printf("%s", output_buf);
+		if (o->format->event) {
+			o->format->event(o, DF_END, &output_buf, &output_len);
+			if (output_len) {
+				printf("%s", output_buf);
+				free(output_buf);
+			}
+		}
 		if (limit_samples && received_samples < limit_samples)
 			printf("Device only sent %" PRIu64 " samples.\n",
 			       received_samples);
@@ -311,26 +317,32 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 			 * Don't dump samples on stdout when also saving the
 			 * session.
 			 */
+			output_len = 0;
 			if (!opt_save_session_filename) {
-				if (received_samples +
-				    packet->length / sample_size >
-				    limit_samples * sample_size) {
-					o->format->data(o, filter_out,
-							limit_samples *
-							sample_size -
-							received_samples,
-							&output_buf,
-							&output_len);
-				} else {
-					o->format->data(o, filter_out,
-							filter_out_len,
-							&output_buf,
-							&output_len);
+				if (o->format->data) {
+					if (received_samples +
+						packet->length / sample_size >
+						limit_samples * sample_size) {
+						o->format->data(o, filter_out,
+								limit_samples *
+								sample_size -
+								received_samples,
+								&output_buf,
+								&output_len);
+					} else {
+						o->format->data(o, filter_out,
+								filter_out_len,
+								&output_buf,
+								&output_len);
+					}
 				}
-				printf("%s", output_buf);
+				if (output_len)
+					printf("%s", output_buf);
 			}
 			if (filter_out)
 				free(filter_out);
+			if (output_len)
+				free(output_buf);
 			received_samples += packet->length / sample_size;
 		}
 	}
