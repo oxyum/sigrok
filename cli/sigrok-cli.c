@@ -765,7 +765,6 @@ int main(int argc, char **argv)
 	GOptionContext *context;
 	GError *error;
 
-	printf("sigrok version %s\n", PACKAGE_VERSION);
 	g_log_set_default_handler(logger, NULL);
 	if (getenv("SIGROK_DEBUG"))
 		debug = TRUE;
