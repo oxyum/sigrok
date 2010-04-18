@@ -470,6 +470,44 @@ char **parse_triggerstring(struct device *device, char *triggerstring)
 	return triggerlist;
 }
 
+
+int parse_sizestring(char *sizestring)
+{
+	int multiplier;
+	uint64_t val;
+	char *s;
+
+	val = strtoull(sizestring, &s, 10);
+	multiplier = 0;
+	while (s && *s && multiplier == 0) {
+		switch (*s) {
+		case ' ':
+			break;
+		case 'k':
+		case 'K':
+			multiplier = KHZ(1);
+			break;
+		case 'm':
+		case 'M':
+			multiplier = MHZ(1);
+			break;
+		case 'g':
+		case 'G':
+			multiplier = GHZ(1);
+			break;
+		default:
+			val = 0;
+			multiplier = -1;
+		}
+		s++;
+	}
+	if (multiplier > 0)
+		val *= multiplier;
+
+	return val;
+}
+
+
 void remove_source(int fd)
 {
 	struct source *new_sources;
@@ -632,7 +670,7 @@ void run_session(void)
 						    opt_devoption[i])) {
 						ret = SIGROK_ERR;
 						if (hwcap_options[i].type == T_UINT64) {
-							tmp_u64 = strtoull(val, NULL, 10);
+							tmp_u64 = parse_sizestring(val);
 							ret =
 							    device->plugin->
 							    set_configuration
