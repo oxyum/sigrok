@@ -260,6 +260,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 			device->datastore = datastore_new(unitsize);
 		break;
 	case DF_END:
+		g_message("received DF_END");
 		o->format->event(o, DF_END, &output_buf, &output_len);
 		printf("%s", output_buf);
 		if (limit_samples && received_samples < limit_samples)
