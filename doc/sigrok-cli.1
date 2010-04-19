@@ -86,7 +86,12 @@ Set a device-specific option. The argument takes the form of
 .BR "option=value" .
 Currently the only option supported is
 .BR samplerate ,
-with the argument being the samplerate in Hz.
+with the argument being the samplerate in Hz. You can also specify the sample
+rate in KHz, MHz or GHz. The following are all equivalent:
+.sp
+ sigrok-cli --samples 100 -o samplerate=1000000
+ sigrok-cli --samples 100 -o samplerate=1m
+ sigrok-cli --samples 100 -o "samplerate=1 MHz"
 .sp
 The
 .B \-\-device-option
