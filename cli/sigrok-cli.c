@@ -672,6 +672,10 @@ void run_session(void)
 			break;
 		}
 	}
+	if (!output_format) {
+		printf("invalid output format %s\n", opt_format);
+		return;
+	}
 
 	if (opt_devoption) {
 		for (i = 0; opt_devoption[i]; i++) {
