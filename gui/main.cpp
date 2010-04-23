@@ -65,7 +65,8 @@ int main(int argc, char *argv[])
 	inbuf = (uint8_t *)calloc(1000, 1);
 	inbuf[0] = 'X'; /* Just a quick test. */
 	inbuf[1] = 'Y';
-	ret = sigrokdecode_run_decoder("sigrokdecode_count_transitions",
+	ret = sigrokdecode_run_decoder("transitioncounter",
+				       "sigrokdecode_count_transitions",
 				       inbuf, 1000, &outbuf, &outbuflen);
 	if (outbuf != NULL) {
 		std::cout << "outbuflen: " << outbuflen << std::endl;

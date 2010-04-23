@@ -834,7 +834,7 @@ int main(int argc, char **argv)
 		inbuf[i] = (uint8_t) (rand() % 256);
 
 	// ret = sigrokdecode_run_decoder("sigrokdecode_count_transitions",
-	ret = sigrokdecode_run_decoder("sigrokdecode_i2c",
+	ret = sigrokdecode_run_decoder("i2c", "sigrokdecode_i2c",
 				       inbuf, BUFLEN, &outbuf, &outbuflen);
 
 	printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
