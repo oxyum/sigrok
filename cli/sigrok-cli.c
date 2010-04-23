@@ -819,13 +819,14 @@ int main(int argc, char **argv)
 	uint64_t outbuflen = 0;
 	GOptionContext *context;
 	GError *error;
+	struct sigrokdecode_decoder *dec;
 
 	g_log_set_default_handler(logger, NULL);
 	if (getenv("SIGROK_DEBUG"))
 		debug = TRUE;
 
-#if 0
-#define BUFLEN 5000
+#if 1
+#define BUFLEN 50
 	sigrokdecode_init();
 
 	inbuf = calloc(BUFLEN, 1);
@@ -833,10 +834,12 @@ int main(int argc, char **argv)
 		// inbuf[i] = i % 256;
 		inbuf[i] = (uint8_t) (rand() % 256);
 
-	// ret = sigrokdecode_run_decoder("sigrokdecode_count_transitions",
-	ret = sigrokdecode_run_decoder("i2c", "sigrokdecode_i2c",
-				       inbuf, BUFLEN, &outbuf, &outbuflen);
+	ret = sigrokdecode_load_decoder("i2c", &dec);
+	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
+	printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
 
+	ret = sigrokdecode_load_decoder("transitioncounter", &dec);
+	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
 	printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
 
 	sigrokdecode_shutdown();

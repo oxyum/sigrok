@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
 	QTranslator translator;
 	uint8_t *inbuf = NULL, *outbuf = NULL;
 	uint64_t outbuflen = 0;
+	struct sigrokdecode_decoder *dec;
 	int ret;
 
 	translator.load(QString("locale/sigrok-gui_") + locale);
@@ -58,21 +59,27 @@ int main(int argc, char *argv[])
 	}
 
 #if 1
+#define BUFLEN 50
+
 	if (sigrokdecode_init() != SIGROKDECODE_OK) {
 		std::cerr << "ERROR: Failed to init sigrokdecode." << std::endl;
 		return 1;
 	}
+
 	inbuf = (uint8_t *)calloc(1000, 1);
 	inbuf[0] = 'X'; /* Just a quick test. */
 	inbuf[1] = 'Y';
-	ret = sigrokdecode_run_decoder("transitioncounter",
-				       "sigrokdecode_count_transitions",
-				       inbuf, 1000, &outbuf, &outbuflen);
-	if (outbuf != NULL) {
-		std::cout << "outbuflen: " << outbuflen << std::endl;
-		std::cout << "outbuf[0]: " << outbuf[0] << std::endl;
-		std::cout << "outbuf[1]: " << outbuf[1] << std::endl;
-	}
+
+	ret = sigrokdecode_load_decoder("i2c", &dec);
+	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
+	std::cout << "outbuf (" << outbuflen << " bytes):" << std::endl;
+	std::cout << outbuf << std::endl;
+
+	ret = sigrokdecode_load_decoder("transitioncounter", &dec);
+	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
+	std::cout << "outbuf (" << outbuflen << " bytes):" << std::endl;
+	std::cout << outbuf << std::endl;
+
 	sigrokdecode_shutdown();
 #endif
 
