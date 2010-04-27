@@ -55,6 +55,10 @@ PKG_CHECK_MODULES([libzip], [libzip >= 0.8],
 	[CFLAGS="$CFLAGS $libzip_CFLAGS";
 	LIBS="$LIBS $libzip_LIBS"])
 
+PKG_CHECK_MODULES([libftdi], [libftdi >= 0.16],
+	[CFLAGS="$CFLAGS $libftdi_CFLAGS";
+	LIBS="$LIBS $libftdi_LIBS"])
+
 # Python support.
 CPPFLAGS_PYTHON=""
 LDFLAGS_PYTHON=""
