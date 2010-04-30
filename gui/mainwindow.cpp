@@ -127,6 +127,10 @@ void MainWindow::setupDockWidgets(void)
 				 dockWidgets[i], SLOT(setWindowTitle(QString)));
 #endif
 	}
+
+	/* For now, display only one scrollbar which scrolls all channels. */
+	for (int i = 0; i < getNumChannels() - 1; ++i)
+		channelForms[i]->m_ui->channelScrollBar->setVisible(false);
 }
 
 void MainWindow::setCurrentLA(int la)
@@ -250,16 +254,11 @@ void MainWindow::on_actionScan_triggered()
 
 	/* FIXME */
 	ui->comboBoxNumSamples->clear();
-	ui->comboBoxNumSamples->addItem("100", 100); /* For testing... */
 	ui->comboBoxNumSamples->addItem("3000000", 3000000);
 	ui->comboBoxNumSamples->addItem("2000000", 2000000);
 	ui->comboBoxNumSamples->addItem("1000000", 1000000);
 
 	ui->comboBoxNumSamples->setEditable(true);
-
-	/// ret = sigrok_hw_init(getCurrentLA(), &ctx);
-	// if (ret < 0)
-	// 	statusBar()->showMessage(tr("ERROR: LA init failed."), 2000);
 
 	if (getCurrentLA() >= 0)
 		setupDockWidgets();
