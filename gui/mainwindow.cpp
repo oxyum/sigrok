@@ -181,7 +181,7 @@ void MainWindow::on_actionScan_triggered()
 	char *di_num_probes;
 	uint64_t *di_samplerates;
 
-	statusBar()->showMessage(tr("Scanning for logic analyzers..."));
+	statusBar()->showMessage(tr("Scanning for logic analyzers..."), 2000);
 
 	device_scan();
 	devices = device_list();
@@ -190,12 +190,12 @@ void MainWindow::on_actionScan_triggered()
 
 	if (num_devices == 0) {
 		s = tr("No supported logic analyzer found.");
-		statusBar()->showMessage(s);
+		statusBar()->showMessage(s, 2000);
 		return;
 	} else {
 		s = tr("Found supported logic analyzer: ");
 		s.append(device->plugin->name);
-		statusBar()->showMessage(s);
+		statusBar()->showMessage(s, 2000);
 	}
 
 	setCurrentLA(0 /* TODO */);
@@ -240,7 +240,7 @@ void MainWindow::on_actionScan_triggered()
 
 	/// ret = sigrok_hw_init(getCurrentLA(), &ctx);
 	// if (ret < 0)
-	// 	statusBar()->showMessage(tr("ERROR: LA init failed."));
+	// 	statusBar()->showMessage(tr("ERROR: LA init failed."), 2000);
 
 	if (getCurrentLA() >= 0)
 		setupDockWidgets();
