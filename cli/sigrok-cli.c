@@ -133,14 +133,14 @@ void show_device_list(void)
 	device_scan();
 	devices = device_list();
 
-	if (g_slist_length(devices) > 0) {
-		printf("The following devices were found:\nID  Device\n");
-		for (l = devices; l; l = l->next) {
-			device = l->data;
-			printf("%-3d ", devcnt);
-			print_device_line(device);
-			devcnt++;
-		}
+	if (g_slist_length(devices) == 0)
+		return;
+
+	printf("The following devices were found:\nID  Device\n");
+	for (l = devices; l; l = l->next) {
+		device = l->data;
+		printf("%-3d ", devcnt++);
+		print_device_line(device);
 	}
 }
 
@@ -176,37 +176,38 @@ void show_device_detail(void)
 	title = "Supported options:\n";
 	capabilities = device->plugin->get_capabilities();
 	for (cap = 0; capabilities[cap]; cap++) {
-		hwo = find_hwcap_option(capabilities[cap]);
-		if (hwo) {
-			if (title) {
-				printf("%s", title);
-				title = NULL;
+		if (!(hwo = find_hwcap_option(capabilities[cap])))
+			continue;
+
+		if (title) {
+			printf("%s", title);
+			title = NULL;
+		}
+
+		if (hwo->capability == HWCAP_SAMPLERATE) {
+			printf("    %s", hwo->shortname);
+			/* Supported samplerates */
+			samplerates = device->plugin->get_device_info(
+				device->plugin_index, DI_SAMPLERATES);
+			if (!samplerates) {
+				printf("\n");
+				break;
 			}
-			if (hwo->capability == HWCAP_SAMPLERATE) {
-				printf("    %s", hwo->shortname);
-				/* Supported samplerates */
-				samplerates = device->plugin->get_device_info(
-					device->plugin_index, DI_SAMPLERATES);
-				if (samplerates) {
-					/* TODO: Add missing free()s. */
-					if (samplerates->step) {
-						printf(" (%s - %s in steps of %s)\n",
-						     sigrok_samplerate_string
-						     (samplerates->low),
-						     sigrok_samplerate_string
-						     (samplerates->high),
-						     sigrok_samplerate_string
-						     (samplerates->step));
-					} else {
-						printf(" - supported samplerates:\n");
-						for (i = 0; samplerates->list[i]; i++) {
-							printf("    %7s\n", sigrok_samplerate_string(samplerates->list[i]));
-						}
-					}
-				} else
-					printf("\n");
-			} else
-				printf("      %s\n", hwo->shortname);
+
+			/* TODO: Add missing free()s. */
+			if (samplerates->step) {
+				printf(" (%s - %s in steps of %s)\n",
+				  sigrok_samplerate_string(samplerates->low),
+				  sigrok_samplerate_string(samplerates->high),
+				  sigrok_samplerate_string(samplerates->step));
+			} else {
+				printf(" - supported samplerates:\n");
+				for (i = 0; samplerates->list[i]; i++) {
+					printf("    %7s\n", sigrok_samplerate_string(samplerates->list[i]));
+				}
+			}
+		} else {
+			printf("      %s\n", hwo->shortname);
 		}
 	}
 }
@@ -232,7 +233,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	if (packet->type != DF_HEADER && o == NULL)
 		return;
 
-	sample_size = 0;
+	sample_size = -1;
 
 	switch (packet->type) {
 	case DF_HEADER:
@@ -300,48 +301,41 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		break;
 	}
 
-	if (sample_size > 0) {
-		if (received_samples < limit_samples) {
-			filter_probes(sample_size, unitsize, probelist,
-				      packet->payload, packet->length,
-				      &filter_out, &filter_out_len);
-			if (device->datastore)
-				datastore_put(device->datastore, filter_out,
-					      filter_out_len, sample_size,
-					      probelist);
+	if (sample_size == -1)
+		return;
 
-			/*
-			 * Don't dump samples on stdout when also saving the
-			 * session.
-			 */
-			output_len = 0;
-			if (!opt_save_session_filename) {
-				if (o->format->data) {
-					if (received_samples +
-						packet->length / sample_size >
-						limit_samples * sample_size) {
-						o->format->data(o, filter_out,
-								limit_samples *
-								sample_size -
-								received_samples,
-								&output_buf,
-								&output_len);
-					} else {
-						o->format->data(o, filter_out,
-								filter_out_len,
-								&output_buf,
-								&output_len);
-					}
+	if (received_samples < limit_samples) {
+		filter_probes(sample_size, unitsize, probelist,
+			      packet->payload, packet->length,
+			      &filter_out, &filter_out_len);
+		if (device->datastore)
+			datastore_put(device->datastore, filter_out,
+				      filter_out_len, sample_size, probelist);
+
+		/* Don't dump samples on stdout when also saving the session. */
+		output_len = 0;
+		if (!opt_save_session_filename) {
+			if (o->format->data) {
+				if (received_samples + packet->length /
+				    sample_size > limit_samples * sample_size) {
+					o->format->data(o, filter_out,
+					  limit_samples * sample_size -
+					  received_samples, &output_buf,
+					  &output_len);
+				} else {
+					o->format->data(o, filter_out,
+					  filter_out_len, &output_buf,
+					  &output_len);
 				}
-				if (output_len)
-					printf("%s", output_buf);
 			}
-			if (filter_out)
-				free(filter_out);
 			if (output_len)
-				free(output_buf);
-			received_samples += packet->length / sample_size;
+				printf("%s", output_buf);
 		}
+		if (filter_out)
+			free(filter_out);
+		if (output_len)
+			free(output_buf);
+		received_samples += packet->length / sample_size;
 	}
 }
 
@@ -479,7 +473,6 @@ char **parse_triggerstring(struct device *device, char *triggerstring)
 	return triggerlist;
 }
 
-
 int parse_sizestring(char *sizestring)
 {
 	int multiplier;
@@ -515,7 +508,6 @@ int parse_sizestring(char *sizestring)
 
 	return val;
 }
-
 
 void remove_source(int fd)
 {
@@ -806,7 +798,6 @@ void logger(const gchar *log_domain, GLogLevelFlags log_level,
 			fflush(stdout);
 		}
 	}
-
 }
 
 int main(int argc, char **argv)
