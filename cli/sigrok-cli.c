@@ -277,11 +277,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		o = NULL;
 		break;
 	case DF_TRIGGER:
-		/*
-		 * TODO: If pre-trigger capture is set, display ! here.
-		 * Otherwise the capture just always begins with the trigger,
-		 * which is fine: no need to mark the trigger.
-		 */
+		o->format->event(o, DF_TRIGGER, 0, 0);
 		break;
 	case DF_LOGIC8:
 		sample_size = 1;
