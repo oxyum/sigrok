@@ -51,8 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	currentLA = -1;
 	numChannels = -1;
-	configChannelTitleBarLayout = 0; /* Vertical layout */
-
+	configChannelTitleBarLayout = 1; /* Horizontal layout */
 	for (int i = 0; i < NUMCHANNELS; ++i)
 		dockWidgets[i] = NULL;
 
@@ -81,7 +80,7 @@ void MainWindow::setupDockWidgets(void)
 		channelForms[i] = new ChannelForm(this);
 
 		dockWidgets[i] = new QDockWidget(this);
-		dockWidgets[i]->setAllowedAreas(Qt::RightDockWidgetArea);
+		dockWidgets[i]->setAllowedAreas(Qt::BottomDockWidgetArea);
 
 		QDockWidget::DockWidgetFeatures f;
 		f = QDockWidget::DockWidgetClosable |
@@ -91,7 +90,8 @@ void MainWindow::setupDockWidgets(void)
 			f |= QDockWidget::DockWidgetVerticalTitleBar;
 		dockWidgets[i]->setFeatures(f);
 		dockWidgets[i]->setWidget(channelForms[i]);
-		addDockWidget(Qt::RightDockWidgetArea, dockWidgets[i]);
+		addDockWidget(Qt::BottomDockWidgetArea, dockWidgets[i],
+			      Qt::Vertical);
 
 		/* Update labels upon changes. */
 		QObject::connect(channelForms[i],

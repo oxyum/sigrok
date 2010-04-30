@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>400</height>
+    <width>880</width>
+    <height>820</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,8 +23,8 @@
      <rect>
       <x>10</x>
       <y>0</y>
-      <width>130</width>
-      <height>311</height>
+      <width>581</width>
+      <height>61</height>
      </rect>
     </property>
     <widget class="QWidget" name="gridLayoutWidget">
@@ -32,8 +32,8 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>129</width>
-       <height>311</height>
+       <width>581</width>
+       <height>61</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout">
@@ -58,43 +58,6 @@
         </item>
        </widget>
       </item>
-      <item row="7" column="0">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelChannels">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Channels:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QComboBox" name="comboBoxSampleRate">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QComboBox" name="comboBoxNumSamples">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
       <item row="4" column="0">
        <widget class="QLabel" name="labelSampleStart">
         <property name="enabled">
@@ -105,7 +68,31 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="0" column="1">
+       <widget class="QLabel" name="labelChannels">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Channels:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QComboBox" name="comboBoxSampleRate">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QComboBox" name="comboBoxNumSamples">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
        <widget class="QLabel" name="labelSampleEnd">
         <property name="enabled">
          <bool>false</bool>
@@ -115,7 +102,7 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="4" column="2">
        <widget class="QLabel" name="labelZoomFactor">
         <property name="enabled">
          <bool>false</bool>
@@ -134,8 +121,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>600</width>
-     <height>26</height>
+     <width>880</width>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
