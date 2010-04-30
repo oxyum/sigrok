@@ -116,6 +116,11 @@ void MainWindow::setupDockWidgets(void)
 			channelForms[i], SLOT(generatePainterPath()));
 
 		// dockWidgets[i]->show();
+
+		/* Set a default channel name. */
+		QLineEdit *l = channelForms[i]->m_ui->channelLineEdit;
+		l->setText(QString(tr("Channel %1")).arg(i));
+
 #if 0
 		/* If the user renames a channel, adapt the dock title. */
 		QObject::connect(lineEdits[i], SIGNAL(textChanged(QString)),
@@ -324,6 +329,10 @@ void MainWindow::on_action_Open_triggered()
 		connect(sc, SIGNAL(valueChanged(int)),
 			w, SLOT(updateScrollBars(int)));
 
+		/* Set a default channel name. */
+		QLineEdit *l = channelForms[i]->m_ui->channelLineEdit;
+		l->setText(QString(tr("Channel %1")).arg(i));
+		
 		channelForms[i]->update();
 	}
 
