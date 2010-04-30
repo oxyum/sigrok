@@ -186,18 +186,37 @@ void MainWindow::on_actionScan_triggered()
 	device_scan();
 	devices = device_list();
 	num_devices = g_slist_length(devices);
-	device = (struct device *)g_slist_nth_data(devices, 0 /* opt_device */);
+
+	ui->comboBoxLA->clear();
+	for (int i = 0; i < num_devices; ++i) {
+		device = (struct device *)g_slist_nth_data(devices, i);
+		ui->comboBoxLA->addItem(device->plugin->name); /* TODO: Full name */
+	}
 
 	if (num_devices == 0) {
 		s = tr("No supported logic analyzer found.");
 		statusBar()->showMessage(s, 2000);
 		return;
-	} else {
+	} else if (num_devices == 1) {
 		s = tr("Found supported logic analyzer: ");
 		s.append(device->plugin->name);
 		statusBar()->showMessage(s, 2000);
+	} else {
+		/* TODO: Allow user to select one of the devices. */
+		s = tr("Found multiple logic analyzers: ");
+		for (int i = 0; i < num_devices; ++i) {
+			device = (struct device *)g_slist_nth_data(devices, i);
+			s.append(device->plugin->name);
+			if (i != num_devices - 1)
+				s.append(", ");
+		}
+		statusBar()->showMessage(s, 2000);
+		device_close_all();
+		return;
 	}
 
+	device = (struct device *)g_slist_nth_data(devices, 0 /* opt_device */);
+	
 	setCurrentLA(0 /* TODO */);
 
 	di_num_probes = (char *)device->plugin->get_device_info(
