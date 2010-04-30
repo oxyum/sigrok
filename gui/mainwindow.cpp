@@ -179,7 +179,7 @@ void MainWindow::on_actionScan_triggered()
 	int num_devices;
 	struct device *device;
 	char *di_num_probes;
-	uint64_t *di_samplerates;
+	struct samplerates *samplerates;
 
 	statusBar()->showMessage(tr("Scanning for logic analyzers..."), 2000);
 
@@ -233,19 +233,19 @@ void MainWindow::on_actionScan_triggered()
 	s = QString(tr("Channels: %1")).arg(getNumChannels());
 	ui->labelChannels->setText(s);
 
-	di_samplerates = (uint64_t *)device->plugin->get_device_info(
-			device->plugin_index, DI_SAMPLERATES);
-	if (!di_samplerates) {
+	samplerates = (struct samplerates *)device->plugin->get_device_info(
+		      device->plugin_index, DI_SAMPLERATES);
+	if (!samplerates) {
 		/* TODO: Error handling. */
 	}
 
+	/* Populate the combobox with supported samplerates. */
 	ui->comboBoxSampleRate->clear();
-	for (int i = 0; di_samplerates[i]; ++i) {
-		if (di_samplerates[i] < 1000000)
-			s = QString(tr("%1 kHz")).arg(di_samplerates[i] / 1000);
-		else
-			s = QString(tr("%1 MHz")).arg(di_samplerates[i] / 1000000);
-		ui->comboBoxSampleRate->addItem(s, di_samplerates[i]);
+	/* TODO: Samplerate steps support. */
+	for (int i = 0; samplerates->list[i]; ++i) {
+		/* TODO: Free return value of sigrok_samplerate_string(). */
+		s = QString(sigrok_samplerate_string(samplerates->list[i]));
+		ui->comboBoxSampleRate->addItem(s, samplerates->list[i]);
 	}
 
 	/* FIXME */

@@ -188,6 +188,7 @@ void show_device_detail(void)
 				samplerates = device->plugin->get_device_info(
 					device->plugin_index, DI_SAMPLERATES);
 				if (samplerates) {
+					/* TODO: Add missing free()s. */
 					if (samplerates->step) {
 						printf(" (%s - %s in steps of %s)\n",
 						     sigrok_samplerate_string
