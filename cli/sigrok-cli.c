@@ -813,7 +813,7 @@ int main(int argc, char **argv)
 	if (getenv("SIGROK_DEBUG"))
 		debug = TRUE;
 
-#if 1
+#if 0
 #define BUFLEN 50
 	sigrokdecode_init();
 

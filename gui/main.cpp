@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-#if 1
+#if 0
 #define BUFLEN 50
 
 	if (sigrokdecode_init() != SIGROKDECODE_OK) {
