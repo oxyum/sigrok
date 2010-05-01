@@ -109,7 +109,7 @@ AC_CONFIG_FILES([Makefile
 		 cli/Makefile
 		])
 
-AC_SUBST(FIRMWARE_DIR, '$(datadir)/sigrok')
+AC_SUBST(FIRMWARE_DIR, '$(datadir)/sigrok/firmware')
 AC_SUBST(MAKEFLAGS, '--no-print-directory --silent')
 AC_SUBST(AM_LIBTOOLFLAGS, '--silent')
 
