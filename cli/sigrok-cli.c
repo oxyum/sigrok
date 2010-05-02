@@ -312,39 +312,38 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	if (opt_wait_trigger && !triggered)
 		return;
 
-	if (received_samples < limit_samples) {
-		filter_probes(sample_size, unitsize, probelist,
-			      packet->payload, packet->length,
-			      &filter_out, &filter_out_len);
-		if (device->datastore)
-			datastore_put(device->datastore, filter_out,
-				      filter_out_len, sample_size, probelist);
+	if (received_samples >= limit_samples)
+		return;
 
-		/* Don't dump samples on stdout when also saving the session. */
-		output_len = 0;
-		if (!opt_save_session_filename) {
-			if (o->format->data) {
-				if (received_samples + packet->length /
-				    sample_size > limit_samples * sample_size) {
-					o->format->data(o, filter_out,
-					  limit_samples * sample_size -
-					  received_samples, &output_buf,
-					  &output_len);
-				} else {
-					o->format->data(o, filter_out,
-					  filter_out_len, &output_buf,
-					  &output_len);
-				}
+	filter_probes(sample_size, unitsize, probelist,
+		      packet->payload, packet->length,
+		      &filter_out, &filter_out_len);
+	if (device->datastore)
+		datastore_put(device->datastore, filter_out,
+			      filter_out_len, sample_size, probelist);
+
+	/* Don't dump samples on stdout when also saving the session. */
+	output_len = 0;
+	if (!opt_save_session_filename) {
+		if (o->format->data) {
+			if (received_samples + packet->length /
+			    sample_size > limit_samples * sample_size) {
+				o->format->data(o, filter_out,
+				  limit_samples * sample_size -
+				  received_samples, &output_buf, &output_len);
+			} else {
+				o->format->data(o, filter_out,
+				  filter_out_len, &output_buf, &output_len);
 			}
-			if (output_len)
-				printf("%s", output_buf);
 		}
-		if (filter_out)
-			free(filter_out);
 		if (output_len)
-			free(output_buf);
-		received_samples += packet->length / sample_size;
+			printf("%s", output_buf);
 	}
+	if (filter_out)
+		free(filter_out);
+	if (output_len)
+		free(output_buf);
+	received_samples += packet->length / sample_size;
 }
 
 char **parse_probestring(int max_probes, char *probestring)
