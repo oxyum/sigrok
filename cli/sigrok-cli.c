@@ -61,6 +61,7 @@ static gboolean opt_version = FALSE;
 static gboolean opt_list_hwplugins = FALSE;
 static gboolean opt_list_devices = FALSE;
 static gboolean opt_list_analyzers = FALSE;
+static gboolean opt_wait_trigger = FALSE;
 static gchar *opt_load_session_filename = NULL;
 static gchar *opt_save_session_filename = NULL;
 static int opt_device = -1;
@@ -82,6 +83,7 @@ static GOptionEntry optargs[] = {
 	{"device", 'd', 0, G_OPTION_ARG_INT, &opt_device, "Use device id", NULL},
 	{"probes", 'p', 0, G_OPTION_ARG_STRING, &opt_probes, "Probes to use", NULL},
 	{"triggers", 't', 0, G_OPTION_ARG_STRING, &opt_triggers, "Trigger configuration", NULL},
+	{"wait-trigger", 'w', 0, G_OPTION_ARG_NONE, &opt_wait_trigger, "Wait for trigger", NULL},
 	{"device-option", 'o', 0, G_OPTION_ARG_STRING_ARRAY, &opt_devoption, "Device-specific option", NULL},
 	{"analyzers", 'a', 0, G_OPTION_ARG_STRING, &opt_analyzers, "Protocol analyzer sequence", NULL},
 	{"format", 'f', 0, G_OPTION_ARG_STRING, &opt_format, "Output format", NULL},
@@ -223,6 +225,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	static int probelist[65] = { 0 };
 	static uint64_t received_samples = 0;
 	static int unitsize = 0;
+	static int triggered = 0;
 	struct probe *probe;
 	struct datafeed_header *header;
 	int num_enabled_probes, sample_size, i;
@@ -280,6 +283,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		break;
 	case DF_TRIGGER:
 		o->format->event(o, DF_TRIGGER, 0, 0);
+		triggered = 1;
 		break;
 	case DF_LOGIC8:
 		sample_size = 1;
@@ -302,6 +306,10 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	}
 
 	if (sample_size == -1)
+		return;
+
+	/* Don't store any samples until triggered. */
+	if (opt_wait_trigger && !triggered)
 		return;
 
 	if (received_samples < limit_samples) {
