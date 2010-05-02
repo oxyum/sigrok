@@ -22,7 +22,7 @@ TARGET        = sigrok-gui
 TEMPLATE      = app
 
 # The sigrok-gui version number. Define APP_VERSION macro for use in the code.
-VERSION       = 0.1
+VERSION       = 0.1pre2
 DEFINES      += APP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES      += main.cpp \

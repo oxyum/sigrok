@@ -30,7 +30,7 @@
 #include <sigrok.h>
 #include "config.h"
 
-#define SIGROK_CLI_VERSION "0.1"
+#define SIGROK_CLI_VERSION "0.1pre2"
 #define DEFAULT_OUTPUT_FORMAT "bits64"
 
 extern struct hwcap_option hwcap_options[];
