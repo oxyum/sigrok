@@ -41,8 +41,24 @@ extern "C" {
 #include <sigrok.h>
 }
 
-GMainContext *gmaincontext = NULL;
-GMainLoop *gmainloop = NULL;
+struct source {
+	int fd;
+	int events;
+	int timeout;
+	receive_data_callback cb;
+	void *user_data;
+};
+struct source *sources = NULL;
+int num_sources = 0;
+int source_timeout = -1;
+
+/* These live in hwplugin.c, for the frontend to override. */
+extern source_callback_add source_cb_add;
+extern source_callback_remove source_cb_remove;
+
+int end_acquisition = 0;
+
+GPollFD *fds;
 
 uint64_t limit_samples = 0; /* FIXME */
 
@@ -254,6 +270,7 @@ void MainWindow::on_actionScan_triggered()
 
 	/* FIXME */
 	ui->comboBoxNumSamples->clear();
+	ui->comboBoxNumSamples->addItem("100", 100); /* For testing... */
 	ui->comboBoxNumSamples->addItem("3000000", 3000000);
 	ui->comboBoxNumSamples->addItem("2000000", 2000000);
 	ui->comboBoxNumSamples->addItem("1000000", 1000000);
@@ -381,22 +398,22 @@ void MainWindow::on_action_Save_as_triggered()
 	file.close();
 }
 
-void my_datafeed_callback(struct device *device, struct datafeed_packet *packet)
+void datafeed_in(struct device *device, struct datafeed_packet *packet)
 {
 	static int num_probes = 0;
-	static int received_samples = 0;
 	static int probelist[65] = {0};
-
+	static uint64_t received_samples = 0;
+	static int triggered = 0;
 	struct probe *probe;
 	struct datafeed_header *header;
-	int num_enabled_probes, offset, sample_size, unitsize, p;
-	int bpl_offset, bpl_cnt;
+	int num_enabled_probes, sample_size;
 	uint64_t sample;
 
-	sample_size = -1;
-
-	// if(packet->type != DF_HEADER && linebuf == NULL)
+	/* If the first packet to come in isn't a header, don't even try. */
+	// if (packet->type != DF_HEADER && o == NULL)
 	//	return;
+
+	sample_size = -1;
 
 	switch (packet->type) {
 	case DF_HEADER:
@@ -415,15 +432,16 @@ void my_datafeed_callback(struct device *device, struct datafeed_packet *packet)
 		       num_enabled_probes, num_probes, header->samplerate,
 		       ctime(&header->starttime.tv_sec), limit_samples);
 
-		// linebuf = g_malloc0(num_probes * linebuf_len);
+		/* TODO: realloc() */
 		break;
 	case DF_END:
 		printf("DF_END\n");
-		g_main_loop_quit(gmainloop);
-		return;
+		/* TODO: o */
+		end_acquisition = 1;
 		break;
 	case DF_TRIGGER:
 		/* TODO */
+		triggered = 1;
 		break;
 	case DF_LOGIC8:
 		sample_size = 1;
@@ -432,17 +450,80 @@ void my_datafeed_callback(struct device *device, struct datafeed_packet *packet)
 	/* TODO: DF_LOGIC16 etc. */
 	}
 
-	if (sample_size < 0)
+	if (sample_size == -1)
 		return;
+	
+	/* Don't store any samples until triggered. */
+	// if (opt_wait_trigger && !triggered)
+	// 	return;
+
+	if (received_samples >= limit_samples)
+		return;
+
+	/* TODO */
 
 	for (uint64_t i = 0; received_samples < limit_samples
 			     && i < packet->length; i += sample_size) {
 		sample = 0;
-		memcpy(&sample, (char *)packet->payload + offset, sample_size);
+		memcpy(&sample, (char *)packet->payload + i, sample_size);
 		sample_buffer[i] = (uint8_t)(sample & 0xff); /* FIXME */
-		printf("Sample %d: 0x%x\n", i, sample);
+		printf("Sample %" PRIu64 ": 0x%x\n", i, sample);
 		received_samples++;
 	}
+}
+
+void remove_source(int fd)
+{
+	struct source *new_sources;
+	int oldsource, newsource;
+
+	if (!sources)
+		return;
+
+	new_sources = (struct source *)calloc(1, sizeof(struct source)
+					      * num_sources);
+	for (oldsource = 0; oldsource < num_sources; oldsource++) {
+		if (sources[oldsource].fd != fd)
+			memcpy(&new_sources[newsource++], &sources[oldsource],
+			       sizeof(struct source));
+	}
+
+	if (oldsource != newsource) {
+		free(sources);
+		sources = new_sources;
+		num_sources--;
+	} else {
+		/* Target fd was not found. */
+		free(new_sources);
+	}
+}
+
+void add_source(int fd, int events, int timeout,
+		receive_data_callback callback, void *user_data)
+{
+	struct source *new_sources, *s;
+
+	// add_source_fd(fd, events, timeout, callback, user_data);
+
+	new_sources = (struct source *)calloc(1, sizeof(struct source)
+					      * (num_sources + 1));
+
+	if (sources) {
+		memcpy(new_sources, sources, sizeof(GPollFD) * num_sources);
+		free(sources);
+	}
+
+	s = &new_sources[num_sources++];
+	s->fd = fd;
+	s->events = events;
+	s->timeout = timeout;
+	s->cb = callback;
+	s->user_data = user_data;
+	sources = new_sources;
+
+	if (timeout != source_timeout && timeout > 0
+	    && (source_timeout == -1 || timeout < source_timeout))
+		source_timeout = timeout;
 }
 
 void MainWindow::on_action_Get_samples_triggered()
@@ -453,7 +534,7 @@ void MainWindow::on_action_Get_samples_triggered()
 			ui->comboBoxNumSamples->currentIndex()).toLongLong();
 	uint64_t chunksize = 512;
 	QString s;
-	int opt_device;
+	int opt_device, ret, i;
 	struct device *device;
 	char numBuf[16];
 
@@ -468,16 +549,28 @@ void MainWindow::on_action_Get_samples_triggered()
 	}
 
 	session_new();
-	session_datafeed_callback_add(my_datafeed_callback);
+	session_datafeed_callback_add(datafeed_in);
+
+	source_cb_remove = remove_source;
+	source_cb_add = add_source;
+
 	device = (struct device *)g_slist_nth_data(devices, opt_device);
 
-	snprintf(numBuf, 16, "%"PRIu64"", limit_samples);
+	snprintf(numBuf, 16, "%" PRIu64 "", limit_samples);
 	device->plugin->set_configuration(device->plugin_index,
 		HWCAP_LIMIT_SAMPLES, (char *)numBuf);
 
-
 	if (session_device_add(device) != SIGROK_OK) {
 		printf("Failed to use device.\n");
+		session_destroy();
+		return;
+	}
+
+	/* TODO */
+
+	if (device->plugin->set_configuration(device->plugin_index,
+                  HWCAP_PROBECONFIG, (char *)device->probes) != SIGROK_OK) {
+		printf("Failed to configure probes.\n");
 		session_destroy();
 		return;
 	}
@@ -488,9 +581,34 @@ void MainWindow::on_action_Get_samples_triggered()
 		return;
 	}
 
-	gmaincontext = g_main_context_default();
-	gmainloop = g_main_loop_new(gmaincontext, FALSE);
-	g_main_loop_run(gmainloop);
+	fds = NULL;
+	while (!end_acquisition) {
+		if (fds)
+			free(fds);
+
+		/* Construct g_poll()'s array. */
+		fds = (GPollFD *)malloc(sizeof(GPollFD) * num_sources);
+		for (i = 0; i < num_sources; ++i) {
+			fds[i].fd = sources[i].fd;
+			fds[i].events = sources[i].events;
+		}
+
+		ret = g_poll(fds, num_sources, source_timeout);
+
+		for (i = 0; i < num_sources; ++i) {
+			if (fds[i].revents > 0 || (ret == 0
+			    && source_timeout == sources[i].timeout)) {
+				/*
+				 * Invoke the source's callback on an event,
+				 * or if the poll timeout out and this source
+				 * asked for that timeout.
+				 */
+				sources[i].cb(fds[i].fd, fds[i].revents,
+					      sources[i].user_data);
+			}
+		}
+	}
+	free(fds);
 
 	session_stop();
 	session_destroy();
