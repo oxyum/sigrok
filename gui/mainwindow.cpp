@@ -417,7 +417,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 
 	switch (packet->type) {
 	case DF_HEADER:
-		printf("DF_HEADER\n");
+		qDebug("DF_HEADER");
 		header = (struct datafeed_header *) packet->payload;
 		num_probes = header->num_probes;
 		num_enabled_probes = 0;
@@ -427,27 +427,32 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 				probelist[num_enabled_probes++] = probe->index;
 		}
 
-		printf("Acquisition with %d/%d probes at %"PRIu64"MHz "
-		       "starting at %s (%"PRIu64" samples)\n",
-		       num_enabled_probes, num_probes, header->samplerate,
-		       ctime(&header->starttime.tv_sec), limit_samples);
+		qDebug() << "Acquisition with" << num_enabled_probes << "/"
+			 << num_probes << "probes at"
+			 << sigrok_samplerate_string(header->samplerate)
+			 << "starting at" << ctime(&header->starttime.tv_sec)
+			 << "(" << limit_samples << "samples)";
 
 		/* TODO: realloc() */
 		break;
 	case DF_END:
-		printf("DF_END\n");
+		qDebug("DF_END");
 		/* TODO: o */
 		end_acquisition = 1;
 		break;
 	case DF_TRIGGER:
 		/* TODO */
+		qDebug("DF_TRIGGER");
 		triggered = 1;
 		break;
 	case DF_LOGIC8:
 		sample_size = 1;
-		printf("DF_LOGIC8\n");
+		qDebug("DF_LOGIC8");
 		break;
 	/* TODO: DF_LOGIC16 etc. */
+	default:
+		qDebug("DF_XXXX, not yet handled");
+		break;
 	}
 
 	if (sample_size == -1)
@@ -467,7 +472,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		sample = 0;
 		memcpy(&sample, (char *)packet->payload + i, sample_size);
 		sample_buffer[i] = (uint8_t)(sample & 0xff); /* FIXME */
-		printf("Sample %" PRIu64 ": 0x%x\n", i, sample);
+		// qDebug("Sample %" PRIu64 ": 0x%x", i, sample);
 		received_samples++;
 	}
 }
@@ -561,7 +566,7 @@ void MainWindow::on_action_Get_samples_triggered()
 		HWCAP_LIMIT_SAMPLES, (char *)numBuf);
 
 	if (session_device_add(device) != SIGROK_OK) {
-		printf("Failed to use device.\n");
+		qDebug("Failed to use device.");
 		session_destroy();
 		return;
 	}
@@ -570,13 +575,13 @@ void MainWindow::on_action_Get_samples_triggered()
 
 	if (device->plugin->set_configuration(device->plugin_index,
                   HWCAP_PROBECONFIG, (char *)device->probes) != SIGROK_OK) {
-		printf("Failed to configure probes.\n");
+		qDebug("Failed to configure probes.");
 		session_destroy();
 		return;
 	}
 
 	if (session_start() != SIGROK_OK) {
-		printf("Failed to start session.\n");
+		qDebug("Failed to start session.");
 		session_destroy();
 		return;
 	}
