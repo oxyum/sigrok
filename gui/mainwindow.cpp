@@ -636,14 +636,20 @@ void MainWindow::on_action_Get_samples_triggered()
 	for (int i = 0; i < getNumChannels(); ++i) {
 		channelForms[i]->setChannelNumber(i);
 		channelForms[i]->setNumSamples(numSamplesLocal);
-		channelForms[i]->setSampleStart(0);
-		channelForms[i]->setSampleEnd(numSamplesLocal);
+		// channelForms[i]->setSampleStart(0);
+		// channelForms[i]->setSampleEnd(numSamplesLocal);
 
 		QScrollBar *sc = channelForms[i]->m_ui->channelScrollBar;
 		sc->setMinimum(0);
 		sc->setMaximum(99);
+
+		/* The i-th scrollbar scrolls channel i. */
 		connect(sc, SIGNAL(valueChanged(int)),
 			channelForms[i], SLOT(setScrollBarValue(int)));
+
+		/* If any of the scrollbars change, update all of them. */
+		connect(sc, SIGNAL(valueChanged(int)),
+		        w, SLOT(updateScrollBars(int)));
 
 		channelForms[i]->update();
 	}
