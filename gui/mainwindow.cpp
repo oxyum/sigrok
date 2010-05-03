@@ -633,41 +633,6 @@ void MainWindow::on_action_Get_samples_triggered()
 	session_stop();
 	session_destroy();
 
-#if 0
-	// if (getCurrentLA() < 0) {
-	// 	/* TODO */
-	// 	return;
-	// }
-
-	// buf = sigrok_hw_get_samples_init(&ctx, numSamplesLocal, 1000000, 1000);
-	// if (buf == NULL) {
-	// 	/* TODO: Error handling. */
-	// 	return;
-	// }
-
-	QProgressDialog progress("Getting samples from logic analyzer...",
-				 "Abort", 0, numSamplesLocal, this);
-	progress.setWindowModality(Qt::WindowModal);
-	progress.setMinimumDuration(500);
-
-	for (uint64_t i = 0; i < numSamplesLocal; i += chunksize) {
-		progress.setValue(i);
-
-		/* TODO: Properly handle an abort. */
-		if (progress.wasCanceled())
-			break;
-
-		/* Get a small chunk of samples. */
-		// ret = sigrok_hw_get_samples_chunk(&ctx, buf, chunksize,
-		// 				      pos, 1000);
-		pos += chunksize;
-		/* TODO: Error handling. */
-	}
-	progress.setValue(numSamplesLocal);
-
-	sample_buffer = buf;
-#endif
-
 	for (int i = 0; i < getNumChannels(); ++i) {
 		channelForms[i]->setChannelNumber(i);
 		channelForms[i]->setNumSamples(numSamplesLocal);
