@@ -2,6 +2,24 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="nl_NL">
 <context>
+    <name>ChannelForm</name>
+    <message>
+        <location filename="../channelform.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../channelform.ui" line="52"/>
+        <source>Channel xyz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../channelform.cpp" line="66"/>
+        <source>Channel %1</source>
+        <translation type="unfinished">Kanaal %1</translation>
+    </message>
+</context>
+<context>
     <name>ConfigForm</name>
     <message>
         <location filename="../configform.ui" line="14"/>
@@ -52,220 +70,233 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../mainwindow.cpp" line="180"/>
+        <location filename="../mainwindow.cpp" line="183"/>
         <source>About</source>
         <translation>Over sigrok-gui</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="181"/>
         <source>sigrok-gui 0.1&lt;br /&gt;
 Copyright (C) 2010 Uwe Hermann &amp;lt;uwe@hermann-uwe.de&amp;gt;&lt;br /&gt;
 GNU GPL, version 2 or later&lt;br /&gt;
 &lt;a href=&quot;http://www.sigrok.org&quot;&gt;http://www.sigrok.org&lt;/a&gt;</source>
-        <translation>sigrok-gui 0.1&lt;br /&gt;
+        <translation type="obsolete">sigrok-gui 0.1&lt;br /&gt;
 Copyright (C) 2010 Uwe Hermann &amp;lt;uwe@hermann-uwe.de&amp;gt;&lt;br /&gt;
 GNU GPL, Versie 2 of hoger&lt;br /&gt;
 &lt;a href=&quot;http://www.sigrok.org&quot;&gt;http://www.sigrok.org&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="190"/>
+        <location filename="../mainwindow.cpp" line="188"/>
         <source>About Qt</source>
         <translation>Over Qt</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="208"/>
+        <location filename="../mainwindow.cpp" line="205"/>
         <source>Scanning for logic analyzers...</source>
         <translation>Scannen naar logic analyzers...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="216"/>
+        <location filename="../mainwindow.cpp" line="218"/>
         <source>No supported logic analyzer found.</source>
         <translation>Geen ondersteunde logic analyzer gevonden.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="220"/>
+        <location filename="../mainwindow.cpp" line="222"/>
         <source>Found supported logic analyzer: </source>
         <translation>Gevonden ondersteunde logic analyzers:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="238"/>
-        <location filename="../mainwindow.cpp" line="316"/>
+        <location filename="../mainwindow.cpp" line="254"/>
+        <location filename="../mainwindow.cpp" line="328"/>
         <source>Channels: %1</source>
         <translation>Kanalen: %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="250"/>
         <source>%1 kHz</source>
-        <translation>%1 kHz</translation>
+        <translation type="obsolete">%1 kHz</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="252"/>
         <source>%1 MHz</source>
-        <translation>%1 MHz</translation>
+        <translation type="obsolete">%1 MHz</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="283"/>
+        <location filename="../mainwindow.cpp" line="295"/>
         <source>Open sample file</source>
         <translation>Open sample bestand</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="284"/>
+        <location filename="../mainwindow.cpp" line="296"/>
         <source>Raw sample files (*.raw *.bin);;Gnuplot data files (*.dat);;VCD files (*.vcd);;All files (*)</source>
         <translation>Binaire sample (*.raw *.bin);;Gnuplot data (*.dat);;VCD-Data (*.vcd);;Alle bestanden (*)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="313"/>
+        <location filename="../mainwindow.cpp" line="325"/>
         <source>File</source>
         <translation>Bestand</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="582"/>
+        <location filename="../mainwindow.cpp" line="695"/>
         <source>Channels: </source>
         <translation>Kanalen: </translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="328"/>
-        <location filename="../mainwindow.cpp" line="531"/>
-        <location filename="../mainwindow.cpp" line="591"/>
+        <location filename="../mainwindow.cpp" line="340"/>
+        <location filename="../mainwindow.cpp" line="704"/>
         <source>Start sample: </source>
         <translation>Start sample: </translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="94"/>
+        <location filename="../mainwindow.cpp" line="140"/>
+        <location filename="../mainwindow.cpp" line="370"/>
         <source>Channel %1</source>
         <translation>Kanaal %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="331"/>
-        <location filename="../mainwindow.cpp" line="536"/>
-        <location filename="../mainwindow.cpp" line="594"/>
+        <location filename="../mainwindow.cpp" line="176"/>
+        <source>%1 %2&lt;br /&gt;
+Copyright (C) 2010 Uwe Hermann &amp;lt;uwe@hermann-uwe.de&amp;gt;&lt;br /&gt;
+GNU GPL, version 2 or later&lt;br /&gt;&lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="227"/>
+        <source>Found multiple logic analyzers: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="343"/>
+        <location filename="../mainwindow.cpp" line="707"/>
         <source>End sample: </source>
         <translation>Sample einde: </translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="334"/>
-        <location filename="../mainwindow.cpp" line="597"/>
+        <location filename="../mainwindow.cpp" line="346"/>
+        <location filename="../mainwindow.cpp" line="710"/>
         <source>Zoom factor: </source>
         <translation>Zoom factor: </translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="354"/>
+        <location filename="../mainwindow.cpp" line="385"/>
         <source>Save sample file</source>
         <translation>Samples opslaan</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="355"/>
+        <location filename="../mainwindow.cpp" line="386"/>
         <source>Raw sample files (*.raw *.bin);;All files (*)</source>
         <translation>Binaire sample (*.raw *.bin);;Alle bestanden (*)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="580"/>
         <location filename="../mainwindow.ui" line="56"/>
+        <location filename="../mainwindow.cpp" line="693"/>
         <source>No LA detected</source>
         <translation>Geen Logic Analyzer gevonden</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="14"/>
         <source>sigrok</source>
-        <translation>sigrok</translation>
+        <translation type="obsolete">sigrok</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="80"/>
+        <location filename="../mainwindow.ui" line="77"/>
         <source>Channels:</source>
         <translation>Kanalen:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="104"/>
+        <location filename="../mainwindow.ui" line="67"/>
         <source>Start sample:</source>
         <translation>Start sample:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="114"/>
+        <location filename="../mainwindow.ui" line="14"/>
+        <source>sigrok-gui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="101"/>
         <source>End sample:</source>
         <translation>Einde sample:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="124"/>
+        <location filename="../mainwindow.ui" line="111"/>
         <source>Zoom factor:</source>
         <translation>Zoom factor:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="143"/>
+        <location filename="../mainwindow.ui" line="130"/>
         <source>&amp;File</source>
         <translation>&amp;Bestand</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="152"/>
+        <location filename="../mainwindow.ui" line="139"/>
         <source>&amp;Help</source>
         <translation>&amp;Hulp</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="159"/>
+        <location filename="../mainwindow.ui" line="146"/>
         <source>&amp;Edit</source>
         <translation>&amp;Bewerken</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="165"/>
+        <location filename="../mainwindow.ui" line="152"/>
         <source>Device</source>
         <translation>&amp;Apparaat</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="199"/>
+        <location filename="../mainwindow.ui" line="186"/>
         <source>E&amp;xit</source>
         <translation>&amp;Afsluiten</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="202"/>
+        <location filename="../mainwindow.ui" line="189"/>
         <source>Ctrl+Q</source>
         <translation>Ctrl+Q</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="207"/>
+        <location filename="../mainwindow.ui" line="194"/>
         <source>&amp;About...</source>
         <translation>Over sigrok...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="210"/>
+        <location filename="../mainwindow.ui" line="197"/>
         <source>Ctrl+A</source>
         <translation>Ctrl+A</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="215"/>
+        <location filename="../mainwindow.ui" line="202"/>
         <source>About &amp;Qt...</source>
         <translation>Over Qt...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="224"/>
+        <location filename="../mainwindow.ui" line="211"/>
         <source>&amp;Preferences</source>
         <translation>&amp;Instellingen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="233"/>
+        <location filename="../mainwindow.ui" line="220"/>
         <source>&amp;Scan</source>
         <translation>Zoeken</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="236"/>
+        <location filename="../mainwindow.ui" line="223"/>
         <source>Scan for supported logic analyzers</source>
         <translation>Zoek naar ondersteunde logic analyzers</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="245"/>
+        <location filename="../mainwindow.ui" line="232"/>
         <source>&amp;Open...</source>
         <translation>&amp;Openen...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="254"/>
+        <location filename="../mainwindow.ui" line="241"/>
         <source>&amp;New...</source>
         <translation>&amp;Nieuw...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="266"/>
+        <location filename="../mainwindow.ui" line="253"/>
         <source>&amp;Save as...</source>
         <translation>Op&amp;slaan als...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="278"/>
+        <location filename="../mainwindow.ui" line="265"/>
         <source>&amp;Get samples...</source>
         <translation>Meting starten</translation>
     </message>
