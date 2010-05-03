@@ -62,6 +62,8 @@ GPollFD *fds;
 
 uint64_t limit_samples = 0; /* FIXME */
 
+QProgressDialog *progress = NULL;
+
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -413,6 +415,11 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	// if (packet->type != DF_HEADER && o == NULL)
 	//	return;
 
+	/* TODO: Also check elsewhere? */
+	/* TODO: Abort acquisition too, if user pressed cancel. */
+	if (progress && progress->wasCanceled())
+		return;
+
 	sample_size = -1;
 
 	switch (packet->type) {
@@ -439,6 +446,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		qDebug("DF_END");
 		/* TODO: o */
 		end_acquisition = 1;
+		progress->setValue(received_samples); /* FIXME */
 		break;
 	case DF_TRIGGER:
 		/* TODO */
@@ -475,6 +483,8 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		// qDebug("Sample %" PRIu64 ": 0x%x", i, sample);
 		received_samples++;
 	}
+
+	progress->setValue(received_samples);
 }
 
 void remove_source(int fd)
@@ -585,6 +595,11 @@ void MainWindow::on_action_Get_samples_triggered()
 		session_destroy();
 		return;
 	}
+
+	progress = new QProgressDialog("Getting samples from logic analyzer...",
+				   "Abort", 0, numSamplesLocal, this);
+	progress->setWindowModality(Qt::WindowModal);
+	progress->setMinimumDuration(100);
 
 	fds = NULL;
 	while (!end_acquisition) {
