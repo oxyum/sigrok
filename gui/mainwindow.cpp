@@ -196,7 +196,6 @@ void MainWindow::on_actionPreferences_triggered()
 
 void MainWindow::on_actionScan_triggered()
 {
-	int ret;
 	QString s;
 	int num_devices;
 	struct device *device;
@@ -490,7 +489,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 void remove_source(int fd)
 {
 	struct source *new_sources;
-	int oldsource, newsource;
+	int oldsource, newsource = 0;
 
 	if (!sources)
 		return;
@@ -543,11 +542,8 @@ void add_source(int fd, int events, int timeout,
 
 void MainWindow::on_action_Get_samples_triggered()
 {
-	uint8_t *buf;
-	uint64_t pos = 0;
 	uint64_t numSamplesLocal = ui->comboBoxNumSamples->itemData(
 			ui->comboBoxNumSamples->currentIndex()).toLongLong();
-	uint64_t chunksize = 512;
 	QString s;
 	int opt_device, ret, i;
 	struct device *device;

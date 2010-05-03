@@ -50,11 +50,21 @@ bool SampleIODevice::open(OpenMode openMode)
 
 qint64 SampleIODevice::readData(char *data, qint64 maxlen)
 {
+	/* FIXME */
+	data = data;
+	maxlen = maxlen;
+	return 0;
+
 	/* TODO: Read a chunk of data. */
 }
 
 qint64 SampleIODevice::writeData(const char *data, qint64 len)
 {
+	/* FIXME */
+	data = data;
+	len = len;
+	return 0;
+
 	/* TODO: Write a chunk of data. */
 }
 

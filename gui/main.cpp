@@ -38,10 +38,12 @@ int main(int argc, char *argv[])
 	QString locale = QLocale::system().name();
 	QApplication a(argc, argv);
 	QTranslator translator;
+#if 0
 	uint8_t *inbuf = NULL, *outbuf = NULL;
 	uint64_t outbuflen = 0;
 	struct sigrokdecode_decoder *dec;
 	int ret;
+#endif
 
 	translator.load(QString("locale/sigrok-gui_") + locale);
 	a.installTranslator(&translator);
