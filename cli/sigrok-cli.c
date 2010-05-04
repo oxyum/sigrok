@@ -270,7 +270,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		if (o->format->event) {
 			o->format->event(o, DF_END, &output_buf, &output_len);
 			if (output_len) {
-				printf("%s", output_buf);
+				fwrite(output_buf, 1, output_len, stdout);
 				free(output_buf);
 			}
 		}
@@ -337,7 +337,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 			}
 		}
 		if (output_len)
-			printf("%s", output_buf);
+			fwrite(output_buf, 1, output_len, stdout);
 	}
 	if (filter_out)
 		free(filter_out);
