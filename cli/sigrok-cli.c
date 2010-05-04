@@ -68,7 +68,7 @@ static int opt_device = -1;
 static gchar *opt_probes = NULL;
 static gchar *opt_triggers = NULL;
 static gchar **opt_devoption = NULL;
-static gchar *opt_analyzers = NULL;
+static gchar *opt_pds = NULL;
 static gchar *opt_format = NULL;
 static gchar *opt_time = NULL;
 static gchar *opt_samples = NULL;
@@ -85,7 +85,7 @@ static GOptionEntry optargs[] = {
 	{"triggers", 't', 0, G_OPTION_ARG_STRING, &opt_triggers, "Trigger configuration", NULL},
 	{"wait-trigger", 'w', 0, G_OPTION_ARG_NONE, &opt_wait_trigger, "Wait for trigger", NULL},
 	{"device-option", 'o', 0, G_OPTION_ARG_STRING_ARRAY, &opt_devoption, "Device-specific option", NULL},
-	{"analyzers", 'a', 0, G_OPTION_ARG_STRING, &opt_analyzers, "Protocol analyzer sequence", NULL},
+	{"analyzers", 'a', 0, G_OPTION_ARG_STRING, &opt_pds, "Protocol analyzer sequence", NULL},
 	{"format", 'f', 0, G_OPTION_ARG_STRING, &opt_format, "Output format", NULL},
 	{"time", 0, 0, G_OPTION_ARG_STRING, &opt_time, "How long to sample (ms)", NULL},
 	{"samples", 0, 0, G_OPTION_ARG_STRING, &opt_samples, "Number of samples to acquire", NULL},
@@ -567,6 +567,40 @@ void add_source(int fd, int events, int timeout, receive_data_callback callback,
 		source_timeout = timeout;
 }
 
+/* Register the given PDs for this session. */
+/* TODO: Support both serial PDs and nested PDs. Parallel PDs even? */
+/* TODO: Only register here, run in streaming fashion later/elsewhere. */
+static int register_pds(struct device *device, const char *pdstring)
+{
+	int i, ret;
+	char **tokens;
+	uint8_t *inbuf = NULL, *outbuf = NULL;
+	uint64_t outbuflen = 0;
+	struct sigrokdecode_decoder *dec;
+
+	/* FIXME: Just for testing... */
+#define BUFLEN 50
+	inbuf = calloc(BUFLEN, 1);
+	for (i = 0; i < BUFLEN; i++)	/* Fill array with some values. */
+		inbuf[i] = (uint8_t) (rand() % 256);
+
+	/* TODO: Error handling. */
+	tokens = g_strsplit(pdstring, ",", 10 /* FIXME */);
+
+	/* Run specified PDs serially on the data, in the given order. */
+	for (i = 0; tokens[i]; i++) {
+		printf("Running protocol decoder %d (%s).\n", i, tokens[i]);
+		sigrokdecode_init();
+		ret = sigrokdecode_load_decoder(tokens[i], &dec);
+		ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf,
+					       &outbuflen);
+		printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
+		sigrokdecode_shutdown();
+	}
+
+	return 0;
+}
+
 void run_session(void)
 {
 	struct device *device;
@@ -579,9 +613,14 @@ void run_session(void)
 	uint64_t tmp_u64;
 	char **probelist, *val;
 
+	/* FIXME: Wrong location, just for testing... */
+	if (opt_pds)
+		register_pds(NULL, opt_pds);
+
 	device_scan();
 	devices = device_list();
 	num_devices = g_slist_length(devices);
+
 	if (num_devices == 0) {
 		g_warning("No devices found.");
 		return;
@@ -740,6 +779,9 @@ void run_session(void)
 					  HWCAP_LIMIT_SAMPLES, opt_samples);
 	}
 
+	if (opt_pds)
+		register_pds(NULL, opt_pds);
+
 	if (device->plugin->set_configuration(device->plugin_index,
 		  HWCAP_PROBECONFIG, (char *)device->probes) != SIGROK_OK) {
 		printf("Failed to configure probes.\n");
@@ -819,26 +861,6 @@ int main(int argc, char **argv)
 	g_log_set_default_handler(logger, NULL);
 	if (getenv("SIGROK_DEBUG"))
 		debug = TRUE;
-
-#if 0
-#define BUFLEN 50
-	sigrokdecode_init();
-
-	inbuf = calloc(BUFLEN, 1);
-	for (i = 0; i < BUFLEN; i++)	/* Fill array with some values. */
-		// inbuf[i] = i % 256;
-		inbuf[i] = (uint8_t) (rand() % 256);
-
-	ret = sigrokdecode_load_decoder("i2c", &dec);
-	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
-	printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
-
-	ret = sigrokdecode_load_decoder("transitioncounter", &dec);
-	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
-	printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
-
-	sigrokdecode_shutdown();
-#endif
 
 	error = NULL;
 	context = g_option_context_new(NULL);
