@@ -25,6 +25,9 @@
 #include <time.h>
 #include <sys/time.h>
 #include <inttypes.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
 #include <glib.h>
 #include <libusb.h>
 #include <sigrok.h>
@@ -61,9 +64,14 @@ static gboolean opt_version = FALSE;
 static gboolean opt_list_hwplugins = FALSE;
 static gboolean opt_list_devices = FALSE;
 static gboolean opt_list_analyzers = FALSE;
+<<<<<<< HEAD:cli/sigrok-cli.c
 static gboolean opt_wait_trigger = FALSE;
 static gchar *opt_load_session_filename = NULL;
 static gchar *opt_save_session_filename = NULL;
+=======
+static gchar *opt_load_filename = NULL;
+static gchar *opt_save_filename = NULL;
+>>>>>>> CLI: file loading using the new input API:cli/sigrok-cli.c
 static int opt_device = -1;
 static gchar *opt_probes = NULL;
 static gchar *opt_triggers = NULL;
@@ -78,8 +86,8 @@ static GOptionEntry optargs[] = {
 	{"list-hardware-plugins", 'H', 0, G_OPTION_ARG_NONE, &opt_list_hwplugins, "List hardware plugins", NULL},
 	{"list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL},
 	{"list-analyzer-plugins", 'A', 0, G_OPTION_ARG_NONE, &opt_list_analyzers, "List analyzer plugins", NULL},
-	{"load-session-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_session_filename, "Load session from file", NULL},
-	{"save-session-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_session_filename, "Save session to file", NULL},
+	{"load-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_filename, "Load session from file", NULL},
+	{"save-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_filename, "Save session to file", NULL},
 	{"device", 'd', 0, G_OPTION_ARG_INT, &opt_device, "Use device id", NULL},
 	{"probes", 'p', 0, G_OPTION_ARG_STRING, &opt_probes, "Probes to use", NULL},
 	{"triggers", 't', 0, G_OPTION_ARG_STRING, &opt_triggers, "Trigger configuration", NULL},
@@ -262,7 +270,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		 * Saving sessions will need a datastore to dump into
 		 * the session file.
 		 */
-		if (opt_save_session_filename)
+		if (opt_save_filename)
 			device->datastore = datastore_new(unitsize);
 		break;
 	case DF_END:
@@ -567,6 +575,7 @@ void add_source(int fd, int events, int timeout, receive_data_callback callback,
 		source_timeout = timeout;
 }
 
+<<<<<<< HEAD:cli/sigrok-cli.c
 /* Register the given PDs for this session. */
 /* TODO: Support both serial PDs and nested PDs. Parallel PDs even? */
 /* TODO: Only register here, run in streaming fashion later/elsewhere. */
@@ -601,11 +610,43 @@ static int register_pds(struct device *device, const char *pdstring)
 	return 0;
 }
 
+=======
+void load_file(void)
+{
+	struct stat st;
+	struct input_format **inputs, *input_format;
+	int i;
+
+	inputs = input_list();
+	for (i = 0; inputs[i]; i++) {
+		if (inputs[i]->format_match(opt_load_filename))
+			break;
+	}
+
+	if (!inputs[i])
+		/* no input module wanted to touch this */
+		return;
+	input_format = inputs[i];
+
+	if (stat(opt_load_filename, &st) == -1) {
+		printf("unable to load %s: %s", opt_load_filename, strerror(errno));
+		return;
+	}
+	limit_samples = st.st_size;
+
+	session_new();
+	session_datafeed_callback_add(datafeed_in);
+	input_format->in_loadfile(opt_load_filename);
+	session_stop();
+
+}
+
+
+>>>>>>> CLI: file loading using the new input API:cli/sigrok-cli.c
 void run_session(void)
 {
 	struct device *device;
 	struct probe *probe;
-	struct output_format **formats;
 	GPollFD *fds;
 	GSList *devices;
 	int num_devices, max_probes, *capabilities, ret, i, j;
@@ -693,23 +734,6 @@ void run_session(void)
 			}
 		}
 		g_free(probelist);
-	}
-
-	if (!opt_format)
-		opt_format = DEFAULT_OUTPUT_FORMAT;
-	formats = output_list();
-	for (i = 0; formats[i]; i++) {
-		if (!strncasecmp(formats[i]->extension, opt_format,
-		     strlen(formats[i]->extension))) {
-			output_format = formats[i];
-			output_format_param =
-			    opt_format + strlen(formats[i]->extension);
-			break;
-		}
-	}
-	if (!output_format) {
-		printf("invalid output format %s\n", opt_format);
-		return;
 	}
 
 	if (opt_devoption) {
@@ -825,8 +849,8 @@ void run_session(void)
 	free(fds);
 
 	session_stop();
-	if (opt_save_session_filename)
-		if (session_save(opt_save_session_filename) != SIGROK_OK)
+	if (opt_save_filename)
+		if (session_save(opt_save_filename) != SIGROK_OK)
 			printf("Failed to save session.\n");
 	session_destroy();
 }
@@ -851,6 +875,7 @@ void logger(const gchar *log_domain, GLogLevelFlags log_level,
 
 int main(int argc, char **argv)
 {
+	struct output_format **outputs;
 	int ret, i;
 	uint8_t *inbuf = NULL, *outbuf = NULL;
 	uint64_t outbuflen = 0;
@@ -862,6 +887,29 @@ int main(int argc, char **argv)
 	if (getenv("SIGROK_DEBUG"))
 		debug = TRUE;
 
+<<<<<<< HEAD:cli/sigrok-cli.c
+=======
+#if 0
+#define BUFLEN 50
+	sigrokdecode_init();
+
+	inbuf = calloc(BUFLEN, 1);
+	for (i = 0; i < BUFLEN; i++)	/* Fill array with some values. */
+		// inbuf[i] = i % 256;
+		inbuf[i] = (uint8_t) (rand() % 256);
+
+	ret = sigrokdecode_load_decoder("i2c", &dec);
+	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
+	printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
+
+	ret = sigrokdecode_load_decoder("transitioncounter", &dec);
+	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
+	printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
+
+	sigrokdecode_shutdown();
+#endif
+
+>>>>>>> CLI: file loading using the new input API:cli/sigrok-cli.c
 	error = NULL;
 	context = g_option_context_new(NULL);
 	g_option_context_add_main_entries(context, optargs, NULL);
@@ -874,6 +922,23 @@ int main(int argc, char **argv)
 	if (sigrok_init() != SIGROK_OK)
 		return 1;
 
+	if (!opt_format)
+		opt_format = DEFAULT_OUTPUT_FORMAT;
+	outputs = output_list();
+	for (i = 0; outputs[i]; i++) {
+		if (!strncasecmp(outputs[i]->extension, opt_format,
+		     strlen(outputs[i]->extension))) {
+			output_format = outputs[i];
+			output_format_param =
+			    opt_format + strlen(outputs[i]->extension);
+			break;
+		}
+	}
+	if (!output_format) {
+		printf("invalid output format %s\n", opt_format);
+		return 1;
+	}
+
 	if (opt_version)
 		show_version();
 	else if (opt_list_hwplugins)
@@ -882,6 +947,8 @@ int main(int argc, char **argv)
 		show_device_list();
 	else if (opt_list_analyzers)
 		show_analyzer_list();
+	else if (opt_load_filename)
+		load_file();
 	else if (opt_samples || opt_time)
 		run_session();
 	else if (opt_device != -1)
