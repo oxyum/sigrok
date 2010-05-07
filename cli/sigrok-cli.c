@@ -64,14 +64,9 @@ static gboolean opt_version = FALSE;
 static gboolean opt_list_hwplugins = FALSE;
 static gboolean opt_list_devices = FALSE;
 static gboolean opt_list_analyzers = FALSE;
-<<<<<<< HEAD:cli/sigrok-cli.c
 static gboolean opt_wait_trigger = FALSE;
-static gchar *opt_load_session_filename = NULL;
-static gchar *opt_save_session_filename = NULL;
-=======
 static gchar *opt_load_filename = NULL;
 static gchar *opt_save_filename = NULL;
->>>>>>> CLI: file loading using the new input API:cli/sigrok-cli.c
 static int opt_device = -1;
 static gchar *opt_probes = NULL;
 static gchar *opt_triggers = NULL;
@@ -332,7 +327,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 
 	/* Don't dump samples on stdout when also saving the session. */
 	output_len = 0;
-	if (!opt_save_session_filename) {
+	if (!opt_save_filename) {
 		if (o->format->data) {
 			if (received_samples + packet->length /
 			    sample_size > limit_samples * sample_size) {
@@ -575,7 +570,6 @@ void add_source(int fd, int events, int timeout, receive_data_callback callback,
 		source_timeout = timeout;
 }
 
-<<<<<<< HEAD:cli/sigrok-cli.c
 /* Register the given PDs for this session. */
 /* TODO: Support both serial PDs and nested PDs. Parallel PDs even? */
 /* TODO: Only register here, run in streaming fashion later/elsewhere. */
@@ -610,7 +604,6 @@ static int register_pds(struct device *device, const char *pdstring)
 	return 0;
 }
 
-=======
 void load_file(void)
 {
 	struct stat st;
@@ -642,7 +635,6 @@ void load_file(void)
 }
 
 
->>>>>>> CLI: file loading using the new input API:cli/sigrok-cli.c
 void run_session(void)
 {
 	struct device *device;
@@ -887,8 +879,6 @@ int main(int argc, char **argv)
 	if (getenv("SIGROK_DEBUG"))
 		debug = TRUE;
 
-<<<<<<< HEAD:cli/sigrok-cli.c
-=======
 #if 0
 #define BUFLEN 50
 	sigrokdecode_init();
@@ -909,7 +899,6 @@ int main(int argc, char **argv)
 	sigrokdecode_shutdown();
 #endif
 
->>>>>>> CLI: file loading using the new input API:cli/sigrok-cli.c
 	error = NULL;
 	context = g_option_context_new(NULL);
 	g_option_context_add_main_entries(context, optargs, NULL);
