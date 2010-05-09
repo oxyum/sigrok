@@ -42,6 +42,7 @@ In order to get the sigrok source code and build it, run:
  $ git clone git://sigrok.git.sourceforge.net/gitroot/sigrok/sigrok
  $ cd sigrok
  $ ./autogen.sh
+ $ ./configure
  $ make
 
 For building the GUI:
