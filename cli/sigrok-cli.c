@@ -231,7 +231,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	static int triggered = 0;
 	struct probe *probe;
 	struct datafeed_header *header;
-	int num_enabled_probes, sample_size, i;
+	int num_enabled_probes, sample_size, i, ret;
 	uint64_t output_len, filter_out_len;
 	char *output_buf, *filter_out;
 
@@ -244,12 +244,20 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	switch (packet->type) {
 	case DF_HEADER:
 		/* initialize the output module. */
-		o = malloc(sizeof(struct output));
+		if (!(o = malloc(sizeof(struct output))))
+			return; /* FIXME: How to report errors? */
 		o->format = output_format;
 		o->device = device;
 		o->param = output_format_param;
-		if (o->format->init)
-			o->format->init(o);
+
+		/* TODO: Error handling. */
+		if (o->format->init) {
+			if ((ret = o->format->init(o)) != SIGROK_OK) {
+				g_error("Output format init failed.");
+				// return ret;
+				return; /* FIXME */
+			}
+		}
 
 		header = (struct datafeed_header *)packet->payload;
 		num_enabled_probes = 0;
@@ -265,11 +273,17 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		 * Saving sessions will need a datastore to dump into
 		 * the session file.
 		 */
-		if (opt_save_filename)
-			device->datastore = datastore_new(unitsize);
+		if (opt_save_filename) {
+			if (!(device->datastore = datastore_new(unitsize))) {
+				g_error("Couldn't create datastore.");
+				/* TODO: free()? */
+				// return SIGROK_ERR_MALLOC;
+				return; /* FIXME */
+			}
+		}
 		break;
 	case DF_END:
-		g_message("received DF_END");
+		g_message("Received DF_END");
 		if (o->format->event) {
 			o->format->event(o, DF_END, &output_buf, &output_len);
 			if (output_len) {
