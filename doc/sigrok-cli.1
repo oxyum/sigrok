@@ -58,6 +58,22 @@ Example:
    3:11111111 11111111 11111111 11111111 [...]
    4:11111111 11111111 11111111 11111111 [...]
    7:11111111 11111111 11111111 11111111 [...]
+.sp
+The comma-separated list is processed from left to right, i.e. items farther
+to the right override previous items. For example
+.B "1=CS,1=MISO"
+will set the name of probe 1 to
+.BR "MISO" .
+.sp
+Also, while
+.B "5=MOSI,6=MISO"
+will only select probes 5 and 6, and set their names to MISO and MOSI, the
+command line
+.B "5=MOSI,6=MISO,1-8"
+will select probes 1-8 (including 5 and 6, of course), but the names specified
+for probes 5 and 6 will be reset to the defaults by the
+.B "1-8"
+probe selection.
 .TP
 .BR "\-t, \-\-triggers " <triggerlist>
 A comma-separated list of triggers to use, of the form
