@@ -274,7 +274,8 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		 * the session file.
 		 */
 		if (opt_save_filename) {
-			if (!(device->datastore = datastore_new(unitsize))) {
+			ret = datastore_new(unitsize, &(device->datastore));
+			if (ret != SIGROK_OK) {
 				g_error("Couldn't create datastore.");
 				/* TODO: free()? */
 				// return SIGROK_ERR_MALLOC;
