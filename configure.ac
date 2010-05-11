@@ -100,6 +100,7 @@ AC_CONFIG_FILES([Makefile
 		 contrib/Makefile
 		 doc/Makefile
 		 libsigrok/Makefile
+		 libsigrok/libsigrok.pc
 		 libsigrokdecode/Makefile
 		 libsigrokdecode/scripts/Makefile
 		 cli/Makefile
