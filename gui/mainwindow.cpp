@@ -37,7 +37,6 @@ extern "C" {
 #include <inttypes.h>
 #include <stdint.h>
 #include <glib.h>
-#include <gmodule.h>
 #include <sigrok.h>
 }
 

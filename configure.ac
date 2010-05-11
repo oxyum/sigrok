@@ -43,10 +43,6 @@ LT_INIT
 AM_PATH_GLIB_2_0(2.0.0,
 	CFLAGS="$CFLAGS $GLIB_CFLAGS"; LIBS="$LIBS $GLIB_LIBS")
 
-PKG_CHECK_MODULES([gmodule], [gmodule-2.0 >= 2.0],
-	[CFLAGS="$CFLAGS $gmodule_CFLAGS";
-	LIBS="$LIBS $gmodule_LIBS"])
-
 PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.5],
 	[CFLAGS="$CFLAGS $libusb_CFLAGS";
 	LIBS="$LIBS $libusb_LIBS"])
