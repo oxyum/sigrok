@@ -37,7 +37,8 @@ ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0498", MODE="664", GROUP="plugdev"
 
 # Buspirate (v3)
 # http://dangerousprototypes.com/2009/11/03/bus-pirate-logic-analyzer-mode/
-# lsusb "0403:6001 Future Technology Devices International, Ltd FT232 USB-Serial (UART) IC"
+# lsusb "0403:6001 Future Technology Devices International,
+#        Ltd FT232 USB-Serial (UART) IC"
 ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="664", GROUP="plugdev"
 
 # CWAV USBee SX

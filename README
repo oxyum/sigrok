@@ -29,7 +29,7 @@ Requirements
  - libglib >= 2.0
  - libusb >= 1.0.5 (for most logic analyzer hardware)
  - libzip >= 0.8
- - libftdi (for some logic analyzer hardware)
+ - libftdi >= 0.16 (for some logic analyzer hardware)
  - Python >= 2.5 (for protocol decoder scripts)
  - Qt + Qt Creator >= 4.5 (for building/editing the GUI) 
 
