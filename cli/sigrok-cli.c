@@ -498,7 +498,7 @@ char **parse_triggerstring(struct device *device, char *triggerstring)
 	return triggerlist;
 }
 
-int parse_sizestring(char *sizestring)
+uint64_t parse_sizestring(char *sizestring)
 {
 	int multiplier;
 	uint64_t val;
@@ -805,9 +805,9 @@ void run_session(void)
 	}
 
 	if (opt_samples) {
-		limit_samples = strtoull(opt_samples, NULL, 10);
+		limit_samples = parse_sizestring(opt_samples);
 		device->plugin->set_configuration(device->plugin_index,
-					  HWCAP_LIMIT_SAMPLES, opt_samples);
+					  HWCAP_LIMIT_SAMPLES, &limit_samples);
 	}
 
 	if (opt_pds)
