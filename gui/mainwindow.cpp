@@ -265,7 +265,8 @@ void MainWindow::on_actionScan_triggered()
 	for (int i = 0; samplerates->list[i]; ++i) {
 		/* TODO: Free return value of sigrok_samplerate_string(). */
 		s = QString(sigrok_samplerate_string(samplerates->list[i]));
-		ui->comboBoxSampleRate->addItem(s, samplerates->list[i]);
+		ui->comboBoxSampleRate->addItem(s,
+				     QVariant::fromValue(samplerates->list[i]));
 	}
 
 	/* FIXME */
@@ -333,7 +334,7 @@ void MainWindow::on_action_Open_triggered()
 
 	ui->comboBoxNumSamples->clear();
 	ui->comboBoxNumSamples->addItem(QString::number(getNumSamples()),
-					getNumSamples());
+					QVariant::fromValue(getNumSamples()));
 	ui->comboBoxNumSamples->setEnabled(true);
 
 	ui->labelSampleStart->setText(tr("Start sample: "));
