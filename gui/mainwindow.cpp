@@ -577,6 +577,8 @@ void MainWindow::on_action_Get_samples_triggered()
 {
 	uint64_t numSamplesLocal = ui->comboBoxNumSamples->itemData(
 			ui->comboBoxNumSamples->currentIndex()).toLongLong();
+	uint64_t samplerate = ui->comboBoxSampleRate->itemData(
+			ui->comboBoxSampleRate->currentIndex()).toLongLong();
 	QString s;
 	int opt_device, ret, i;
 	struct device *device;
@@ -600,6 +602,7 @@ void MainWindow::on_action_Get_samples_triggered()
 
 	device = (struct device *)g_slist_nth_data(devices, opt_device);
 
+	/* Set the number of samples we want to get from the device. */
 	snprintf(numBuf, 16, "%" PRIu64 "", limit_samples);
 	device->plugin->set_configuration(device->plugin_index,
 		HWCAP_LIMIT_SAMPLES, (char *)numBuf);
@@ -610,10 +613,16 @@ void MainWindow::on_action_Get_samples_triggered()
 		return;
 	}
 
-	/* TODO */
+	/* Set the samplerate. */
+	if (device->plugin->set_configuration(device->plugin_index,
+	    HWCAP_SAMPLERATE, &samplerate) != SIGROK_OK) {
+		qDebug("Failed to set sample rate.");
+		session_destroy();
+		return;
+	};
 
 	if (device->plugin->set_configuration(device->plugin_index,
-                  HWCAP_PROBECONFIG, (char *)device->probes) != SIGROK_OK) {
+	    HWCAP_PROBECONFIG, (char *)device->probes) != SIGROK_OK) {
 		qDebug("Failed to configure probes.");
 		session_destroy();
 		return;
