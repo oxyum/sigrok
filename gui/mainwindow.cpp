@@ -196,10 +196,11 @@ void MainWindow::on_actionPreferences_triggered()
 void MainWindow::on_actionScan_triggered()
 {
 	QString s;
-	int num_devices;
+	int num_devices, pos;
 	struct device *device;
-	char *di_num_probes;
+	char *di_num_probes, *str;
 	struct samplerates *samplerates;
+	const static float mult[] = { 2.f, 2.5f, 2.f };
 
 	statusBar()->showMessage(tr("Scanning for logic analyzers..."), 2000);
 
@@ -261,12 +262,25 @@ void MainWindow::on_actionScan_triggered()
 
 	/* Populate the combobox with supported samplerates. */
 	ui->comboBoxSampleRate->clear();
-	/* TODO: Samplerate steps support. */
-	for (int i = 0; samplerates->list[i]; ++i) {
-		/* TODO: Free return value of sigrok_samplerate_string(). */
-		s = QString(sigrok_samplerate_string(samplerates->list[i]));
-		ui->comboBoxSampleRate->addItem(s,
-				     QVariant::fromValue(samplerates->list[i]));
+	if (samplerates->list != NULL) {
+		for (int i = 0; samplerates->list[i]; ++i) {
+			str = sigrok_samplerate_string(samplerates->list[i]);
+			s = QString(str);
+			free(str);
+			ui->comboBoxSampleRate->addItem(s,
+				QVariant::fromValue(samplerates->list[i]));
+		}
+	} else {
+		pos = 0;
+		for (uint64_t r = samplerates->low; r <= samplerates->high; ) {
+			str = sigrok_samplerate_string(r);
+			s = QString(str);
+			free(str);
+			ui->comboBoxSampleRate->addItem(s,
+						QVariant::fromValue(r));
+			r *= mult[pos++];
+			pos %= 3;
+		}
 	}
 
 	/* FIXME */
