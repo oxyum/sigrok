@@ -39,6 +39,37 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 LT_INIT
 
+# Logic analyzer hardware support '--enable' options.
+
+AC_ARG_ENABLE(asix-sigma, AC_HELP_STRING([--enable-asix-sigma],
+	      [enable ASIX Sigma support [default=yes]]),
+	      [LA_ASIX_SIGMA="$enableval"],
+	      [LA_ASIX_SIGMA=no])
+AM_CONDITIONAL(LA_ASIX_SIGMA, test x$LA_ASIX_SIGMA = xyes)
+AC_DEFINE(HAVE_LA_ASIX_SIGMA, 1, [ASIX Sigma support])
+
+AC_ARG_ENABLE(ols, AC_HELP_STRING([--enable-ols],
+	      [enable OpenBench Logic Sniffer (OLS) support [default=yes]]),
+	      [LA_OLS="$enableval"],
+	      [LA_OLS=no])
+AM_CONDITIONAL(LA_OLS, test x$LA_OLS = xyes)
+AC_DEFINE(HAVE_LA_OLS, 1, [OpenBench Logic Sniffer (OLS) support])
+
+AC_ARG_ENABLE(saleae-logic, AC_HELP_STRING([--enable-saleae-logic],
+	      [enable Saleae Logic support [default=yes]]),
+	      [LA_SALEAE_LOGIC="$enableval"],
+	      [LA_SALEAE_LOGIC=no])
+AM_CONDITIONAL(LA_SALEAE_LOGIC, test x$LA_SALEAE_LOGIC = xyes)
+AC_DEFINE(HAVE_LA_SALEAE_LOGIC, 1, [Saleae Logic support])
+
+AC_ARG_ENABLE(zeroplus-logic-cube,
+	      AC_HELP_STRING([--enable-zeroplus-logic-cube],
+	      [enable Zeroplus Logic Cube support [default=yes]]),
+	      [LA_ZEROPLUS_LOGIC_CUBE="$enableval"],
+	      [LA_ZEROPLUS_LOGIC_CUBE=no])
+AM_CONDITIONAL(LA_ZEROPLUS_LOGIC_CUBE, test x$LA_ZEROPLUS_LOGIC_CUBE = xyes)
+AC_DEFINE(HAVE_LA_ZEROPLUS_LOGIC_CUBE, 1, [Zeroplus Logic Cube support])
+
 # Checks for libraries.
 AM_PATH_GLIB_2_0(2.0.0,
 	CFLAGS="$CFLAGS $GLIB_CFLAGS"; LIBS="$LIBS $GLIB_LIBS")
@@ -51,9 +82,11 @@ PKG_CHECK_MODULES([libzip], [libzip >= 0.8],
 	[CFLAGS="$CFLAGS $libzip_CFLAGS";
 	LIBS="$LIBS $libzip_LIBS"])
 
-PKG_CHECK_MODULES([libftdi], [libftdi >= 0.16],
-	[CFLAGS="$CFLAGS $libftdi_CFLAGS";
-	LIBS="$LIBS $libftdi_LIBS"])
+if test "x$LA_ASIX_SIGMA" != xno; then
+	PKG_CHECK_MODULES([libftdi], [libftdi >= 0.16],
+		[CFLAGS="$CFLAGS $libftdi_CFLAGS";
+		LIBS="$LIBS $libftdi_LIBS"])
+fi
 
 # Python support.
 CPPFLAGS_PYTHON=""
