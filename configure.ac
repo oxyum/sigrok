@@ -44,7 +44,7 @@ LT_INIT
 AC_ARG_ENABLE(asix-sigma, AC_HELP_STRING([--enable-asix-sigma],
 	      [enable ASIX Sigma support [default=yes]]),
 	      [LA_ASIX_SIGMA="$enableval"],
-	      [LA_ASIX_SIGMA=no])
+	      [LA_ASIX_SIGMA=yes])
 AM_CONDITIONAL(LA_ASIX_SIGMA, test x$LA_ASIX_SIGMA = xyes)
 if test "x$LA_ASIX_SIGMA" = "xyes"; then
 	AC_DEFINE(HAVE_LA_ASIX_SIGMA, 1, [ASIX Sigma support])
@@ -53,7 +53,7 @@ fi
 AC_ARG_ENABLE(ols, AC_HELP_STRING([--enable-ols],
 	      [enable OpenBench Logic Sniffer (OLS) support [default=yes]]),
 	      [LA_OLS="$enableval"],
-	      [LA_OLS=no])
+	      [LA_OLS=yes])
 AM_CONDITIONAL(LA_OLS, test x$LA_OLS = xyes)
 if test "x$LA_OLS" = "xyes"; then
 	AC_DEFINE(HAVE_LA_OLS, 1, [OpenBench Logic Sniffer (OLS) support])
@@ -62,7 +62,7 @@ fi
 AC_ARG_ENABLE(saleae-logic, AC_HELP_STRING([--enable-saleae-logic],
 	      [enable Saleae Logic support [default=yes]]),
 	      [LA_SALEAE_LOGIC="$enableval"],
-	      [LA_SALEAE_LOGIC=no])
+	      [LA_SALEAE_LOGIC=yes])
 AM_CONDITIONAL(LA_SALEAE_LOGIC, test x$LA_SALEAE_LOGIC = xyes)
 if test "x$LA_LA_SALEAE_LOGIC" = "xyes"; then
 	AC_DEFINE(HAVE_LA_SALEAE_LOGIC, 1, [Saleae Logic support])
@@ -72,7 +72,7 @@ AC_ARG_ENABLE(zeroplus-logic-cube,
 	      AC_HELP_STRING([--enable-zeroplus-logic-cube],
 	      [enable Zeroplus Logic Cube support [default=yes]]),
 	      [LA_ZEROPLUS_LOGIC_CUBE="$enableval"],
-	      [LA_ZEROPLUS_LOGIC_CUBE=no])
+	      [LA_ZEROPLUS_LOGIC_CUBE=yes])
 AM_CONDITIONAL(LA_ZEROPLUS_LOGIC_CUBE, test x$LA_ZEROPLUS_LOGIC_CUBE = xyes)
 if test "x$LA_ZEROPLUS_LOGIC_CUBE" = "xyes"; then
 	AC_DEFINE(HAVE_LA_ZEROPLUS_LOGIC_CUBE, 1, [Zeroplus Logic Cube support])
