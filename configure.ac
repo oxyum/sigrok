@@ -64,7 +64,7 @@ AC_ARG_ENABLE(saleae-logic, AC_HELP_STRING([--enable-saleae-logic],
 	      [LA_SALEAE_LOGIC="$enableval"],
 	      [LA_SALEAE_LOGIC=yes])
 AM_CONDITIONAL(LA_SALEAE_LOGIC, test x$LA_SALEAE_LOGIC = xyes)
-if test "x$LA_LA_SALEAE_LOGIC" = "xyes"; then
+if test "x$LA_SALEAE_LOGIC" = "xyes"; then
 	AC_DEFINE(HAVE_LA_SALEAE_LOGIC, 1, [Saleae Logic support])
 fi
 
