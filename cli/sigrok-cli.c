@@ -748,27 +748,15 @@ void run_session(void)
 			if ((val = strchr(opt_devoption[i], '='))) {
 				*val++ = 0;
 				for (j = 0; hwcap_options[j].capability; j++) {
-					if (!strcmp(hwcap_options[i].shortname,
-						    opt_devoption[i])) {
+					if (!strcmp(hwcap_options[i].shortname, opt_devoption[i])) {
 						ret = SIGROK_ERR;
 						if (hwcap_options[i].type == T_UINT64) {
 							tmp_u64 = parse_sizestring(val);
-							ret =
-							    device->plugin->
-							    set_configuration
-							    (device->
-							     plugin_index,
-							     hwcap_options[j].
-							     capability,
-							     &tmp_u64);
-						} else if (hwcap_options[i].
-							   type == T_CHAR) {
-							ret = device->plugin->
-							    set_configuration
-							    (device->
-							     plugin_index,
-							     hwcap_options[j].
-							     capability, val);
+							ret = device->plugin-> set_configuration(device-> plugin_index,
+									hwcap_options[j]. capability, &tmp_u64);
+						} else if (hwcap_options[i]. type == T_CHAR) {
+							ret = device->plugin-> set_configuration(device-> plugin_index,
+									hwcap_options[j]. capability, val);
 						}
 
 						if (ret != SIGROK_OK) {
@@ -776,6 +764,8 @@ void run_session(void)
 							session_destroy();
 							return;
 						}
+						else
+							break;
 					}
 				}
 			} else {
