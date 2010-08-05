@@ -656,7 +656,7 @@ void run_session(void)
 	struct probe *probe;
 	GPollFD *fds;
 	GSList *devices;
-	int num_devices, max_probes, *capabilities, ret, i, j;
+	int num_devices, max_probes, *capabilities, ret, found, i, j;
 	unsigned int time_msec;
 	uint64_t tmp_u64;
 	char **probelist, *val;
@@ -745,32 +745,43 @@ void run_session(void)
 
 	if (opt_devoption) {
 		for (i = 0; opt_devoption[i]; i++) {
-			if ((val = strchr(opt_devoption[i], '='))) {
-				*val++ = 0;
-				for (j = 0; hwcap_options[j].capability; j++) {
-					if (!strcmp(hwcap_options[i].shortname, opt_devoption[i])) {
-						ret = SIGROK_ERR;
-						if (hwcap_options[i].type == T_UINT64) {
-							tmp_u64 = parse_sizestring(val);
-							ret = device->plugin-> set_configuration(device-> plugin_index,
-									hwcap_options[j]. capability, &tmp_u64);
-						} else if (hwcap_options[i]. type == T_CHAR) {
-							ret = device->plugin-> set_configuration(device-> plugin_index,
-									hwcap_options[j]. capability, val);
-						}
+			if (!(val = strchr(opt_devoption[i], '='))) {
+				printf("No value given for device option '%s'.\n", opt_devoption[i]);
+				session_destroy();
+				return;
+			}
 
-						if (ret != SIGROK_OK) {
-							printf("Failed to set device option '%s'.\n", opt_devoption[i]);
-							session_destroy();
-							return;
-						}
-						else
-							break;
+			found = FALSE;
+			*val++ = 0;
+			for (j = 0; hwcap_options[j].capability; j++) {
+				if (!strcmp(hwcap_options[j].shortname, opt_devoption[i])) {
+					found = TRUE;
+					switch (hwcap_options[j].type) {
+					case T_UINT64:
+						tmp_u64 = parse_sizestring(val);
+						ret = device->plugin-> set_configuration(device-> plugin_index,
+								hwcap_options[j]. capability, &tmp_u64);
+						break;
+					case T_CHAR:
+						ret = device->plugin-> set_configuration(device-> plugin_index,
+								hwcap_options[j]. capability, val);
+						break;
+					default:
+						ret = SIGROK_ERR;
 					}
+
+					if (ret != SIGROK_OK) {
+						printf("Failed to set device option '%s'.\n", opt_devoption[i]);
+						session_destroy();
+						return;
+					}
+					else
+						break;
 				}
-			} else {
-				printf("Invalid device option '%s'.\n",
-				       opt_devoption[i]);
+			}
+			if(!found)
+			{
+				printf("Unknown device option '%s'.\n", opt_devoption[i]);
 				session_destroy();
 				return;
 			}
