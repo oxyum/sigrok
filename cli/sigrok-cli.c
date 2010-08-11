@@ -344,14 +344,11 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	output_len = 0;
 	if (!opt_save_filename) {
 		if (o->format->data) {
-			if (received_samples + packet->length /
-			    sample_size > limit_samples * sample_size) {
-				o->format->data(o, filter_out,
-				  limit_samples * sample_size -
-				  received_samples, &output_buf, &output_len);
+			if (received_samples + packet->length / sample_size > limit_samples * sample_size) {
+				o->format->data(o, filter_out, limit_samples * sample_size - received_samples,
+						&output_buf, &output_len);
 			} else {
-				o->format->data(o, filter_out,
-				  filter_out_len, &output_buf, &output_len);
+				o->format->data(o, filter_out, filter_out_len, &output_buf, &output_len);
 			}
 		}
 		if (output_len)
