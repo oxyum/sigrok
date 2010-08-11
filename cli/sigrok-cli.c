@@ -38,7 +38,7 @@
 
 extern struct hwcap_option hwcap_options[];
 
-gboolean debug = FALSE;
+gboolean debug = 0;
 int end_acquisition = FALSE;
 uint64_t limit_samples = 0;
 struct output_format *output_format = NULL;
@@ -873,11 +873,12 @@ void logger(const gchar *log_domain, GLogLevelFlags log_level,
 	if (log_level & (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_WARNING)) {
 		fprintf(stderr, "Warning: %s\n", message);
 		fflush(stderr);
-	} else {
-		if (debug) {
-			printf("* %s\n", message);
-			fflush(stdout);
-		}
+	} else if (log_level & G_LOG_LEVEL_DEBUG && debug == 2) {
+		printf("* %s\n", message);
+		fflush(stdout);
+	} else if (log_level & G_LOG_LEVEL_MESSAGE && debug == 1) {
+		printf("* %s\n", message);
+		fflush(stdout);
 	}
 }
 
@@ -893,7 +894,7 @@ int main(int argc, char **argv)
 
 	g_log_set_default_handler(logger, NULL);
 	if (getenv("SIGROK_DEBUG"))
-		debug = TRUE;
+		debug = strtol(getenv("SIGROK_DEBUG"), NULL, 10);
 
 #if 0
 #define BUFLEN 50
