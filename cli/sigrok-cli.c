@@ -808,6 +808,8 @@ void run_session(void)
 					      DI_CUR_SAMPLERATE));
 			limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
 		}
+		device->plugin->set_configuration(device->plugin_index,
+					  HWCAP_LIMIT_SAMPLES, &limit_samples);
 	}
 
 	if (opt_samples) {
