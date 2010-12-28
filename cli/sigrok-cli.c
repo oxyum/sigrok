@@ -878,12 +878,11 @@ void logger(const gchar *log_domain, GLogLevelFlags log_level,
 	if (log_level & (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_WARNING)) {
 		fprintf(stderr, "Warning: %s\n", message);
 		fflush(stderr);
-	} else if (log_level & G_LOG_LEVEL_DEBUG && debug == 2) {
-		printf("* %s\n", message);
-		fflush(stdout);
-	} else if (log_level & G_LOG_LEVEL_MESSAGE && debug == 1) {
-		printf("* %s\n", message);
-		fflush(stdout);
+	} else {
+		if ((log_level & G_LOG_LEVEL_MESSAGE && debug == 1) || debug == 2) {
+			printf("* %s\n", message);
+			fflush(stdout);
+		}
 	}
 }
 
