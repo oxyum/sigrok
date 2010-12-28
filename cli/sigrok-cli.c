@@ -285,11 +285,16 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		break;
 	case DF_END:
 		g_message("Received DF_END");
+		if (end_acquisition) {
+			g_message("double end!");
+			break;
+		}
 		if (o->format->event) {
 			o->format->event(o, DF_END, &output_buf, &output_len);
 			if (output_len) {
 				fwrite(output_buf, 1, output_len, stdout);
 				free(output_buf);
+				output_len = 0;
 			}
 		}
 		if (limit_samples && received_samples < limit_samples)
@@ -333,9 +338,12 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	if (received_samples >= limit_samples)
 		return;
 
-	filter_probes(sample_size, unitsize, probelist,
+	ret = filter_probes(sample_size, unitsize, probelist,
 		      packet->payload, packet->length,
 		      &filter_out, &filter_out_len);
+	if (ret != SIGROK_OK)
+		return;
+
 	if (device->datastore)
 		datastore_put(device->datastore, filter_out,
 			      filter_out_len, sample_size, probelist);
@@ -354,11 +362,11 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		if (output_len)
 			fwrite(output_buf, 1, output_len, stdout);
 	}
-	if (filter_out)
-		free(filter_out);
+	free(filter_out);
 	if (output_len)
 		free(output_buf);
 	received_samples += packet->length / sample_size;
+
 }
 
 char **parse_probestring(int max_probes, char *probestring)
