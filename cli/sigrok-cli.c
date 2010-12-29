@@ -416,6 +416,8 @@ char **parse_probestring(int max_probes, char *probestring)
 
 			if ((name = strchr(tokens[i], '='))) {
 				probelist[tmp - 1] = g_strdup(++name);
+				if (strlen(probelist[tmp - 1]) > MAX_PROBENAME_LEN)
+					probelist[tmp - 1][MAX_PROBENAME_LEN] = 0;
 			} else {
 				snprintf(str, 7, "%d", tmp);
 				probelist[tmp - 1] = g_strdup(str);
