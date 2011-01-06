@@ -879,13 +879,18 @@ void logger(const gchar *log_domain, GLogLevelFlags log_level,
 	log_domain = log_domain;
 	user_data = user_data;
 
+        /*
+         * All messages, warnings, errors etc. go to stderr (not stdout) in
+         * order to not mess up the CLI tool data output, e.g. VCD output.
+         */
 	if (log_level & (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_WARNING)) {
-		fprintf(stderr, "Warning: %s\n", message);
+		fprintf(stderr, "%s\n", message);
 		fflush(stderr);
 	} else {
-		if ((log_level & G_LOG_LEVEL_MESSAGE && debug == 1) || debug == 2) {
-			printf("* %s\n", message);
-			fflush(stdout);
+		if ((log_level & G_LOG_LEVEL_MESSAGE && debug == 1)
+		    || debug == 2) {
+			printf("%s\n", message);
+			fflush(stderr);
 		}
 	}
 }
