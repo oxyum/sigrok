@@ -603,6 +603,9 @@ static int register_pds(struct device *device, const char *pdstring)
 	uint64_t outbuflen = 0;
 	struct sigrokdecode_decoder *dec;
 
+	/* Avoid compiler warnings. */
+	device = device;
+
 	/* FIXME: Just for testing... */
 #define BUFLEN 50
 	inbuf = calloc(BUFLEN, 1);
@@ -898,12 +901,15 @@ void logger(const gchar *log_domain, GLogLevelFlags log_level,
 int main(int argc, char **argv)
 {
 	struct output_format **outputs;
-	int ret, i;
-	uint8_t *inbuf = NULL, *outbuf = NULL;
-	uint64_t outbuflen = 0;
+	int i;
 	GOptionContext *context;
 	GError *error;
+#if 0
+	int ret;
+	uint8_t *inbuf = NULL, *outbuf = NULL;
+	uint64_t outbuflen = 0;
 	struct sigrokdecode_decoder *dec;
+#endif
 
 	g_log_set_default_handler(logger, NULL);
 	if (getenv("SIGROK_DEBUG"))
