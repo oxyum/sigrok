@@ -79,19 +79,29 @@ if test "x$LA_ZEROPLUS_LOGIC_CUBE" = "xyes"; then
 fi
 
 # Checks for libraries.
+
+# libglib-2.0 is always needed.
 AM_PATH_GLIB_2_0(2.0.0,
 	CFLAGS="$CFLAGS $GLIB_CFLAGS"; LIBS="$LIBS $GLIB_LIBS")
 
+# libgthread-2.0 is always needed (e.g. for the demo hardware driver).
 AC_CHECK_LIB(gthread-2.0, g_thread_init)
 
+# libusb is only needed for some hardware drivers.
+if test "x$LA_SALEAE_LOGIC" != xno \
+   -o "x$LA_ASIX_SIGMA" != xno \
+   -o "x$LA_ZEROPLUS_LOGIC_CUBE" != xno; then
 PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.5],
 	[CFLAGS="$CFLAGS $libusb_CFLAGS";
 	LIBS="$LIBS $libusb_LIBS"])
+fi
 
+# libzip is always needed.
 PKG_CHECK_MODULES([libzip], [libzip >= 0.8],
 	[CFLAGS="$CFLAGS $libzip_CFLAGS";
 	LIBS="$LIBS $libzip_LIBS"])
 
+# libftdi is only needed for some hardware drivers.
 if test "x$LA_ASIX_SIGMA" != xno; then
 	PKG_CHECK_MODULES([libftdi], [libftdi >= 0.16],
 		[CFLAGS="$CFLAGS $libftdi_CFLAGS";
