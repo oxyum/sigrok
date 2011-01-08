@@ -41,7 +41,8 @@ FORMS        += mainwindow.ui \
 	        channelform.ui
 
 TRANSLATIONS  = locale/sigrok-gui_de_DE.ts \
-                locale/sigrok-gui_nl_NL.ts
+                locale/sigrok-gui_nl_NL.ts \
+                locale/sigrok-gui_fr_FR.ts
 
 CONFIG       += link_pkgconfig debug_and_release build_all
 PKGCONFIG     = glib-2.0 libusb-1.0 libzip
