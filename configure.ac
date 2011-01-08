@@ -82,6 +82,8 @@ fi
 AM_PATH_GLIB_2_0(2.0.0,
 	CFLAGS="$CFLAGS $GLIB_CFLAGS"; LIBS="$LIBS $GLIB_LIBS")
 
+AC_CHECK_LIB(gthread-2.0, g_thread_init)
+
 PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.5],
 	[CFLAGS="$CFLAGS $libusb_CFLAGS";
 	LIBS="$LIBS $libusb_LIBS"])
