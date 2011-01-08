@@ -141,6 +141,15 @@ AC_CONFIG_FILES([Makefile
 		 contrib/Makefile
 		 doc/Makefile
 		 libsigrok/Makefile
+		 libsigrok/hardware/Makefile
+		 libsigrok/hardware/asix-sigma/Makefile
+		 libsigrok/hardware/common/Makefile
+		 libsigrok/hardware/demo/Makefile
+		 libsigrok/hardware/openbench-logic-sniffer/Makefile
+		 libsigrok/hardware/saleae-logic/Makefile
+		 libsigrok/hardware/zeroplus-logic-cube/Makefile
+		 libsigrok/input/Makefile
+		 libsigrok/output/Makefile
 		 libsigrok/libsigrok.pc
 		 libsigrokdecode/Makefile
 		 libsigrokdecode/libsigrokdecode.pc
