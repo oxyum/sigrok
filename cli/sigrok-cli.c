@@ -67,7 +67,7 @@ static gboolean opt_list_analyzers = FALSE;
 static gboolean opt_wait_trigger = FALSE;
 static gchar *opt_load_filename = NULL;
 static gchar *opt_save_filename = NULL;
-static int opt_device = -1;
+static gchar *opt_device = NULL;
 static gchar *opt_probes = NULL;
 static gchar *opt_triggers = NULL;
 static gchar **opt_devoption = NULL;
@@ -83,7 +83,7 @@ static GOptionEntry optargs[] = {
 	{"list-analyzer-plugins", 'A', 0, G_OPTION_ARG_NONE, &opt_list_analyzers, "List analyzer plugins", NULL},
 	{"load-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_filename, "Load session from file", NULL},
 	{"save-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_filename, "Save session to file", NULL},
-	{"device", 'd', 0, G_OPTION_ARG_INT, &opt_device, "Use device id", NULL},
+	{"device", 'd', 0, G_OPTION_ARG_STRING, &opt_device, "Use device id", NULL},
 	{"probes", 'p', 0, G_OPTION_ARG_STRING, &opt_probes, "Probes to use", NULL},
 	{"triggers", 't', 0, G_OPTION_ARG_STRING, &opt_triggers, "Trigger configuration", NULL},
 	{"wait-trigger", 'w', 0, G_OPTION_ARG_NONE, &opt_wait_trigger, "Wait for trigger", NULL},
@@ -94,6 +94,10 @@ static GOptionEntry optargs[] = {
 	{"samples", 0, 0, G_OPTION_ARG_STRING, &opt_samples, "Number of samples to acquire", NULL},
 	{NULL, 0, 0, 0, NULL, NULL, NULL}
 };
+
+struct device *parse_devicestring(char *devicestring);
+int num_real_devices(void);
+
 
 void show_version(void)
 {
@@ -118,8 +122,7 @@ void print_device_line(struct device *device)
 {
 	struct sigrok_device_instance *sdi;
 
-	sdi =
-	    device->plugin->get_device_info(device->plugin_index, DI_INSTANCE);
+	sdi = device->plugin->get_device_info(device->plugin_index, DI_INSTANCE);
 	printf("%s %s", sdi->vendor, sdi->model);
 	if (sdi->version && sdi->version[0])
 		printf(" %s", sdi->version);
@@ -130,7 +133,7 @@ void print_device_line(struct device *device)
 
 void show_device_list(void)
 {
-	struct device *device;
+	struct device *device, *demo_device;
 	GSList *devices, *l;
 	int devcnt;
 
@@ -142,11 +145,21 @@ void show_device_list(void)
 		return;
 
 	printf("The following devices were found:\nID  Device\n");
+	demo_device = NULL;
 	for (l = devices; l; l = l->next) {
 		device = l->data;
-		printf("%-3d ", devcnt++);
+		if (strstr(device->plugin->name, "demo")) {
+			demo_device = device;
+			continue;
+		}
+		printf("%-3d   ", devcnt++);
 		print_device_line(device);
 	}
+	if (demo_device) {
+		printf("demo  ");
+		print_device_line(demo_device);
+	}
+
 }
 
 void show_device_detail(void)
@@ -154,14 +167,12 @@ void show_device_detail(void)
 	struct device *device;
 	struct hwcap_option *hwo;
 	struct samplerates *samplerates;
-	GSList *devices;
 	int cap, *capabilities, i;
 	char *title, *triggers;
 
 	device_scan();
-	devices = device_list();
-	device = g_slist_nth_data(devices, opt_device);
-	if (device == NULL) {
+	device = parse_devicestring(opt_device);
+	if (!device) {
 		printf("No such device. Use -D to list all devices.\n");
 		return;
 	}
@@ -208,11 +219,11 @@ void show_device_detail(void)
 			} else {
 				printf(" - supported samplerates:\n");
 				for (i = 0; samplerates->list[i]; i++) {
-					printf("    %7s\n", sigrok_samplerate_string(samplerates->list[i]));
+					printf("      %7s\n", sigrok_samplerate_string(samplerates->list[i]));
 				}
 			}
 		} else {
-			printf("      %s\n", hwo->shortname);
+			printf("    %s\n", hwo->shortname);
 		}
 	}
 }
@@ -541,6 +552,55 @@ uint64_t parse_sizestring(char *sizestring)
 	return val;
 }
 
+struct device *parse_devicestring(char *devicestring)
+{
+	struct device *device, *d;
+	GSList *devices, *l;
+	int num_devices, device_num, device_cnt;;
+	char *tmp;
+
+	if (!devicestring)
+		return NULL;
+
+	device_num = strtol(devicestring, &tmp, 10);
+	if (tmp != devicestring) {
+		num_devices = num_real_devices();
+		if (device_num < 0 || device_num >= num_devices)
+			return NULL;
+	}
+
+	device = NULL;
+	device_cnt = 0;
+	devices = device_list();
+	for (l = devices; l; l = l->next) {
+		d = l->data;
+		if (strstr(d->plugin->name, "demo")) {
+			if (!strcmp(devicestring, "demo")) {
+				device = d;
+				break;
+			}
+			continue;
+		} else {
+			if (tmp == devicestring) {
+				/* selecting device by driver name */
+				if (!strcmp(d->plugin->name, devicestring)) {
+					device = d;
+					break;
+				}
+			} else if (device_cnt == device_num) {
+				/* selecting device by number */
+				if (device_num == device_cnt) {
+					device = d;
+					break;
+				}
+			}
+			device_cnt++;
+		}
+	}
+
+	return device;
+}
+
 void remove_source(int fd)
 {
 	struct source *new_sources;
@@ -660,12 +720,28 @@ void load_file(void)
 }
 
 
+int num_real_devices(void)
+{
+	struct device *device;
+	GSList *devices, *l;
+	int num_devices;
+
+	num_devices = 0;
+	devices = device_list();
+	for (l = devices; l; l = l->next) {
+		device = l->data;
+		if (!strstr(device->plugin->name, "demo"))
+			num_devices++;
+	}
+
+	return num_devices;
+}
+
 void run_session(void)
 {
 	struct device *device;
 	struct probe *probe;
 	GPollFD *fds;
-	GSList *devices;
 	int num_devices, max_probes, *capabilities, ret, found, i, j;
 	unsigned int time_msec;
 	uint64_t tmp_u64;
@@ -676,25 +752,24 @@ void run_session(void)
 		register_pds(NULL, opt_pds);
 
 	device_scan();
-	devices = device_list();
-	num_devices = g_slist_length(devices);
+	num_devices = num_real_devices();
 
 	if (num_devices == 0) {
 		g_warning("No devices found.");
 		return;
 	}
 
-	if (opt_device == -1) {
+	if (!opt_device) {
 		if (num_devices == 1)
 			/* No device specified, but there is only one. */
-			opt_device = 0;
+			device = parse_devicestring("0");
 		else {
-			g_warning("%d devices found, please select one.",
-				  num_devices);
+			g_warning("%d devices found, please select one.", num_devices);
 			return;
 		}
 	} else {
-		if (opt_device >= num_devices) {
+		device = parse_devicestring(opt_device);
+		if (!device) {
 			g_warning("Device not found.");
 			return;
 		}
@@ -705,7 +780,6 @@ void run_session(void)
 	source_cb_remove = remove_source;
 	source_cb_add = add_source;
 
-	device = g_slist_nth_data(devices, opt_device);
 	if (session_device_add(device) != SIGROK_OK) {
 		printf("Failed to use device.\n");
 		session_destroy();
@@ -976,7 +1050,7 @@ int main(int argc, char **argv)
 		load_file();
 	else if (opt_samples || opt_time)
 		run_session();
-	else if (opt_device != -1)
+	else if (opt_device)
 		show_device_detail();
 	else
 		printf("%s", g_option_context_get_help(context, TRUE, NULL));
