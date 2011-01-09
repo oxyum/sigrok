@@ -53,6 +53,10 @@ int main(int argc, char *argv[])
 	QApplication::setApplicationName("sigrok-gui");
 	QApplication::setOrganizationDomain("http://www.sigrok.org");
 
+	/* Disable this to actually allow running the (pre-alpha!) GUI. */
+	std::cerr << "The GUI is not yet usable, aborting." << std::endl;
+	return 1;
+
 	w = new MainWindow;
 
 	if (sigrok_init() != SIGROK_OK) {
