@@ -319,23 +319,8 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		o->format->event(o, DF_TRIGGER, 0, 0);
 		triggered = 1;
 		break;
-	case DF_LOGIC8:
-		sample_size = 1;
-		break;
-	case DF_LOGIC16:
-		sample_size = 2;
-		break;
-	case DF_LOGIC24:
-		sample_size = 3;
-		break;
-	case DF_LOGIC32:
-		sample_size = 4;
-		break;
-	case DF_LOGIC48:
-		sample_size = 6;
-		break;
-	case DF_LOGIC64:
-		sample_size = 8;
+	case DF_LOGIC:
+		sample_size = packet->unitsize;
 		break;
 	}
 
