@@ -242,8 +242,8 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	static int triggered = 0;
 	struct probe *probe;
 	struct datafeed_header *header;
-	int num_enabled_probes, sample_size, i, ret;
-	uint64_t output_len, filter_out_len;
+	int num_enabled_probes, sample_size, ret, i;
+	uint64_t output_len, filter_out_len, len;
 	char *output_buf, *filter_out;
 
 	/* If the first packet to come in isn't a header, don't even try. */
@@ -347,13 +347,12 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	/* Don't dump samples on stdout when also saving the session. */
 	output_len = 0;
 	if (!opt_save_filename) {
-		if (o->format->data) {
-			if (received_samples + packet->length / sample_size > limit_samples * sample_size) {
-				o->format->data(o, filter_out, limit_samples * sample_size - received_samples,
-						&output_buf, &output_len);
-			} else {
-				o->format->data(o, filter_out, filter_out_len, &output_buf, &output_len);
-			}
+		if (o->format->data && packet->type == o->format->df_type) {
+			if (received_samples + packet->length / sample_size > limit_samples * sample_size)
+				len = limit_samples * sample_size - received_samples;
+			else
+				len = filter_out_len;
+			o->format->data(o, filter_out, len, &output_buf, &output_len);
 		}
 		if (output_len)
 			fwrite(output_buf, 1, output_len, stdout);
