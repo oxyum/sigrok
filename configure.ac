@@ -1,21 +1,21 @@
-## 
+##
 ## This file is part of the sigrok project.
-## 
+##
 ## Copyright (C) 2010 Bert Vermeulen <bert@biot.com>
-## 
+##
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
 ## the Free Software Foundation, either version 3 of the License, or
 ## (at your option) any later version.
-## 
+##
 ## This program is distributed in the hope that it will be useful,
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
-## 
+##
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
-## 
+##
 
 AC_PREREQ(2.61)
 AC_INIT([sigrok], [0.1pre2], [sigrok-devel@lists.sourceforge.net],
@@ -117,7 +117,7 @@ if test "x$LA_ASIX_SIGMA" != xno; then
 		LIBS="$LIBS $libftdi_LIBS"])
 fi
 
-# libudev is needed for link-mso19
+# libudev is only needed for some hardware drivers.
 if test "x$LA_LINK_MSO19" != xno; then
 	PKG_CHECK_MODULES([libudev], [libudev >= 151],
 		[CFLAGS="$CFLAGS $libudev_CFLAGS";
