@@ -31,7 +31,7 @@ Requirements
  - libzip >= 0.8
  - libftdi >= 0.16 (for some logic analyzer hardware)
  - libudev >= 151 (for some logic analyzer hardware)
- - Python >= 2.5 (for protocol decoder scripts)
+ - Python >= 2.5 (for protocol decoders)
  - Qt + Qt Creator >= 4.5 (for building/editing the GUI) 
 
 
