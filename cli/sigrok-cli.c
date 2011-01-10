@@ -545,7 +545,7 @@ void run_session(void)
 	device_scan();
 	num_devices = num_real_devices();
 
-	if (num_devices == 0) {
+	if (!opt_device && num_devices == 0) {
 		g_warning("No devices found.");
 		return;
 	}
