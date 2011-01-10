@@ -63,9 +63,10 @@ int num_sources = 0;
 int source_timeout = -1;
 
 static gboolean opt_version = FALSE;
-static gboolean opt_list_hwplugins = FALSE;
+static gboolean opt_list_hwdrivers = FALSE;
 static gboolean opt_list_devices = FALSE;
 static gboolean opt_list_analyzers = FALSE;
+static gboolean opt_list_output = FALSE;
 static gboolean opt_wait_trigger = FALSE;
 static gchar *opt_load_filename = NULL;
 static gchar *opt_save_filename = NULL;
@@ -80,9 +81,10 @@ static gchar *opt_samples = NULL;
 
 static GOptionEntry optargs[] = {
 	{"version", 'V', 0, G_OPTION_ARG_NONE, &opt_version, "Show version", NULL},
-	{"list-hardware-plugins", 'H', 0, G_OPTION_ARG_NONE, &opt_list_hwplugins, "List hardware plugins", NULL},
+	{"list-hardware-drivers", 'H', 0, G_OPTION_ARG_NONE, &opt_list_hwdrivers, "List hardware drivers", NULL},
 	{"list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL},
 	{"list-analyzer-plugins", 'A', 0, G_OPTION_ARG_NONE, &opt_list_analyzers, "List analyzer plugins", NULL},
+	{"list-output-modules", 0, 0, G_OPTION_ARG_NONE, &opt_list_output, "list output modules", NULL},
 	{"load-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_filename, "Load session from file", NULL},
 	{"save-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_filename, "Save session to file", NULL},
 	{"device", 'd', 0, G_OPTION_ARG_STRING, &opt_device, "Use device id", NULL},
@@ -105,12 +107,12 @@ void show_version(void)
 	       SIGROK_CLI_VERSION);
 }
 
-void show_hwplugin_list(void)
+void show_hwdriver_list(void)
 {
 	GSList *plugins, *p;
 	struct device_plugin *plugin;
 
-	printf("Plugins for the following devices are installed:\n");
+	printf("The following drivers are installed:\n");
 	plugins = list_hwplugins();
 	for (p = plugins; p; p = p->next) {
 		plugin = p->data;
@@ -231,6 +233,19 @@ void show_device_detail(void)
 void show_analyzer_list(void)
 {
 	/* TODO: Implement. */
+}
+
+void show_output_list(void)
+{
+	struct output_format **outputs;
+	int i;
+
+	printf("Supported output formats:\n");
+	outputs = output_list();
+	for (i = 0; outputs[i]; i++) {
+		printf("%-12s %s\n", outputs[i]->extension, outputs[i]->description);
+	}
+
 }
 
 void datafeed_in(struct device *device, struct datafeed_packet *packet)
@@ -811,12 +826,14 @@ int main(int argc, char **argv)
 
 	if (opt_version)
 		show_version();
-	else if (opt_list_hwplugins)
-		show_hwplugin_list();
+	else if (opt_list_hwdrivers)
+		show_hwdriver_list();
 	else if (opt_list_devices)
 		show_device_list();
 	else if (opt_list_analyzers)
 		show_analyzer_list();
+	else if (opt_list_output)
+		show_output_list();
 	else if (opt_load_filename)
 		load_file();
 	else if (opt_samples || opt_time)
