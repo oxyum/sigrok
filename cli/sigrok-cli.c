@@ -272,7 +272,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 
 		header = (struct datafeed_header *)packet->payload;
 		num_enabled_probes = 0;
-		for (i = 0; i < header->num_probes; i++) {
+		for (i = 0; i < header->num_logic_probes; i++) {
 			probe = g_slist_nth_data(device->probes, i);
 			if (probe->enabled)
 				probelist[num_enabled_probes++] = probe->index;
