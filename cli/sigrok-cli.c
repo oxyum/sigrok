@@ -78,6 +78,7 @@ static gchar *opt_pds = NULL;
 static gchar *opt_format = NULL;
 static gchar *opt_time = NULL;
 static gchar *opt_samples = NULL;
+static gchar *opt_continuous = NULL;
 
 static GOptionEntry optargs[] = {
 	{"version", 'V', 0, G_OPTION_ARG_NONE, &opt_version, "Show version", NULL},
@@ -96,6 +97,7 @@ static GOptionEntry optargs[] = {
 	{"format", 'f', 0, G_OPTION_ARG_STRING, &opt_format, "Output format", NULL},
 	{"time", 0, 0, G_OPTION_ARG_STRING, &opt_time, "How long to sample (ms)", NULL},
 	{"samples", 0, 0, G_OPTION_ARG_STRING, &opt_samples, "Number of samples to acquire", NULL},
+	{"continuous", 0, 0, G_OPTION_ARG_NONE, &opt_continuous, "Sample continuously", NULL},
 	{NULL, 0, 0, 0, NULL, NULL, NULL}
 };
 
@@ -326,6 +328,8 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		if (limit_samples && received_samples < limit_samples)
 			printf("Device only sent %" PRIu64 " samples.\n",
 			       received_samples);
+		if (opt_continuous)
+			printf("Received %"PRIu64" samples.\n", received_samples);
 		end_acquisition = TRUE;
 		free(o);
 		o = NULL;
@@ -347,7 +351,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	if (opt_wait_trigger && !triggered)
 		return;
 
-	if (received_samples >= limit_samples)
+	if (limit_samples && received_samples >= limit_samples)
 		return;
 
 	if (packet->type == DF_LOGIC) {
@@ -371,7 +375,8 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	output_len = 0;
 	if (!opt_save_filename) {
 		if (o->format->data && packet->type == o->format->df_type) {
-			if (received_samples + packet->length / sample_size > limit_samples * sample_size)
+			if (limit_samples
+					&& received_samples + packet->length / sample_size > limit_samples * sample_size)
 				len = limit_samples * sample_size - received_samples;
 			else
 				len = filter_out_len;
@@ -557,6 +562,14 @@ void run_session(void)
 		device = parse_devicestring(opt_device);
 		if (!device) {
 			g_warning("Device not found.");
+			return;
+		}
+	}
+
+	if (opt_continuous) {
+		capabilities = device->plugin->get_capabilities();
+		if (!find_hwcap(capabilities, HWCAP_CONTINUOUS)) {
+			g_warning("this device does not support continuous sampling.");
 			return;
 		}
 	}
@@ -836,7 +849,7 @@ int main(int argc, char **argv)
 		show_output_list();
 	else if (opt_load_filename)
 		load_file();
-	else if (opt_samples || opt_time)
+	else if (opt_samples || opt_time || opt_continuous)
 		run_session();
 	else if (opt_device)
 		show_device_detail();
