@@ -320,6 +320,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		triggered = 1;
 		break;
 	case DF_LOGIC:
+	case DF_ANALOG:
 		sample_size = packet->unitsize;
 		break;
 	}
@@ -334,11 +335,18 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	if (received_samples >= limit_samples)
 		return;
 
-	ret = filter_probes(sample_size, unitsize, probelist,
-		      packet->payload, packet->length,
-		      &filter_out, &filter_out_len);
-	if (ret != SIGROK_OK)
-		return;
+	if (packet->type == DF_LOGIC) {
+		/* filters only support DF_LOGIC */
+		ret = filter_probes(sample_size, unitsize, probelist,
+				  packet->payload, packet->length,
+				  &filter_out, &filter_out_len);
+		if (ret != SIGROK_OK)
+			return;
+	} else {
+		if (!(filter_out = malloc(packet->length)))
+			return;
+		filter_out_len = packet->length;
+	}
 
 	if (device->datastore)
 		datastore_put(device->datastore, filter_out,
