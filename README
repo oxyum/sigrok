@@ -30,6 +30,7 @@ Requirements
  - libusb >= 1.0.5 (for most logic analyzer hardware)
  - libzip >= 0.8
  - libftdi >= 0.16 (for some logic analyzer hardware)
+ - libudev >= 151 (for some logic analyzer hardware)
  - Python >= 2.5 (for protocol decoder scripts)
  - Qt + Qt Creator >= 4.5 (for building/editing the GUI) 
 
@@ -50,6 +51,8 @@ For building the GUI:
  $ cd gui
  $ qmake
  $ make
+
+NOTE: The GUI is not yet usable, it's work-in-progress!
 
 For installing sigrok:
 
