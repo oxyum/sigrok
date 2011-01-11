@@ -45,6 +45,7 @@ int end_acquisition = FALSE;
 uint64_t limit_samples = 0;
 struct output_format *output_format = NULL;
 char *output_format_param = NULL;
+char *input_format_param = NULL;
 
 /* These live in hwplugin.c, for the frontend to override. */
 extern source_callback_add source_cb_add;
@@ -68,6 +69,7 @@ static gboolean opt_list_devices = FALSE;
 static gboolean opt_list_analyzers = FALSE;
 static gboolean opt_list_output = FALSE;
 static gboolean opt_wait_trigger = FALSE;
+static gchar *opt_input_file = NULL;
 static gchar *opt_load_filename = NULL;
 static gchar *opt_save_filename = NULL;
 static gchar *opt_device = NULL;
@@ -86,6 +88,7 @@ static GOptionEntry optargs[] = {
 	{"list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL},
 	{"list-analyzer-plugins", 'A', 0, G_OPTION_ARG_NONE, &opt_list_analyzers, "List analyzer plugins", NULL},
 	{"list-output-modules", 0, 0, G_OPTION_ARG_NONE, &opt_list_output, "list output modules", NULL},
+	{"input-file", 'I', 0, G_OPTION_ARG_FILENAME, &opt_input_file, "Load input from file", NULL},
 	{"load-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_filename, "Load session from file", NULL},
 	{"save-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_filename, "Save session to file", NULL},
 	{"device", 'd', 0, G_OPTION_ARG_STRING, &opt_device, "Use device id", NULL},
@@ -480,32 +483,80 @@ static int register_pds(struct device *device, const char *pdstring)
 	return 0;
 }
 
-void load_file(void)
+void select_probes(struct device *device)
+{
+	struct probe *probe;
+	char **probelist;
+	int max_probes, i;
+
+	if (opt_probes) {
+		/*
+		 * this only works because a device by default initializes
+		 * and enables all its probes.
+		 */
+		max_probes = g_slist_length(device->probes);
+		probelist = parse_probestring(max_probes, opt_probes);
+		if (!probelist) {
+			session_destroy();
+			return;
+		}
+
+		for (i = 0; i < max_probes; i++) {
+			if (probelist[i]) {
+				device_probe_name(device, i + 1, probelist[i]);
+				g_free(probelist[i]);
+			} else {
+				probe = probe_find(device, i + 1);
+				probe->enabled = FALSE;
+			}
+		}
+		g_free(probelist);
+	}
+
+}
+
+void load_input_file(void)
 {
 	struct stat st;
+	struct input *in;
 	struct input_format **inputs, *input_format;
 	int i;
 
+	/* find an input module that can handle this file */
 	inputs = input_list();
 	for (i = 0; inputs[i]; i++) {
-		if (inputs[i]->format_match(opt_load_filename))
+		if (inputs[i]->format_match(opt_input_file))
 			break;
 	}
-
 	if (!inputs[i])
 		/* no input module wanted to touch this */
 		return;
 	input_format = inputs[i];
 
-	if (stat(opt_load_filename, &st) == -1) {
-		printf("unable to load %s: %s", opt_load_filename, strerror(errno));
+	if (stat(opt_input_file, &st) == -1) {
+		g_error("Failed to load %s: %s", opt_input_file, strerror(errno));
 		return;
 	}
-	limit_samples = st.st_size;
+
+	/* initialize the input module. */
+	if (!(in = malloc(sizeof(struct input)))) {
+		g_error("Failed to allocate input module.");
+		return;
+	}
+	in->format = input_format;
+ 	in->param = input_format_param;
+	if (in->format->init) {
+		if (in->format->init(in) != SIGROK_OK) {
+			g_error("Input format init failed.");
+			return;
+		}
+	}
+
+	select_probes(in->vdevice);
 
 	session_new();
 	session_datafeed_callback_add(datafeed_in);
-	input_format->in_loadfile(opt_load_filename);
+	input_format->loadfile(in, opt_input_file);
 	session_stop();
 
 }
@@ -531,7 +582,6 @@ int num_real_devices(void)
 void run_session(void)
 {
 	struct device *device;
-	struct probe *probe;
 	GPollFD *fds;
 	int num_devices, max_probes, *capabilities, ret, found, i, j;
 	unsigned int time_msec;
@@ -565,11 +615,12 @@ void run_session(void)
 			return;
 		}
 	}
+	select_probes(device);
 
 	if (opt_continuous) {
 		capabilities = device->plugin->get_capabilities();
 		if (!find_hwcap(capabilities, HWCAP_CONTINUOUS)) {
-			g_warning("this device does not support continuous sampling.");
+			g_warning("This device does not support continuous sampling.");
 			return;
 		}
 	}
@@ -583,30 +634,6 @@ void run_session(void)
 		printf("Failed to use device.\n");
 		session_destroy();
 		return;
-	}
-
-	if (opt_probes) {
-		/*
-		 * This only works because a device by default initializes
-		 * and enables all its probes.
-		 */
-		max_probes = g_slist_length(device->probes);
-		probelist = parse_probestring(max_probes, opt_probes);
-		if (!probelist) {
-			session_destroy();
-			return;
-		}
-
-		for (i = 0; i < max_probes; i++) {
-			if (probelist[i]) {
-				device_probe_name(device, i + 1, probelist[i]);
-				g_free(probelist[i]);
-			} else {
-				probe = probe_find(device, i + 1);
-				probe->enabled = FALSE;
-			}
-		}
-		g_free(probelist);
 	}
 
 	if (opt_triggers) {
@@ -847,8 +874,8 @@ int main(int argc, char **argv)
 		show_analyzer_list();
 	else if (opt_list_output)
 		show_output_list();
-	else if (opt_load_filename)
-		load_file();
+	else if (opt_input_file)
+		load_input_file();
 	else if (opt_samples || opt_time || opt_continuous)
 		run_session();
 	else if (opt_device)
