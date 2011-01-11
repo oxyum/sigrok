@@ -1,0 +1,145 @@
+##
+## This file is part of the sigrok project.
+##
+## Copyright (C) 2011 Uwe Hermann <uwe@hermann-uwe.de>
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+##
+
+#
+# This file is used to create the official sigrok Windows installer via NSIS.
+# Read the HACKING file in the sigrok source tree for details.
+#
+# NSIS documentation:
+# http://nsis.sourceforge.net/Docs/
+# http://nsis.sourceforge.net/Docs/Modern%20UI%202/Readme.html
+#
+
+# Include the "Modern UI" header, which gives us the usual Windows look-n-feel.
+!include "MUI2.nsh"
+
+# --- Global stuff ------------------------------------------------------------
+
+# Installer/product name.
+Name "@PACKAGE_NAME@"
+
+# Filename of the installer executable.
+OutFile "@PACKAGE_NAME@-installer-@PACKAGE_VERSION@.exe"
+
+# Where to install the application.
+InstallDir "$PROGRAMFILES\@PACKAGE_NAME@"
+
+# Request application privileges for Windows Vista.
+RequestExecutionLevel user
+
+
+# --- MUI interface configuration ---------------------------------------------
+
+# Use the following icon for the installer EXE file.
+!define MUI_ICON "..\..\gui\icons\sigrok-logo-notext.ico"
+
+# Show a nice image at the top of each installer page.
+!define MUI_HEADERIMAGE
+
+# Don't automatically go to the Finish page so the user can check the log.
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+
+# Upon "cancel", ask the user if he really wants to abort the installer.
+!define MUI_ABORTWARNING
+
+
+# --- MUI pages ---------------------------------------------------------------
+
+# Show a nice "Welcome to the ... Setup Wizard" page.
+!insertmacro MUI_PAGE_WELCOME
+
+# Show the license text which the user has to accept.
+!insertmacro MUI_PAGE_LICENSE "..\..\COPYING"
+
+# Allow the user to select a different install directory.
+!insertmacro MUI_PAGE_DIRECTORY
+
+# Perform the actual installation, i.e. install the files.
+!insertmacro MUI_PAGE_INSTFILES
+
+# Show a final "We're done, click Finish to close this wizard" message.
+!insertmacro MUI_PAGE_FINISH
+
+# Pages used for the uninstaller.
+!insertmacro MUI_UNPAGE_WELCOME
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
+
+
+# --- MUI language files ------------------------------------------------------
+
+# Select an installer language (required!).
+!insertmacro MUI_LANGUAGE "English"
+
+
+# --- Default section ---------------------------------------------------------
+
+Section
+
+	# Where to install the files specified below.
+	SetOutPath "$INSTDIR"
+
+	# Install file(s).
+	# FIXME: For now we test the installer by installing COPYING.
+	File "..\..\COPYING"
+
+	# Generate the uninstaller executable.
+	WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+	# Create a sub-directory in the start menu.
+	CreateDirectory "$SMPROGRAMS\@PACKAGE_NAME@"
+
+	# Create a shortcut for the application.
+	# FIXME
+	CreateShortCut "$SMPROGRAMS\@PACKAGE_NAME@\@PACKAGE_NAME@.lnk" \
+		"$INSTDIR\COPYING" "" "$INSTDIR\COPYING" 0 SW_SHOWNORMAL \
+		"" "Open-source, portable logic analyzer software"
+
+	# Create a shortcut for the uninstaller.
+	CreateShortCut "$SMPROGRAMS\@PACKAGE_NAME@\Uninstall.lnk" \
+		"$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0 \
+		SW_SHOWNORMAL "" "Uninstall @PACKAGE_NAME@"
+
+SectionEnd
+
+# --- Uninstaller section -----------------------------------------------------
+
+Section "Uninstall"
+
+	# Always delete the uninstaller first (yes, this really works).
+	Delete "$INSTDIR\Uninstall.exe"
+
+	# Delete the application.
+	# FIXME
+	Delete "$INSTDIR\COPYING"
+
+	# Delete the install directory.
+	RMDir "$INSTDIR"
+
+	# Delete the links from the start menu.
+	Delete "$SMPROGRAMS\@PACKAGE_NAME@\@PACKAGE_NAME@.lnk"
+	Delete "$SMPROGRAMS\@PACKAGE_NAME@\Uninstall.lnk"
+
+	# Delete the sub-directory in the start menu.
+	RMDir "$SMPROGRAMS\@PACKAGE_NAME@"
+
+SectionEnd
+

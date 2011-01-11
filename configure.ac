@@ -167,6 +167,8 @@ AC_CHECK_FUNCS([gettimeofday memset strchr strerror strncasecmp strtol strtoul s
 
 AC_CONFIG_FILES([Makefile
 		 contrib/Makefile
+		 contrib/nsis/Makefile
+		 contrib/nsis/sigrok.nsi
 		 doc/Makefile
 		 libsigrok/Makefile
 		 libsigrok/hardware/Makefile

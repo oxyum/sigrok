@@ -18,3 +18,22 @@ The Python decoders should also follow the usual Python conventions and use
 Python idioms as far as it makes sense, but they should also indent the
 code with extactly one tab.
 
+
+Creating a Windows installer
+----------------------------
+
+In order to create a self-contained Windows installer EXE file for sigrok,
+you can do the following.
+
+Requirements:
+
+ $ apt-get install mingw32 nsis
+
+Creating the installer
+
+ $ ./configure
+ $ cd contrib/nsis
+ $ makensis *.nsi
+
+This will create a sigrok-installer-$VERSION.exe self-extracting installer.
+
