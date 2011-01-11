@@ -41,6 +41,15 @@ LT_INIT
 
 # Logic analyzer hardware support '--enable' options.
 
+AC_ARG_ENABLE(demo, AC_HELP_STRING([--enable-demo],
+	      [enable demo driver support [default=yes]]),
+	      [LA_DEMO="$enableval"],
+	      [LA_DEMO=yes])
+AM_CONDITIONAL(LA_DEMO, test x$LA_DEMO = xyes)
+if test "x$LA_DEMO" = "xyes"; then
+	AC_DEFINE(HAVE_LA_DEMO, 1, [Demo driver support])
+fi
+
 AC_ARG_ENABLE(asix-sigma, AC_HELP_STRING([--enable-asix-sigma],
 	      [enable ASIX Sigma support [default=yes]]),
 	      [LA_ASIX_SIGMA="$enableval"],
