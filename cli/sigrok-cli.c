@@ -332,7 +332,8 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 			printf("Device only sent %" PRIu64 " samples.\n",
 			       received_samples);
 		if (opt_continuous)
-			printf("Received %"PRIu64" samples.\n", received_samples);
+			printf("Device stopped after %" PRIu64 " samples.\n",
+			       received_samples);
 		end_acquisition = TRUE;
 		free(o);
 		o = NULL;
@@ -423,8 +424,6 @@ void add_source(int fd, int events, int timeout, receive_data_callback callback,
 		void *user_data)
 {
 	struct source *new_sources, *s;
-
-	// add_source_fd(fd, events, timeout, callback, user_data);
 
 	new_sources = calloc(1, sizeof(struct source) * (num_sources + 1));
 
@@ -739,6 +738,9 @@ void run_session(void)
 		return;
 	}
 
+	if (opt_continuous)
+		add_anykey();
+
 	fds = NULL;
 	while (!end_acquisition) {
 		if (fds)
@@ -768,11 +770,15 @@ void run_session(void)
 	}
 	free(fds);
 
+	if (opt_continuous)
+		clear_anykey();
+
 	session_stop();
 	if (opt_save_filename)
 		if (session_save(opt_save_filename) != SIGROK_OK)
 			printf("Failed to save session.\n");
 	session_destroy();
+
 }
 
 void logger(const gchar *log_domain, GLogLevelFlags log_level,

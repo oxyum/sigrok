@@ -23,6 +23,8 @@
 
 /* sigrok-cli.c */
 int num_real_devices(void);
+void add_source(int fd, int events, int timeout, receive_data_callback callback,
+		void *user_data);
 
 /* parsers.c */
 char **parse_probestring(int max_probes, char *probestring);
@@ -30,5 +32,8 @@ char **parse_triggerstring(struct device *device, char *triggerstring);
 uint64_t parse_sizestring(char *sizestring);
 struct device *parse_devicestring(char *devicestring);
 
+/* anykey.c */
+void add_anykey(void);
+void clear_anykey(void);
 
 #endif /* SIGROK_CLI_H_ */

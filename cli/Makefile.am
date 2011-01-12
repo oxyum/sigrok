@@ -19,7 +19,7 @@
 
 bin_PROGRAMS = sigrok-cli
 
-sigrok_cli_SOURCES = sigrok-cli.c parsers.c
+sigrok_cli_SOURCES = sigrok-cli.c parsers.c anykey.c
 
 sigrok_cli_CPPFLAGS = -I$(top_srcdir)/libsigrok \
 		      -I$(top_srcdir)/libsigrokdecode \
