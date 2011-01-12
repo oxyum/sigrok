@@ -59,6 +59,11 @@ RequestExecutionLevel user
 # Upon "cancel", ask the user if he really wants to abort the installer.
 !define MUI_ABORTWARNING
 
+# Don't force the user to accept the license, just show it.
+# Details: http://trac.videolan.org/vlc/ticket/3124
+!define MUI_LICENSEPAGE_BUTTON $(^NextBtn)
+!define MUI_LICENSEPAGE_TEXT_BOTTOM "Click Next to continue."
+
 
 # --- MUI pages ---------------------------------------------------------------
 
