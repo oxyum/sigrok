@@ -18,6 +18,7 @@ map
 missing
 stamp-h1
 m4/
+contrib/nsis/sigrok.nsi
 
 # recursive autoconf leftovers
 .deps
