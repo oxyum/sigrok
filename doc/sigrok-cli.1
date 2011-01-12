@@ -182,6 +182,10 @@ If you want to sample data for 3 seconds, use:
 Alternatively, you can also use:
 .TP
 .B "  sigrok-cli --time 3s"
+.TP
+To capture data from 4 probes lasting 100ms at 10 MHz starting at the trigger condition 1:high, 2:rising, 3:low, 4:high, use:
+.TP
+.B "  sigrok-cli -f bits -p 1-4 --time 100 -o samplerate=10m --wait-trigger --triggers 1=1,2=r,3=0,4=1 "
 .SH "EXIT STATUS"
 .B sigrok-cli
 exits with 0 on success, 1 on most failures.
