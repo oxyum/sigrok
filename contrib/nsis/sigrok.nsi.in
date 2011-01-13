@@ -166,17 +166,25 @@ Section "Uninstall"
 	# Always delete the uninstaller first (yes, this really works).
 	Delete "$INSTDIR\Uninstall.exe"
 
-	# Delete the application and the application data.
+	# Delete the application, the application data, and related libs.
 	Delete "$INSTDIR\COPYING"
-	Delete "$INSTDIR\sigrok-cli.exe"
 	Delete "$INSTDIR\libsigrok.a"
 	Delete "$INSTDIR\libsigrok.la"
 	Delete "$INSTDIR\libsigrokdecode.a"
 	Delete "$INSTDIR\libsigrokdecode.la"
+	Delete "$INSTDIR\sigrok-cli.exe"
+	Delete "$INSTDIR\sigrok-gui.exe"
+	Delete "$INSTDIR\intl.dll"
+	Delete "$INSTDIR\libiconv-2.dll"
+	Delete "$INSTDIR\libstdc++-6.dll"
 	Delete "$INSTDIR\libglib-2.0-0.dll"
 	Delete "$INSTDIR\libgthread-2.0-0.dll"
 	Delete "$INSTDIR\libusb-1.0.dll"
 	Delete "$INSTDIR\libzip-1.dll"
+	Delete "$INSTDIR\libgcc_s_dw2-1.dll"
+	Delete "$INSTDIR\mingwm10.dll"
+	Delete "$INSTDIR\QtCore4.dll"
+	Delete "$INSTDIR\QtGui4.dll"
 	Delete "$INSTDIR\decoders\*.py"
 
 	# Delete the install directory and its sub-directories.
