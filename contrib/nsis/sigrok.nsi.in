@@ -101,19 +101,43 @@ Section
 
 	# Install the file(s) specified below into the specified directory.
 	SetOutPath "$INSTDIR"
+
+	# License file
 	File "..\..\COPYING"
-	File "dist\bin\sigrok-cli.exe"
+
+	# sigrok libs
 	File "dist\lib\libsigrok.a"
 	File "dist\lib\libsigrok.la"
 	File "dist\lib\libsigrokdecode.a"
 	File "dist\lib\libsigrokdecode.la"
-	File "dist\bin\libglib-2.0-0.dll"
-	File "dist\bin\libgthread-2.0-0.dll"
-	File "dist\bin\libusb-1.0.dll"
-	File "dist\bin\libzip-1.dll"
+
+	# sigrok-cli
+	File "dist\bin\sigrok-cli.exe"
+
+	# sigrok-gui
+	File "..\..\gui\release\sigrok-gui.exe"
+
+	# MinGW libs
+	File "c:\MinGW\bin\intl.dll"
+	File "c:\MinGW\bin\libiconv-2.dll"
+	File "c:\MinGW\bin\libstdc++-6.dll"
+
+	# External libs
+	File "c:\MinGW\msys\1.0\bin\libglib-2.0-0.dll"
+	File "c:\MinGW\msys\1.0\bin\libgthread-2.0-0.dll"
+	File "c:\MinGW\msys\1.0\bin\libusb-1.0.dll"
+	File "c:\MinGW\msys\1.0\bin\libzip-1.dll"
+
+	# Qt libs
+	File "c:\Qt\2010.05\qt\bin\libgcc_s_dw2-1.dll"
+	File "c:\Qt\2010.05\qt\bin\mingwm10.dll"
+	File "c:\Qt\2010.05\qt\bin\QtCore4.dll"
+	File "c:\Qt\2010.05\qt\bin\QtGui4.dll"
 
 	# Install the file(s) specified below into the specified directory.
 	SetOutPath "$INSTDIR\decoders"
+
+	# Protocol decoders
 	File "dist\share\sigrok\*.py"
 
 	# Generate the uninstaller executable.
@@ -123,9 +147,9 @@ Section
 	CreateDirectory "$SMPROGRAMS\@PACKAGE_NAME@"
 
 	# Create a shortcut for the application.
-	# FIXME
 	CreateShortCut "$SMPROGRAMS\@PACKAGE_NAME@\@PACKAGE_NAME@.lnk" \
-		"$INSTDIR\COPYING" "" "$INSTDIR\COPYING" 0 SW_SHOWNORMAL \
+		"$INSTDIR\sigrok-gui.exe" "" "$INSTDIR\sigrok-gui.exe" \
+		0 SW_SHOWNORMAL \
 		"" "Open-source, portable logic analyzer software"
 
 	# Create a shortcut for the uninstaller.
