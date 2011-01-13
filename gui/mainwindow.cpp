@@ -439,9 +439,9 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	case DF_HEADER:
 		qDebug("DF_HEADER");
 		header = (struct datafeed_header *) packet->payload;
-		num_probes = header->num_probes;
+		num_probes = header->num_logic_probes;
 		num_enabled_probes = 0;
-		for (int i = 0; i < header->num_probes; ++i) {
+		for (int i = 0; i < header->num_logic_probes; ++i) {
 			probe = (struct probe *)g_slist_nth_data(device->probes, i);
 			if (probe->enabled)
 				probelist[num_enabled_probes++] = probe->index;
