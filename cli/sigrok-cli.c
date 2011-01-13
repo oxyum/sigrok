@@ -339,7 +339,8 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		o = NULL;
 		break;
 	case DF_TRIGGER:
-		o->format->event(o, DF_TRIGGER, 0, 0);
+		if (o->format->event)
+			o->format->event(o, DF_TRIGGER, 0, 0);
 		triggered = 1;
 		break;
 	case DF_LOGIC:
