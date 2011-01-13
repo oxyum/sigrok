@@ -135,7 +135,7 @@ void ChannelForm::generatePainterPath(void)
 
 void ChannelForm::resizeEvent(QResizeEvent *event)
 {
-	/* Quick hack to prevent compiler warning. */
+	/* Avoid compiler warnings. */
 	event = event;
 
 	/* Quick hack to force a redraw upon resize. */
@@ -149,7 +149,7 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 	// QPainter p(m_ui->renderAreaWidget);
 	QPainter p(this);
 
-	/* Quick hack to prevent compiler warning. */
+	/* Avoid compiler warnings. */
 	event = event;
 
 	if (sample_buffer == NULL)

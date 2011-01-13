@@ -20,22 +20,18 @@
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
-#include <poll.h>
 #include <string.h>
 #include <glib.h>
 #include <sigrok.h>
 #include "sigrok-cli.h"
 
-
 extern int end_acquisition;
 
 struct termios term_orig;
 
-
 static int received_anykey(int fd, int revents, void *user_data)
 {
-
-	/* avoid compiler warning */
+	/* Avoid compiler warnings. */
 	fd = fd;
 	revents = revents;
 	user_data = user_data;
@@ -45,12 +41,11 @@ static int received_anykey(int fd, int revents, void *user_data)
 	return TRUE;
 }
 
-
 void add_anykey(void)
 {
 	struct termios term;
 
-	/* turn off buffering on stdin */
+	/* Turn off buffering on stdin. */
 	tcgetattr(STDIN_FILENO, &term);
 	memcpy(&term_orig, &term, sizeof(struct termios));
 	term.c_lflag &= ~(ECHO | ICANON | ISIG);
@@ -59,17 +54,11 @@ void add_anykey(void)
 	add_source(STDIN_FILENO, G_IO_IN, -1, received_anykey, NULL);
 
 	printf("Press any key to stop acquisition.\n");
-
 }
-
 
 void clear_anykey(void)
 {
-
-	/* restore stdin */
+	/* Restore stdin attributes. */
 	tcflush(STDIN_FILENO, TCIFLUSH);
 	tcsetattr(STDIN_FILENO, TCSANOW, &term_orig);
-
 }
-
-

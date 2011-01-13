@@ -34,7 +34,6 @@
 #include "sigrok-cli.h"
 #include "config.h"
 
-
 #define SIGROK_CLI_VERSION "0.1pre2"
 #define DEFAULT_OUTPUT_FORMAT "bits64"
 
@@ -103,8 +102,6 @@ static GOptionEntry optargs[] = {
 	{"continuous", 0, 0, G_OPTION_ARG_NONE, &opt_continuous, "Sample continuously", NULL},
 	{NULL, 0, 0, 0, NULL, NULL, NULL}
 };
-
-
 
 void show_version(void)
 {
@@ -394,7 +391,6 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	if (output_len)
 		free(output_buf);
 	received_samples += packet->length / sample_size;
-
 }
 
 void remove_source(int fd)
@@ -522,15 +518,17 @@ void load_input_file(void)
 	struct input_format **inputs, *input_format;
 	int i;
 
-	/* find an input module that can handle this file */
+	/* Find an input module that can handle this file. */
 	inputs = input_list();
 	for (i = 0; inputs[i]; i++) {
 		if (inputs[i]->format_match(opt_input_file))
 			break;
 	}
+
+	/* Abort if no input module wanted to touch this. */
 	if (!inputs[i])
-		/* no input module wanted to touch this */
 		return;
+
 	input_format = inputs[i];
 
 	if (stat(opt_input_file, &st) == -1) {
@@ -538,13 +536,13 @@ void load_input_file(void)
 		return;
 	}
 
-	/* initialize the input module. */
+	/* Initialize the input module. */
 	if (!(in = malloc(sizeof(struct input)))) {
 		g_error("Failed to allocate input module.");
 		return;
 	}
 	in->format = input_format;
- 	in->param = input_format_param;
+	in->param = input_format_param;
 	if (in->format->init) {
 		if (in->format->init(in) != SIGROK_OK) {
 			g_error("Input format init failed.");
@@ -558,9 +556,7 @@ void load_input_file(void)
 	session_datafeed_callback_add(datafeed_in);
 	input_format->loadfile(in, opt_input_file);
 	session_stop();
-
 }
-
 
 int num_real_devices(void)
 {
@@ -689,9 +685,9 @@ void run_session(void)
 						break;
 				}
 			}
-			if(!found)
-			{
-				printf("Unknown device option '%s'.\n", opt_devoption[i]);
+			if (!found) {
+				printf("Unknown device option '%s'.\n",
+				       opt_devoption[i]);
 				session_destroy();
 				return;
 			}
@@ -785,14 +781,14 @@ void run_session(void)
 void logger(const gchar *log_domain, GLogLevelFlags log_level,
 	    const gchar *message, gpointer user_data)
 {
-	/* QUICK FIX */
+	/* Avoid compiler warnings. */
 	log_domain = log_domain;
 	user_data = user_data;
 
-        /*
-         * All messages, warnings, errors etc. go to stderr (not stdout) in
-         * order to not mess up the CLI tool data output, e.g. VCD output.
-         */
+	/*
+	 * All messages, warnings, errors etc. go to stderr (not stdout) in
+	 * order to not mess up the CLI tool data output, e.g. VCD output.
+	 */
 	if (log_level & (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_WARNING)) {
 		fprintf(stderr, "%s\n", message);
 		fflush(stderr);
