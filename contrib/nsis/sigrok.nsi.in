@@ -123,10 +123,10 @@ Section
 	File "c:\MinGW\bin\libstdc++-6.dll"
 
 	# External libs
-	File "c:\MinGW\msys\1.0\bin\libglib-2.0-0.dll"
-	File "c:\MinGW\msys\1.0\bin\libgthread-2.0-0.dll"
-	File "c:\MinGW\msys\1.0\bin\libusb-1.0.dll"
-	File "c:\MinGW\msys\1.0\bin\libzip-1.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libglib-2.0-0.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libgthread-2.0-0.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libusb-1.0.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libzip-1.dll"
 
 	# Qt libs
 	File "c:\Qt\2010.05\qt\bin\libgcc_s_dw2-1.dll"
