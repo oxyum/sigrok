@@ -189,59 +189,12 @@ static void show_device_list(void)
 	}
 }
 
-static int helper_print_hwcaps(struct device *device, struct hwcap_option *hwo,
-			       struct samplerates *samplerates, char **stropts)
-{
-	int i;
-
-	if (hwo->capability == HWCAP_PATTERN_MODE) {
-		printf("    %s", hwo->shortname);
-		if ((stropts = (char **)device->plugin->get_device_info(
-				device->plugin_index, DI_PATTERNMODES))) {
-			if (!stropts) {
-				printf("\n");
-				return 1;
-			}
-			printf(" - supported modes:\n");
-			for (i = 0; stropts[i]; i++)
-				printf("      %s\n", stropts[i]);
-		}
-	} else if (hwo->capability == HWCAP_SAMPLERATE) {
-		printf("    %s", hwo->shortname);
-		/* Supported samplerates */
-		samplerates = device->plugin->get_device_info(
-			device->plugin_index, DI_SAMPLERATES);
-		if (!samplerates) {
-			printf("\n");
-			return 1;
-		}
-
-		/* TODO: Add missing free()s. */
-		if (samplerates->step) {
-			printf(" (%s - %s in steps of %s)\n",
-			  sigrok_samplerate_string(samplerates->low),
-			  sigrok_samplerate_string(samplerates->high),
-			  sigrok_samplerate_string(samplerates->step));
-		} else {
-			printf(" - supported samplerates:\n");
-			for (i = 0; samplerates->list[i]; i++) {
-				printf("      %7s\n",
-				sigrok_samplerate_string(samplerates->list[i]));
-			}
-		}
-	} else {
-		printf("    %s\n", hwo->shortname);
-	}
-
-	return 0;
-}
-
 static void show_device_detail(void)
 {
 	struct device *device;
 	struct hwcap_option *hwo;
 	struct samplerates *samplerates;
-	int cap, *capabilities;
+	int cap, *capabilities, i;
 	char *title, *charopts, **stropts;
 
 	device_scan();
@@ -274,8 +227,43 @@ static void show_device_detail(void)
 			title = NULL;
 		}
 
-		if (!helper_print_hwcaps(device, hwo, samplerates, stropts))
-			break;
+		if (hwo->capability == HWCAP_PATTERN_MODE) {
+			printf("    %s", hwo->shortname);
+			if ((stropts = (char **)device->plugin->get_device_info(
+					device->plugin_index, DI_PATTERNMODES))) {
+				if (!stropts) {
+					printf("\n");
+					break;
+				}
+				printf(" - supported modes:\n");
+				for (i = 0; stropts[i]; i++)
+					printf("      %s\n", stropts[i]);
+			}
+		} else if (hwo->capability == HWCAP_SAMPLERATE) {
+			printf("    %s", hwo->shortname);
+			/* Supported samplerates */
+			samplerates = device->plugin->get_device_info(
+				device->plugin_index, DI_SAMPLERATES);
+			if (!samplerates) {
+				printf("\n");
+				break;
+			}
+
+			/* TODO: Add missing free()s. */
+			if (samplerates->step) {
+				printf(" (%s - %s in steps of %s)\n",
+				  sigrok_samplerate_string(samplerates->low),
+				  sigrok_samplerate_string(samplerates->high),
+				  sigrok_samplerate_string(samplerates->step));
+			} else {
+				printf(" - supported samplerates:\n");
+				for (i = 0; samplerates->list[i]; i++) {
+					printf("      %7s\n", sigrok_samplerate_string(samplerates->list[i]));
+				}
+			}
+		} else {
+			printf("    %s\n", hwo->shortname);
+		}
 	}
 }
 
@@ -607,67 +595,14 @@ int num_real_devices(void)
 	return num_devices;
 }
 
-static int helper_handle_devopt(struct device *device, const char *devopt)
-{
-	int j, r, found;
-	char *val;
-	uint64_t tmp_u64;
-
-	if (!(val = strchr(devopt, '='))) {
-		printf("No value given for device option '%s'.\n", devopt);
-		session_destroy();
-		return 1;
-	}
-
-	found = FALSE;
-	*val++ = 0;
-	for (j = 0; hwcap_options[j].capability; j++) {
-		if (strcmp(hwcap_options[j].shortname, devopt))
-			continue;
-
-		found = TRUE;
-		switch (hwcap_options[j].type) {
-		case T_UINT64:
-			tmp_u64 = parse_sizestring(val);
-			r = device->plugin-> set_configuration(
-				device->plugin_index,
-				hwcap_options[j].capability, &tmp_u64);
-			break;
-		case T_CHAR:
-			r = device->plugin->set_configuration(
-				device->plugin_index,
-				hwcap_options[j].capability, val);
-			break;
-		default:
-			r = SIGROK_ERR;
-		}
-
-		if (r != SIGROK_OK) {
-			printf("Failed to set device option '%s'.\n",
-			       devopt);
-			session_destroy();
-			return 1;
-		}
-		else
-			break;
-	}
-	if (!found) {
-		printf("Unknown device option '%s'.\n", devopt);
-		session_destroy();
-		return 1;
-	}
-
-	return 0;
-}
-
 static void run_session(void)
 {
 	struct device *device;
 	GPollFD *fds;
-	int num_devices, max_probes, *capabilities, ret, i;
+	int num_devices, max_probes, *capabilities, ret, found, i, j;
 	unsigned int time_msec;
-	char **probelist, *val;
 	uint64_t tmp_u64;
+	char **probelist, *val;
 
 	device_scan();
 	num_devices = num_real_devices();
@@ -734,8 +669,46 @@ static void run_session(void)
 
 	if (opt_devoption) {
 		for (i = 0; opt_devoption[i]; i++) {
-			if (helper_handle_devopt(device, opt_devoption[i]) > 0)
+			if (!(val = strchr(opt_devoption[i], '='))) {
+				printf("No value given for device option '%s'.\n", opt_devoption[i]);
+				session_destroy();
 				return;
+			}
+
+			found = FALSE;
+			*val++ = 0;
+			for (j = 0; hwcap_options[j].capability; j++) {
+				if (!strcmp(hwcap_options[j].shortname, opt_devoption[i])) {
+					found = TRUE;
+					switch (hwcap_options[j].type) {
+					case T_UINT64:
+						tmp_u64 = parse_sizestring(val);
+						ret = device->plugin-> set_configuration(device-> plugin_index,
+								hwcap_options[j]. capability, &tmp_u64);
+						break;
+					case T_CHAR:
+						ret = device->plugin-> set_configuration(device-> plugin_index,
+								hwcap_options[j]. capability, val);
+						break;
+					default:
+						ret = SIGROK_ERR;
+					}
+
+					if (ret != SIGROK_OK) {
+						printf("Failed to set device option '%s'.\n", opt_devoption[i]);
+						session_destroy();
+						return;
+					}
+					else
+						break;
+				}
+			}
+			if (!found) {
+				printf("Unknown device option '%s'.\n",
+				       opt_devoption[i]);
+				session_destroy();
+				return;
+			}
 		}
 	}
 
