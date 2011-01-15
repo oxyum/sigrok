@@ -148,12 +148,15 @@ void print_device_line(struct device *device)
 	struct sigrok_device_instance *sdi;
 
 	sdi = device->plugin->get_device_info(device->plugin_index, DI_INSTANCE);
-	printf("%s %s", sdi->vendor, sdi->model);
+	printf("%s", sdi->vendor);
+	if (sdi->model && sdi->model[0])
+		printf(" %s", sdi->model);
 	if (sdi->version && sdi->version[0])
 		printf(" %s", sdi->version);
 	if (device->probes)
 		printf(" with %d probes", g_slist_length(device->probes));
 	printf("\n");
+
 }
 
 void show_device_list(void)
@@ -193,7 +196,7 @@ void show_device_detail(void)
 	struct hwcap_option *hwo;
 	struct samplerates *samplerates;
 	int cap, *capabilities, i;
-	char *title, *triggers;
+	char *title, *charopts, **stropts;
 
 	device_scan();
 	device = parse_devicestring(opt_device);
@@ -204,12 +207,12 @@ void show_device_detail(void)
 
 	print_device_line(device);
 
-	if ((triggers = (char *)device->plugin->get_device_info(
+	if ((charopts = (char *)device->plugin->get_device_info(
 			device->plugin_index, DI_TRIGGER_TYPES))) {
 		printf("Supported triggers: ");
-		while (*triggers) {
-			printf("%c ", *triggers);
-			triggers++;
+		while (*charopts) {
+			printf("%c ", *charopts);
+			charopts++;
 		}
 		printf("\n");
 	}
@@ -225,7 +228,21 @@ void show_device_detail(void)
 			title = NULL;
 		}
 
-		if (hwo->capability == HWCAP_SAMPLERATE) {
+		if (hwo->capability == HWCAP_PATTERN_MODE) {
+			printf("    %s", hwo->shortname);
+			if ((stropts = (char **)device->plugin->get_device_info(
+					device->plugin_index, DI_PATTERNMODES))) {
+				if (!stropts) {
+					printf("\n");
+					break;
+				}
+				printf(" - supported modes:\n");
+				for (i = 0; stropts[i]; i++) {
+					printf("      %s\n", stropts[i]);
+				}
+			}
+		}
+		else if (hwo->capability == HWCAP_SAMPLERATE) {
 			printf("    %s", hwo->shortname);
 			/* Supported samplerates */
 			samplerates = device->plugin->get_device_info(
