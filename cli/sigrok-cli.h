@@ -17,20 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef SIGROK_CLI_H_
 #define SIGROK_CLI_H_
 
 /* sigrok-cli.c */
 int num_real_devices(void);
-void add_source(int fd, int events, int timeout, receive_data_callback callback,
-		void *user_data);
+void add_source(int fd, int events, int timeout,
+		receive_data_callback callback, void *user_data);
 
 /* parsers.c */
-char **parse_probestring(int max_probes, char *probestring);
-char **parse_triggerstring(struct device *device, char *triggerstring);
-uint64_t parse_sizestring(char *sizestring);
-struct device *parse_devicestring(char *devicestring);
+const char **parse_probestring(int max_probes, const char *probestring);
+const char **parse_triggerstring(struct device *device,
+				 const char *triggerstring);
+uint64_t parse_sizestring(const char *sizestring);
+struct device *parse_devicestring(const char *devicestring);
 
 /* anykey.c */
 void add_anykey(void);

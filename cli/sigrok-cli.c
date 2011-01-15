@@ -100,7 +100,7 @@ static GOptionEntry optargs[] = {
 	{NULL, 0, 0, 0, NULL, NULL, NULL}
 };
 
-void show_version(void)
+static void show_version(void)
 {
 	GSList *plugins, *p, *l;
 	struct device_plugin *plugin;
@@ -144,7 +144,7 @@ void show_version(void)
 	sigrokdecode_shutdown();
 }
 
-void print_device_line(struct device *device)
+static void print_device_line(struct device *device)
 {
 	struct sigrok_device_instance *sdi;
 
@@ -159,7 +159,7 @@ void print_device_line(struct device *device)
 	printf("\n");
 }
 
-void show_device_list(void)
+static void show_device_list(void)
 {
 	struct device *device, *demo_device;
 	GSList *devices, *l;
@@ -189,7 +189,7 @@ void show_device_list(void)
 	}
 }
 
-void show_device_detail(void)
+static void show_device_detail(void)
 {
 	struct device *device;
 	struct hwcap_option *hwo;
@@ -267,7 +267,7 @@ void show_device_detail(void)
 	}
 }
 
-void datafeed_in(struct device *device, struct datafeed_packet *packet)
+static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 {
 	static struct output *o = NULL;
 	static int probelist[65] = { 0 };
@@ -420,7 +420,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	received_samples += packet->length / sample_size;
 }
 
-void remove_source(int fd)
+static void remove_source(int fd)
 {
 	struct source *new_sources;
 	int old, new;
@@ -444,8 +444,8 @@ void remove_source(int fd)
 	}
 }
 
-void add_source(int fd, int events, int timeout, receive_data_callback callback,
-		void *user_data)
+void add_source(int fd, int events, int timeout,
+	        receive_data_callback callback, void *user_data)
 {
 	struct source *new_sources, *s;
 
@@ -491,7 +491,7 @@ static int register_pds(struct device *device, const char *pdstring)
 	return 0;
 }
 
-void select_probes(struct device *device)
+static void select_probes(struct device *device)
 {
 	struct probe *probe;
 	char **probelist;
@@ -522,7 +522,7 @@ void select_probes(struct device *device)
 	}
 }
 
-void load_input_file(void)
+static void load_input_file(void)
 {
 	struct stat st;
 	struct input *in;
@@ -570,7 +570,7 @@ void load_input_file(void)
 	session_stop();
 }
 
-void load_session_file(void)
+static void load_session_file(void)
 {
 	/* TODO: Not yet implemented. */
 }
@@ -592,7 +592,7 @@ int num_real_devices(void)
 	return num_devices;
 }
 
-void run_session(void)
+static void run_session(void)
 {
 	struct device *device;
 	GPollFD *fds;
@@ -788,8 +788,8 @@ void run_session(void)
 	session_destroy();
 }
 
-void logger(const gchar *log_domain, GLogLevelFlags log_level,
-	    const gchar *message, gpointer user_data)
+static void logger(const gchar *log_domain, GLogLevelFlags log_level,
+		   const gchar *message, gpointer user_data)
 {
 	/* Avoid compiler warnings. */
 	log_domain = log_domain;

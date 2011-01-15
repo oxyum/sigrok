@@ -22,12 +22,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <glib.h>
-
 #include <sigrok.h>
 #include "sigrok-cli.h"
 
-
-char **parse_probestring(int max_probes, char *probestring)
+const char **parse_probestring(int max_probes, const char *probestring)
 {
 	int tmp, b, e, i;
 	char **tokens, **range, **probelist, *name, str[8];
@@ -98,7 +96,8 @@ char **parse_probestring(int max_probes, char *probestring)
 	return probelist;
 }
 
-char **parse_triggerstring(struct device *device, char *triggerstring)
+const char **parse_triggerstring(struct device *device,
+				 const char *triggerstring)
 {
 	GSList *l;
 	struct probe *probe;
@@ -163,7 +162,7 @@ char **parse_triggerstring(struct device *device, char *triggerstring)
 	return triggerlist;
 }
 
-uint64_t parse_sizestring(char *sizestring)
+uint64_t parse_sizestring(const char *sizestring)
 {
 	int multiplier;
 	uint64_t val;
@@ -199,11 +198,11 @@ uint64_t parse_sizestring(char *sizestring)
 	return val;
 }
 
-struct device *parse_devicestring(char *devicestring)
+struct device *parse_devicestring(const char *devicestring)
 {
 	struct device *device, *d;
 	GSList *devices, *l;
-	int num_devices, device_num, device_cnt;;
+	int num_devices, device_num, device_cnt;
 	char *tmp;
 
 	if (!devicestring)
@@ -247,4 +246,3 @@ struct device *parse_devicestring(char *devicestring)
 
 	return device;
 }
-
