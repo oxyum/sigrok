@@ -605,14 +605,64 @@ int num_real_devices(void)
 	return num_devices;
 }
 
+static int helper_handle_devopt(struct device *device, const char *devopt)
+{
+	int j, r, found;
+	char *val;
+	uint64_t tmp_u64;
+
+	if (!(val = strchr(devopt, '='))) {
+		printf("No value given for device option '%s'.\n", devopt);
+		session_destroy();
+		return 1;
+	}
+
+	found = FALSE;
+	*val++ = 0;
+	for (j = 0; hwcap_options[j].capability; j++) {
+		if (!strcmp(hwcap_options[j].shortname, devopt)) {
+			found = TRUE;
+			switch (hwcap_options[j].type) {
+			case T_UINT64:
+				tmp_u64 = parse_sizestring(val);
+				r = device->plugin-> set_configuration(device-> plugin_index,
+						hwcap_options[j]. capability, &tmp_u64);
+				break;
+			case T_CHAR:
+				r = device->plugin-> set_configuration(device-> plugin_index,
+						hwcap_options[j]. capability, val);
+				break;
+			default:
+				r = SIGROK_ERR;
+			}
+
+			if (r != SIGROK_OK) {
+				printf("Failed to set device option '%s'.\n",
+				       devopt);
+				session_destroy();
+				return 1;
+			}
+			else
+				break;
+		}
+	}
+	if (!found) {
+		printf("Unknown device option '%s'.\n", devopt);
+		session_destroy();
+		return 1;
+	}
+
+	return 0;
+}
+
 static void run_session(void)
 {
 	struct device *device;
 	GPollFD *fds;
-	int num_devices, max_probes, *capabilities, ret, found, i, j;
+	int num_devices, max_probes, *capabilities, ret, i;
 	unsigned int time_msec;
-	uint64_t tmp_u64;
 	char **probelist, *val;
+	uint64_t tmp_u64;
 
 	device_scan();
 	num_devices = num_real_devices();
@@ -678,46 +728,8 @@ static void run_session(void)
 
 	if (opt_devoption) {
 		for (i = 0; opt_devoption[i]; i++) {
-			if (!(val = strchr(opt_devoption[i], '='))) {
-				printf("No value given for device option '%s'.\n", opt_devoption[i]);
-				session_destroy();
-				return;
-			}
-
-			found = FALSE;
-			*val++ = 0;
-			for (j = 0; hwcap_options[j].capability; j++) {
-				if (!strcmp(hwcap_options[j].shortname, opt_devoption[i])) {
-					found = TRUE;
-					switch (hwcap_options[j].type) {
-					case T_UINT64:
-						tmp_u64 = parse_sizestring(val);
-						ret = device->plugin-> set_configuration(device-> plugin_index,
-								hwcap_options[j]. capability, &tmp_u64);
-						break;
-					case T_CHAR:
-						ret = device->plugin-> set_configuration(device-> plugin_index,
-								hwcap_options[j]. capability, val);
-						break;
-					default:
-						ret = SIGROK_ERR;
-					}
-
-					if (ret != SIGROK_OK) {
-						printf("Failed to set device option '%s'.\n", opt_devoption[i]);
-						session_destroy();
-						return;
-					}
-					else
-						break;
-				}
-			}
-			if (!found) {
-				printf("Unknown device option '%s'.\n",
-				       opt_devoption[i]);
-				session_destroy();
-				return;
-			}
+			if (!helper_handle_devopt(device, opt_devoption[i]))
+				continue;
 		}
 	}
 
