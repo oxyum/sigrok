@@ -34,7 +34,6 @@
 #include "sigrok-cli.h"
 #include "config.h"
 
-
 #define DEFAULT_OUTPUT_FORMAT "bits64"
 
 extern struct hwcap_option hwcap_options[];
@@ -121,14 +120,16 @@ void show_version(void)
 	printf("Supported input formats:\n");
 	inputs = input_list();
 	for (i = 0; inputs[i]; i++) {
-		printf("  %-20s %s\n", inputs[i]->extension, inputs[i]->description);
+		printf("  %-20s %s\n", inputs[i]->extension,
+		       inputs[i]->description);
 	}
 	printf("\n");
 
 	printf("Supported output formats:\n");
 	outputs = output_list();
 	for (i = 0; outputs[i]; i++) {
-		printf("  %-20s %s\n", outputs[i]->extension, outputs[i]->description);
+		printf("  %-20s %s\n", outputs[i]->extension,
+		       outputs[i]->description);
 	}
 	printf("\n");
 
@@ -156,7 +157,6 @@ void print_device_line(struct device *device)
 	if (device->probes)
 		printf(" with %d probes", g_slist_length(device->probes));
 	printf("\n");
-
 }
 
 void show_device_list(void)
@@ -187,7 +187,6 @@ void show_device_list(void)
 		printf("demo  ");
 		print_device_line(demo_device);
 	}
-
 }
 
 void show_device_detail(void)
@@ -237,12 +236,10 @@ void show_device_detail(void)
 					break;
 				}
 				printf(" - supported modes:\n");
-				for (i = 0; stropts[i]; i++) {
+				for (i = 0; stropts[i]; i++)
 					printf("      %s\n", stropts[i]);
-				}
 			}
-		}
-		else if (hwo->capability == HWCAP_SAMPLERATE) {
+		} else if (hwo->capability == HWCAP_SAMPLERATE) {
 			printf("    %s", hwo->shortname);
 			/* Supported samplerates */
 			samplerates = device->plugin->get_device_info(
@@ -292,7 +289,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 
 	switch (packet->type) {
 	case DF_HEADER:
-		/* initialize the output module. */
+		/* Initialize the output module. */
 		if (!(o = malloc(sizeof(struct output))))
 			return; /* FIXME: How to report errors? */
 		o->format = output_format;
@@ -380,8 +377,8 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	if (packet->type == DF_LOGIC) {
 		/* filters only support DF_LOGIC */
 		ret = filter_probes(sample_size, unitsize, probelist,
-				  packet->payload, packet->length,
-				  &filter_out, &filter_out_len);
+				    packet->payload, packet->length,
+				    &filter_out, &filter_out_len);
 		if (ret != SIGROK_OK)
 			return;
 	} else {
@@ -405,12 +402,14 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	output_len = 0;
 	if (!opt_save_filename) {
 		if (o->format->data && packet->type == o->format->df_type) {
-			if (limit_samples
-					&& received_samples + packet->length / sample_size > limit_samples * sample_size)
-				len = limit_samples * sample_size - received_samples;
+			if (limit_samples && (received_samples + packet->length
+			    / sample_size > limit_samples * sample_size))
+				len = limit_samples * sample_size
+					- received_samples;
 			else
 				len = filter_out_len;
-			o->format->data(o, filter_out, len, &output_buf, &output_len);
+			o->format->data(o, filter_out, len, &output_buf,
+					&output_len);
 		}
 		if (output_len)
 			fwrite(output_buf, 1, output_len, stdout);
@@ -453,7 +452,8 @@ void add_source(int fd, int events, int timeout, receive_data_callback callback,
 	new_sources = calloc(1, sizeof(struct source) * (num_sources + 1));
 
 	if (sources) {
-		memcpy(new_sources, sources, sizeof(struct source) * num_sources);
+		memcpy(new_sources, sources,
+		       sizeof(struct source) * num_sources);
 		free(sources);
 	}
 
@@ -543,7 +543,8 @@ void load_input_file(void)
 	input_format = inputs[i];
 
 	if (stat(opt_input_file, &st) == -1) {
-		g_error("Failed to load %s: %s", opt_input_file, strerror(errno));
+		g_error("Failed to load %s: %s", opt_input_file,
+			strerror(errno));
 		return;
 	}
 
@@ -571,9 +572,7 @@ void load_input_file(void)
 
 void load_session_file(void)
 {
-
-	/* TODO: not yet implemented */
-
+	/* TODO: Not yet implemented. */
 }
 
 int num_real_devices(void)
@@ -615,7 +614,8 @@ void run_session(void)
 			/* No device specified, but there is only one. */
 			device = parse_devicestring("0");
 		else {
-			g_warning("%d devices found, please select one.", num_devices);
+			g_warning("%d devices found, please select one.",
+				  num_devices);
 			return;
 		}
 	} else {
