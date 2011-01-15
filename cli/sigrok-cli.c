@@ -562,6 +562,13 @@ void load_input_file(void)
 	session_stop();
 }
 
+void load_session_file(void)
+{
+
+	/* TODO: not yet implemented */
+
+}
+
 int num_real_devices(void)
 {
 	struct device *device;
@@ -858,6 +865,8 @@ int main(int argc, char **argv)
 		show_output_list();
 	else if (opt_input_file)
 		load_input_file();
+	else if (opt_load_filename)
+		load_session_file();
 	else if (opt_samples || opt_time || opt_continuous)
 		run_session();
 	else if (opt_device)
