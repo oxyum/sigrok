@@ -68,12 +68,7 @@ int source_timeout = -1;
 
 static gboolean opt_version = FALSE;
 static gboolean opt_list_devices = FALSE;
-<<<<<<< HEAD
 static gboolean opt_list_pds = FALSE;
-static gboolean opt_list_output = FALSE;
-=======
-static gboolean opt_list_analyzers = FALSE;
->>>>>>> folded list of drivers and output modules into -V
 static gboolean opt_wait_trigger = FALSE;
 static gchar *opt_input_file = NULL;
 static gchar *opt_load_filename = NULL;
@@ -91,12 +86,7 @@ static gchar *opt_continuous = NULL;
 static GOptionEntry optargs[] = {
 	{"version", 'V', 0, G_OPTION_ARG_NONE, &opt_version, "Show version", NULL},
 	{"list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL},
-<<<<<<< HEAD
 	{"list-protocol-decoders", 'A', 0, G_OPTION_ARG_NONE, &opt_list_pds, "List protocol decoders", NULL},
-	{"list-output-modules", 0, 0, G_OPTION_ARG_NONE, &opt_list_output, "List output modules", NULL},
-=======
-	{"list-analyzer-plugins", 'A', 0, G_OPTION_ARG_NONE, &opt_list_analyzers, "List analyzer plugins", NULL},
->>>>>>> folded list of drivers and output modules into -V
 	{"input-file", 'I', 0, G_OPTION_ARG_FILENAME, &opt_input_file, "Load input from file", NULL},
 	{"load-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_filename, "Load session from file", NULL},
 	{"save-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_filename, "Save session to file", NULL},
@@ -271,21 +261,6 @@ void show_pd_list(void)
 	sigrokdecode_shutdown();
 }
 
-<<<<<<< HEAD
-void show_output_list(void)
-{
-	struct output_format **outputs;
-	int i;
-
-	printf("Supported output formats:\n");
-	outputs = output_list();
-	for (i = 0; outputs[i]; i++) {
-		printf("%-12s %s\n", outputs[i]->extension, outputs[i]->description);
-	}
-}
-
-=======
->>>>>>> folded list of drivers and output modules into -V
 void datafeed_in(struct device *device, struct datafeed_packet *packet)
 {
 	static struct output *o = NULL;
