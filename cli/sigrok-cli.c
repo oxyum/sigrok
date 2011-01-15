@@ -355,7 +355,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		break;
 	case DF_TRIGGER:
 		if (o->format->event)
-			o->format->event(o, DF_TRIGGER, 0, 0);
+			o->format->event(o, DF_TRIGGER, &output_buf, &output_len);
 		triggered = 1;
 		break;
 	case DF_LOGIC:
