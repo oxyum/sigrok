@@ -509,29 +509,30 @@ static void select_probes(struct device *device)
 	char **probelist;
 	int max_probes, i;
 
-	if (opt_probes) {
-		/*
-		 * This only works because a device by default initializes
-		 * and enables all its probes.
-		 */
-		max_probes = g_slist_length(device->probes);
-		probelist = parse_probestring(max_probes, opt_probes);
-		if (!probelist) {
-			session_destroy();
-			return;
-		}
+	if (!opt_probes)
+		return;
 
-		for (i = 0; i < max_probes; i++) {
-			if (probelist[i]) {
-				device_probe_name(device, i + 1, probelist[i]);
-				g_free(probelist[i]);
-			} else {
-				probe = probe_find(device, i + 1);
-				probe->enabled = FALSE;
-			}
-		}
-		g_free(probelist);
+	/*
+	 * This only works because a device by default initializes
+	 * and enables all its probes.
+	 */
+	max_probes = g_slist_length(device->probes);
+	probelist = parse_probestring(max_probes, opt_probes);
+	if (!probelist) {
+		session_destroy();
+		return;
 	}
+
+	for (i = 0; i < max_probes; i++) {
+		if (probelist[i]) {
+			device_probe_name(device, i + 1, probelist[i]);
+			g_free(probelist[i]);
+		} else {
+			probe = probe_find(device, i + 1);
+			probe->enabled = FALSE;
+		}
+	}
+	g_free(probelist);
 }
 
 static void load_input_file(void)
