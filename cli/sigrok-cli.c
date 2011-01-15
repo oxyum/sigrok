@@ -34,7 +34,7 @@
 #include "sigrok-cli.h"
 #include "config.h"
 
-#define SIGROK_CLI_VERSION "0.1pre2"
+
 #define DEFAULT_OUTPUT_FORMAT "bits64"
 
 extern struct hwcap_option hwcap_options[];
@@ -67,10 +67,13 @@ int num_sources = 0;
 int source_timeout = -1;
 
 static gboolean opt_version = FALSE;
-static gboolean opt_list_hwdrivers = FALSE;
 static gboolean opt_list_devices = FALSE;
+<<<<<<< HEAD
 static gboolean opt_list_pds = FALSE;
 static gboolean opt_list_output = FALSE;
+=======
+static gboolean opt_list_analyzers = FALSE;
+>>>>>>> folded list of drivers and output modules into -V
 static gboolean opt_wait_trigger = FALSE;
 static gchar *opt_input_file = NULL;
 static gchar *opt_load_filename = NULL;
@@ -87,10 +90,13 @@ static gchar *opt_continuous = NULL;
 
 static GOptionEntry optargs[] = {
 	{"version", 'V', 0, G_OPTION_ARG_NONE, &opt_version, "Show version", NULL},
-	{"list-hardware-drivers", 'H', 0, G_OPTION_ARG_NONE, &opt_list_hwdrivers, "List hardware drivers", NULL},
 	{"list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL},
+<<<<<<< HEAD
 	{"list-protocol-decoders", 'A', 0, G_OPTION_ARG_NONE, &opt_list_pds, "List protocol decoders", NULL},
 	{"list-output-modules", 0, 0, G_OPTION_ARG_NONE, &opt_list_output, "List output modules", NULL},
+=======
+	{"list-analyzer-plugins", 'A', 0, G_OPTION_ARG_NONE, &opt_list_analyzers, "List analyzer plugins", NULL},
+>>>>>>> folded list of drivers and output modules into -V
 	{"input-file", 'I', 0, G_OPTION_ARG_FILENAME, &opt_input_file, "Load input from file", NULL},
 	{"load-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_filename, "Load session from file", NULL},
 	{"save-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_filename, "Save session to file", NULL},
@@ -109,21 +115,35 @@ static GOptionEntry optargs[] = {
 
 void show_version(void)
 {
-	printf("sigrok version %s\nCLI version %s\n", VERSION,
-	       SIGROK_CLI_VERSION);
-}
-
-void show_hwdriver_list(void)
-{
 	GSList *plugins, *p;
 	struct device_plugin *plugin;
+	struct input_format **inputs;
+	struct output_format **outputs;
+	int i;
 
-	printf("The following drivers are installed:\n");
+	printf("sigrok version %s\n", VERSION);
+	printf("Installed hardware drivers:\n");
 	plugins = list_hwplugins();
 	for (p = plugins; p; p = p->next) {
 		plugin = p->data;
-		printf(" %s\n", plugin->name);
+		printf("  %s\n", plugin->name);
 	}
+	printf("\n");
+
+	printf("Supported input formats:\n");
+	inputs = input_list();
+	for (i = 0; inputs[i]; i++) {
+		printf("  %-12s %s\n", inputs[i]->extension, inputs[i]->description);
+	}
+	printf("\n");
+
+	printf("Supported output formats:\n");
+	outputs = output_list();
+	for (i = 0; outputs[i]; i++) {
+		printf("  %-12s %s\n", outputs[i]->extension, outputs[i]->description);
+	}
+	printf("\n");
+
 }
 
 void print_device_line(struct device *device)
@@ -251,6 +271,7 @@ void show_pd_list(void)
 	sigrokdecode_shutdown();
 }
 
+<<<<<<< HEAD
 void show_output_list(void)
 {
 	struct output_format **outputs;
@@ -263,6 +284,8 @@ void show_output_list(void)
 	}
 }
 
+=======
+>>>>>>> folded list of drivers and output modules into -V
 void datafeed_in(struct device *device, struct datafeed_packet *packet)
 {
 	static struct output *o = NULL;
@@ -855,14 +878,10 @@ int main(int argc, char **argv)
 
 	if (opt_version)
 		show_version();
-	else if (opt_list_hwdrivers)
-		show_hwdriver_list();
 	else if (opt_list_devices)
 		show_device_list();
 	else if (opt_list_pds)
 		show_pd_list();
-	else if (opt_list_output)
-		show_output_list();
 	else if (opt_input_file)
 		load_input_file();
 	else if (opt_load_filename)
