@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIGROK_CLI_H_
-#define SIGROK_CLI_H_
+#ifndef SIGROK_SIGROK_CLI_H
+#define SIGROK_SIGROK_CLI_H
 
 /* sigrok-cli.c */
 int num_real_devices(void);
@@ -36,4 +36,4 @@ struct device *parse_devicestring(const char *devicestring);
 void add_anykey(void);
 void clear_anykey(void);
 
-#endif /* SIGROK_CLI_H_ */
+#endif
