@@ -169,7 +169,7 @@ void show_device_list(void)
 	if (g_slist_length(devices) == 0)
 		return;
 
-	printf("The following devices were found:\nID  Device\n");
+	printf("The following devices were found:\nID    Device\n");
 	demo_device = NULL;
 	for (l = devices; l; l = l->next) {
 		device = l->data;
