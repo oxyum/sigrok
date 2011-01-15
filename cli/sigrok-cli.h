@@ -26,9 +26,8 @@ void add_source(int fd, int events, int timeout,
 		receive_data_callback callback, void *user_data);
 
 /* parsers.c */
-const char **parse_probestring(int max_probes, const char *probestring);
-const char **parse_triggerstring(struct device *device,
-				 const char *triggerstring);
+char **parse_probestring(int max_probes, const char *probestring);
+char **parse_triggerstring(struct device *device, const char *triggerstring);
 uint64_t parse_sizestring(const char *sizestring);
 struct device *parse_devicestring(const char *devicestring);
 

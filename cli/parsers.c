@@ -25,7 +25,7 @@
 #include <sigrok.h>
 #include "sigrok-cli.h"
 
-const char **parse_probestring(int max_probes, const char *probestring)
+char **parse_probestring(int max_probes, const char *probestring)
 {
 	int tmp, b, e, i;
 	char **tokens, **range, **probelist, *name, str[8];
@@ -96,8 +96,7 @@ const char **parse_probestring(int max_probes, const char *probestring)
 	return probelist;
 }
 
-const char **parse_triggerstring(struct device *device,
-				 const char *triggerstring)
+char **parse_triggerstring(struct device *device, const char *triggerstring)
 {
 	GSList *l;
 	struct probe *probe;
