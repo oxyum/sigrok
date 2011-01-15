@@ -46,6 +46,10 @@ struct output_format *output_format = NULL;
 char *output_format_param = NULL;
 char *input_format_param = NULL;
 
+/* Protocol decoder */
+struct sigrokdecode_decoder *dec;
+char *current_decoder;
+
 /* These live in hwplugin.c, for the frontend to override. */
 extern source_callback_add source_cb_add;
 extern source_callback_remove source_cb_remove;
@@ -65,7 +69,7 @@ int source_timeout = -1;
 static gboolean opt_version = FALSE;
 static gboolean opt_list_hwdrivers = FALSE;
 static gboolean opt_list_devices = FALSE;
-static gboolean opt_list_analyzers = FALSE;
+static gboolean opt_list_pds = FALSE;
 static gboolean opt_list_output = FALSE;
 static gboolean opt_wait_trigger = FALSE;
 static gchar *opt_input_file = NULL;
@@ -85,17 +89,17 @@ static GOptionEntry optargs[] = {
 	{"version", 'V', 0, G_OPTION_ARG_NONE, &opt_version, "Show version", NULL},
 	{"list-hardware-drivers", 'H', 0, G_OPTION_ARG_NONE, &opt_list_hwdrivers, "List hardware drivers", NULL},
 	{"list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL},
-	{"list-analyzer-plugins", 'A', 0, G_OPTION_ARG_NONE, &opt_list_analyzers, "List analyzer plugins", NULL},
-	{"list-output-modules", 0, 0, G_OPTION_ARG_NONE, &opt_list_output, "list output modules", NULL},
+	{"list-protocol-decoders", 'A', 0, G_OPTION_ARG_NONE, &opt_list_pds, "List protocol decoders", NULL},
+	{"list-output-modules", 0, 0, G_OPTION_ARG_NONE, &opt_list_output, "List output modules", NULL},
 	{"input-file", 'I', 0, G_OPTION_ARG_FILENAME, &opt_input_file, "Load input from file", NULL},
 	{"load-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_filename, "Load session from file", NULL},
 	{"save-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_filename, "Save session to file", NULL},
-	{"device", 'd', 0, G_OPTION_ARG_STRING, &opt_device, "Use device id", NULL},
+	{"device", 'd', 0, G_OPTION_ARG_STRING, &opt_device, "Use device ID", NULL},
 	{"probes", 'p', 0, G_OPTION_ARG_STRING, &opt_probes, "Probes to use", NULL},
 	{"triggers", 't', 0, G_OPTION_ARG_STRING, &opt_triggers, "Trigger configuration", NULL},
 	{"wait-trigger", 'w', 0, G_OPTION_ARG_NONE, &opt_wait_trigger, "Wait for trigger", NULL},
 	{"device-option", 'o', 0, G_OPTION_ARG_STRING_ARRAY, &opt_devoption, "Device-specific option", NULL},
-	{"analyzers", 'a', 0, G_OPTION_ARG_STRING, &opt_pds, "Protocol analyzer sequence", NULL},
+	{"protocol-decoders", 'a', 0, G_OPTION_ARG_STRING, &opt_pds, "Protocol decoder sequence", NULL},
 	{"format", 'f', 0, G_OPTION_ARG_STRING, &opt_format, "Output format", NULL},
 	{"time", 0, 0, G_OPTION_ARG_STRING, &opt_time, "How long to sample (ms)", NULL},
 	{"samples", 0, 0, G_OPTION_ARG_STRING, &opt_samples, "Number of samples to acquire", NULL},
@@ -232,9 +236,19 @@ void show_device_detail(void)
 	}
 }
 
-void show_analyzer_list(void)
+void show_pd_list(void)
 {
-	/* TODO: Implement. */
+	GSList *l;
+
+	/* TODO: Error handling. */
+	sigrokdecode_init();
+
+	printf("Supported protocol decoders:\n");
+	for (l = list_pds; l; l = l->next)
+		printf("- %s\n", (const char *)l->data);
+	printf("\n");
+
+	sigrokdecode_shutdown();
 }
 
 void show_output_list(void)
@@ -247,7 +261,6 @@ void show_output_list(void)
 	for (i = 0; outputs[i]; i++) {
 		printf("%-12s %s\n", outputs[i]->extension, outputs[i]->description);
 	}
-
 }
 
 void datafeed_in(struct device *device, struct datafeed_packet *packet)
@@ -260,8 +273,9 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	struct probe *probe;
 	struct datafeed_header *header;
 	int num_enabled_probes, sample_size, ret, i;
-	uint64_t output_len, filter_out_len, len;
+	uint64_t output_len, filter_out_len, len, dec_out_size;
 	char *output_buf, *filter_out;
+	uint8_t *dec_out;
 
 	/* If the first packet to come in isn't a header, don't even try. */
 	if (packet->type != DF_HEADER && o == NULL)
@@ -373,6 +387,13 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		datastore_put(device->datastore, filter_out,
 			      filter_out_len, sample_size, probelist);
 
+	if (current_decoder) {
+		/* TODO: Handle errors. */
+		sigrokdecode_run_decoder(dec, packet->payload, packet->length,
+					 &dec_out, &dec_out_size);
+		printf("Protocol decoder output:\n%s\n", dec_out);
+	}
+
 	/* Don't dump samples on stdout when also saving the session. */
 	output_len = 0;
 	if (!opt_save_filename) {
@@ -447,33 +468,17 @@ void add_source(int fd, int events, int timeout, receive_data_callback callback,
 /* TODO: Only register here, run in streaming fashion later/elsewhere. */
 static int register_pds(struct device *device, const char *pdstring)
 {
-	int i, ret;
 	char **tokens;
-	uint8_t *inbuf = NULL, *outbuf = NULL;
-	uint64_t outbuflen = 0;
-	struct sigrokdecode_decoder *dec;
 
 	/* Avoid compiler warnings. */
 	device = device;
 
-	/* FIXME: Just for testing... */
-#define BUFLEN 50
-	inbuf = calloc(BUFLEN, 1);
-	for (i = 0; i < BUFLEN; i++)	/* Fill array with some values. */
-		inbuf[i] = (uint8_t) (rand() % 256);
-
-	/* TODO: Error handling. */
 	tokens = g_strsplit(pdstring, ",", 10 /* FIXME */);
 
-	/* Run specified PDs serially on the data, in the given order. */
-	for (i = 0; tokens[i]; i++) {
-		printf("Running protocol decoder %d (%s).\n", i, tokens[i]);
-		sigrokdecode_init();
-		ret = sigrokdecode_load_decoder(tokens[i], &dec);
-		ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf,
-					       &outbuflen);
-		printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
-		sigrokdecode_shutdown();
+	if (tokens[0] && strlen(tokens[0]) > 0) {
+		current_decoder = tokens[0];
+		/* TODO: Handle errors. */
+		sigrokdecode_load_decoder(current_decoder, &dec);
 	}
 
 	return 0;
@@ -487,7 +492,7 @@ void select_probes(struct device *device)
 
 	if (opt_probes) {
 		/*
-		 * this only works because a device by default initializes
+		 * This only works because a device by default initializes
 		 * and enables all its probes.
 		 */
 		max_probes = g_slist_length(device->probes);
@@ -508,7 +513,6 @@ void select_probes(struct device *device)
 		}
 		g_free(probelist);
 	}
-
 }
 
 void load_input_file(void)
@@ -583,10 +587,6 @@ void run_session(void)
 	unsigned int time_msec;
 	uint64_t tmp_u64;
 	char **probelist, *val;
-
-	/* FIXME: Wrong location, just for testing... */
-	if (opt_pds)
-		register_pds(NULL, opt_pds);
 
 	device_scan();
 	num_devices = num_real_devices();
@@ -719,9 +719,6 @@ void run_session(void)
 					  HWCAP_LIMIT_SAMPLES, &limit_samples);
 	}
 
-	if (opt_pds)
-		register_pds(NULL, opt_pds);
-
 	if (device->plugin->set_configuration(device->plugin_index,
 		  HWCAP_PROBECONFIG, (char *)device->probes) != SIGROK_OK) {
 		printf("Failed to configure probes.\n");
@@ -775,7 +772,6 @@ void run_session(void)
 		if (session_save(opt_save_filename) != SIGROK_OK)
 			printf("Failed to save session.\n");
 	session_destroy();
-
 }
 
 void logger(const gchar *log_domain, GLogLevelFlags log_level,
@@ -807,36 +803,13 @@ int main(int argc, char **argv)
 	int i;
 	GOptionContext *context;
 	GError *error;
-#if 0
-	int ret;
-	uint8_t *inbuf = NULL, *outbuf = NULL;
-	uint64_t outbuflen = 0;
-	struct sigrokdecode_decoder *dec;
-#endif
+
+	/* No decoder at the moment. */
+	current_decoder = NULL;
 
 	g_log_set_default_handler(logger, NULL);
 	if (getenv("SIGROK_DEBUG"))
 		debug = strtol(getenv("SIGROK_DEBUG"), NULL, 10);
-
-#if 0
-#define BUFLEN 50
-	sigrokdecode_init();
-
-	inbuf = calloc(BUFLEN, 1);
-	for (i = 0; i < BUFLEN; i++)	/* Fill array with some values. */
-		// inbuf[i] = i % 256;
-		inbuf[i] = (uint8_t) (rand() % 256);
-
-	ret = sigrokdecode_load_decoder("i2c", &dec);
-	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
-	printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
-
-	ret = sigrokdecode_load_decoder("transitioncounter", &dec);
-	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
-	printf("outbuf (%" PRIu64 " bytes):\n%s\n", outbuflen, outbuf);
-
-	sigrokdecode_shutdown();
-#endif
 
 	error = NULL;
 	context = g_option_context_new(NULL);
@@ -849,6 +822,12 @@ int main(int argc, char **argv)
 
 	if (sigrok_init() != SIGROK_OK)
 		return 1;
+
+	if (opt_pds) {
+		/* TODO: Error handling. */
+		sigrokdecode_init();
+		register_pds(NULL, opt_pds);
+	}
 
 	if (!opt_format)
 		opt_format = DEFAULT_OUTPUT_FORMAT;
@@ -873,8 +852,8 @@ int main(int argc, char **argv)
 		show_hwdriver_list();
 	else if (opt_list_devices)
 		show_device_list();
-	else if (opt_list_analyzers)
-		show_analyzer_list();
+	else if (opt_list_pds)
+		show_pd_list();
 	else if (opt_list_output)
 		show_output_list();
 	else if (opt_input_file)
@@ -885,6 +864,9 @@ int main(int argc, char **argv)
 		show_device_detail();
 	else
 		printf("%s", g_option_context_get_help(context, TRUE, NULL));
+
+	if (opt_pds)
+		sigrokdecode_shutdown();
 
 	g_option_context_free(context);
 	sigrok_cleanup();
