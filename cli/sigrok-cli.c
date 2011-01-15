@@ -254,7 +254,7 @@ void show_pd_list(void)
 	sigrokdecode_init();
 
 	printf("Supported protocol decoders:\n");
-	for (l = list_pds; l; l = l->next)
+	for (l = sigrokdecode_list_decoders(); l; l = l->next)
 		printf("- %s\n", (const char *)l->data);
 	printf("\n");
 
