@@ -84,7 +84,7 @@ static gchar *opt_samples = NULL;
 static gchar *opt_continuous = NULL;
 
 static GOptionEntry optargs[] = {
-	{"version", 'V', 0, G_OPTION_ARG_NONE, &opt_version, "Show version", NULL},
+	{"version", 'V', 0, G_OPTION_ARG_NONE, &opt_version, "Show version and support list", NULL},
 	{"list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL},
 	{"list-protocol-decoders", 'A', 0, G_OPTION_ARG_NONE, &opt_list_pds, "List protocol decoders", NULL},
 	{"input-file", 'I', 0, G_OPTION_ARG_FILENAME, &opt_input_file, "Load input from file", NULL},
@@ -111,8 +111,8 @@ void show_version(void)
 	struct output_format **outputs;
 	int i;
 
-	printf("sigrok version %s\n", VERSION);
-	printf("Installed hardware drivers:\n");
+	printf("sigrok-cli %s\n\n", VERSION);
+	printf("Supported hardware drivers:\n");
 	plugins = list_hwplugins();
 	for (p = plugins; p; p = p->next) {
 		plugin = p->data;
