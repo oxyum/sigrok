@@ -731,8 +731,8 @@ static void run_session(void)
 
 	if (opt_devoption) {
 		for (i = 0; opt_devoption[i]; i++) {
-			if (!helper_handle_devopt(device, opt_devoption[i]))
-				continue;
+			if (helper_handle_devopt(device, opt_devoption[i]) > 0)
+				return;
 		}
 	}
 
