@@ -68,7 +68,6 @@ int source_timeout = -1;
 
 static gboolean opt_version = FALSE;
 static gboolean opt_list_devices = FALSE;
-static gboolean opt_list_pds = FALSE;
 static gboolean opt_wait_trigger = FALSE;
 static gchar *opt_input_file = NULL;
 static gchar *opt_load_filename = NULL;
@@ -86,7 +85,6 @@ static gchar *opt_continuous = NULL;
 static GOptionEntry optargs[] = {
 	{"version", 'V', 0, G_OPTION_ARG_NONE, &opt_version, "Show version and support list", NULL},
 	{"list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL},
-	{"list-protocol-decoders", 'A', 0, G_OPTION_ARG_NONE, &opt_list_pds, "List protocol decoders", NULL},
 	{"input-file", 'I', 0, G_OPTION_ARG_FILENAME, &opt_input_file, "Load input from file", NULL},
 	{"load-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_filename, "Load session from file", NULL},
 	{"save-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_filename, "Save session to file", NULL},
@@ -105,7 +103,7 @@ static GOptionEntry optargs[] = {
 
 void show_version(void)
 {
-	GSList *plugins, *p;
+	GSList *plugins, *p, *l;
 	struct device_plugin *plugin;
 	struct input_format **inputs;
 	struct output_format **outputs;
@@ -123,17 +121,26 @@ void show_version(void)
 	printf("Supported input formats:\n");
 	inputs = input_list();
 	for (i = 0; inputs[i]; i++) {
-		printf("  %-12s %s\n", inputs[i]->extension, inputs[i]->description);
+		printf("  %-20s %s\n", inputs[i]->extension, inputs[i]->description);
 	}
 	printf("\n");
 
 	printf("Supported output formats:\n");
 	outputs = output_list();
 	for (i = 0; outputs[i]; i++) {
-		printf("  %-12s %s\n", outputs[i]->extension, outputs[i]->description);
+		printf("  %-20s %s\n", outputs[i]->extension, outputs[i]->description);
 	}
 	printf("\n");
 
+	/* TODO: Error handling. */
+	sigrokdecode_init();
+
+	printf("Supported protocol decoders:\n");
+	for (l = sigrokdecode_list_decoders(); l; l = l->next)
+		printf("  %s\n", (const char *)l->data);
+	printf("\n");
+
+	sigrokdecode_shutdown();
 }
 
 void print_device_line(struct device *device)
@@ -244,21 +251,6 @@ void show_device_detail(void)
 			printf("    %s\n", hwo->shortname);
 		}
 	}
-}
-
-void show_pd_list(void)
-{
-	GSList *l;
-
-	/* TODO: Error handling. */
-	sigrokdecode_init();
-
-	printf("Supported protocol decoders:\n");
-	for (l = sigrokdecode_list_decoders(); l; l = l->next)
-		printf("- %s\n", (const char *)l->data);
-	printf("\n");
-
-	sigrokdecode_shutdown();
 }
 
 void datafeed_in(struct device *device, struct datafeed_packet *packet)
@@ -855,8 +847,6 @@ int main(int argc, char **argv)
 		show_version();
 	else if (opt_list_devices)
 		show_device_list();
-	else if (opt_list_pds)
-		show_pd_list();
 	else if (opt_input_file)
 		load_input_file();
 	else if (opt_load_filename)
