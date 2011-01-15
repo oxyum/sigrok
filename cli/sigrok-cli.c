@@ -189,12 +189,59 @@ static void show_device_list(void)
 	}
 }
 
+static int helper_print_hwcaps(struct device *device, struct hwcap_option *hwo,
+			       struct samplerates *samplerates, char **stropts)
+{
+	int i;
+
+	if (hwo->capability == HWCAP_PATTERN_MODE) {
+		printf("    %s", hwo->shortname);
+		if ((stropts = (char **)device->plugin->get_device_info(
+				device->plugin_index, DI_PATTERNMODES))) {
+			if (!stropts) {
+				printf("\n");
+				return 1;
+			}
+			printf(" - supported modes:\n");
+			for (i = 0; stropts[i]; i++)
+				printf("      %s\n", stropts[i]);
+		}
+	} else if (hwo->capability == HWCAP_SAMPLERATE) {
+		printf("    %s", hwo->shortname);
+		/* Supported samplerates */
+		samplerates = device->plugin->get_device_info(
+			device->plugin_index, DI_SAMPLERATES);
+		if (!samplerates) {
+			printf("\n");
+			return 1;
+		}
+
+		/* TODO: Add missing free()s. */
+		if (samplerates->step) {
+			printf(" (%s - %s in steps of %s)\n",
+			  sigrok_samplerate_string(samplerates->low),
+			  sigrok_samplerate_string(samplerates->high),
+			  sigrok_samplerate_string(samplerates->step));
+		} else {
+			printf(" - supported samplerates:\n");
+			for (i = 0; samplerates->list[i]; i++) {
+				printf("      %7s\n",
+				sigrok_samplerate_string(samplerates->list[i]));
+			}
+		}
+	} else {
+		printf("    %s\n", hwo->shortname);
+	}
+
+	return 0;
+}
+
 static void show_device_detail(void)
 {
 	struct device *device;
 	struct hwcap_option *hwo;
 	struct samplerates *samplerates;
-	int cap, *capabilities, i;
+	int cap, *capabilities;
 	char *title, *charopts, **stropts;
 
 	device_scan();
@@ -227,43 +274,8 @@ static void show_device_detail(void)
 			title = NULL;
 		}
 
-		if (hwo->capability == HWCAP_PATTERN_MODE) {
-			printf("    %s", hwo->shortname);
-			if ((stropts = (char **)device->plugin->get_device_info(
-					device->plugin_index, DI_PATTERNMODES))) {
-				if (!stropts) {
-					printf("\n");
-					break;
-				}
-				printf(" - supported modes:\n");
-				for (i = 0; stropts[i]; i++)
-					printf("      %s\n", stropts[i]);
-			}
-		} else if (hwo->capability == HWCAP_SAMPLERATE) {
-			printf("    %s", hwo->shortname);
-			/* Supported samplerates */
-			samplerates = device->plugin->get_device_info(
-				device->plugin_index, DI_SAMPLERATES);
-			if (!samplerates) {
-				printf("\n");
-				break;
-			}
-
-			/* TODO: Add missing free()s. */
-			if (samplerates->step) {
-				printf(" (%s - %s in steps of %s)\n",
-				  sigrok_samplerate_string(samplerates->low),
-				  sigrok_samplerate_string(samplerates->high),
-				  sigrok_samplerate_string(samplerates->step));
-			} else {
-				printf(" - supported samplerates:\n");
-				for (i = 0; samplerates->list[i]; i++) {
-					printf("      %7s\n", sigrok_samplerate_string(samplerates->list[i]));
-				}
-			}
-		} else {
-			printf("    %s\n", hwo->shortname);
-		}
+		if (!helper_print_hwcaps(device, hwo, samplerates, stropts))
+			break;
 	}
 }
 
