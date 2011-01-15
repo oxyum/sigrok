@@ -503,14 +503,14 @@ static int register_pds(struct device *device, const char *pdstring)
 	return 0;
 }
 
-static void select_probes(struct device *device)
+static int select_probes(struct device *device)
 {
 	struct probe *probe;
 	char **probelist;
 	int max_probes, i;
 
 	if (!opt_probes)
-		return;
+		return 0;
 
 	/*
 	 * This only works because a device by default initializes
@@ -519,8 +519,7 @@ static void select_probes(struct device *device)
 	max_probes = g_slist_length(device->probes);
 	probelist = parse_probestring(max_probes, opt_probes);
 	if (!probelist) {
-		session_destroy();
-		return;
+		return 1;
 	}
 
 	for (i = 0; i < max_probes; i++) {
@@ -533,6 +532,8 @@ static void select_probes(struct device *device)
 		}
 	}
 	g_free(probelist);
+
+        return 0;
 }
 
 static void load_input_file(void)
@@ -575,7 +576,8 @@ static void load_input_file(void)
 		}
 	}
 
-	select_probes(in->vdevice);
+	if (select_probes(in->vdevice) > 0)
+            return;
 
 	session_new();
 	session_datafeed_callback_add(datafeed_in);
@@ -691,7 +693,8 @@ static void run_session(void)
 			return;
 		}
 	}
-	select_probes(device);
+	if (select_probes(device) > 0)
+            return;
 
 	if (opt_continuous) {
 		capabilities = device->plugin->get_capabilities();
