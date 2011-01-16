@@ -195,7 +195,7 @@ static void show_device_detail(void)
 	struct hwcap_option *hwo;
 	struct samplerates *samplerates;
 	int cap, *capabilities, i;
-	char *title, *charopts, **stropts;
+	char *s, *title, *charopts, **stropts;
 
 	device_scan();
 	device = parse_devicestring(opt_device);
@@ -229,16 +229,15 @@ static void show_device_detail(void)
 
 		if (hwo->capability == HWCAP_PATTERN_MODE) {
 			printf("    %s", hwo->shortname);
-			if ((stropts = (char **)device->plugin->get_device_info(
-					device->plugin_index, DI_PATTERNMODES))) {
-				if (!stropts) {
-					printf("\n");
-					break;
-				}
-				printf(" - supported modes:\n");
-				for (i = 0; stropts[i]; i++)
-					printf("      %s\n", stropts[i]);
+			stropts = (char **)device->plugin->get_device_info(
+					device->plugin_index, DI_PATTERNMODES);
+			if (!stropts) {
+				printf("\n");
+				continue;
 			}
+			printf(" - supported modes:\n");
+			for (i = 0; stropts[i]; i++)
+				printf("      %s\n", stropts[i]);
 		} else if (hwo->capability == HWCAP_SAMPLERATE) {
 			printf("    %s", hwo->shortname);
 			/* Supported samplerates */
@@ -246,15 +245,25 @@ static void show_device_detail(void)
 				device->plugin_index, DI_SAMPLERATES);
 			if (!samplerates) {
 				printf("\n");
-				break;
+				continue;
 			}
 
-			/* TODO: Add missing free()s. */
 			if (samplerates->step) {
-				printf(" (%s - %s in steps of %s)\n",
-				  sigrok_samplerate_string(samplerates->low),
-				  sigrok_samplerate_string(samplerates->high),
-				  sigrok_samplerate_string(samplerates->step));
+				/* low */
+				if (!(s = sigrok_samplerate_string(samplerates->low)))
+					continue;
+				printf(" (%s", s);
+				free(s);
+				/* high */
+				if (!(s = sigrok_samplerate_string(samplerates->high)))
+					continue;
+				printf(" - %s", s);
+				free(s);
+				/* step */
+				if (!(s = sigrok_samplerate_string(samplerates->step)))
+					continue;
+				printf(" in steps of %s)\n", s);
+				free(s);
 			} else {
 				printf(" - supported samplerates:\n");
 				for (i = 0; samplerates->list[i]; i++) {
@@ -291,19 +300,13 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	case DF_HEADER:
 		/* Initialize the output module. */
 		if (!(o = malloc(sizeof(struct output))))
-			return; /* FIXME: How to report errors? */
+			g_error("Output module malloc failed.");
 		o->format = output_format;
 		o->device = device;
 		o->param = output_format_param;
-
-		/* TODO: Error handling. */
-		if (o->format->init) {
-			if ((ret = o->format->init(o)) != SIGROK_OK) {
+		if (o->format->init)
+			if (o->format->init(o) != SIGROK_OK)
 				g_error("Output format init failed.");
-				// return ret;
-				return; /* FIXME */
-			}
-		}
 
 		header = (struct datafeed_header *)packet->payload;
 		num_enabled_probes = 0;
@@ -321,12 +324,8 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		 */
 		if (opt_save_filename) {
 			ret = datastore_new(unitsize, &(device->datastore));
-			if (ret != SIGROK_OK) {
+			if (ret != SIGROK_OK)
 				g_error("Couldn't create datastore.");
-				/* TODO: free()? */
-				// return SIGROK_ERR_MALLOC;
-				return; /* FIXME */
-			}
 		}
 		break;
 	case DF_END:
