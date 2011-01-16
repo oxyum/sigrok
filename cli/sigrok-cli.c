@@ -306,7 +306,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		o->param = output_format_param;
 		if (o->format->init)
 			if (o->format->init(o) != SIGROK_OK)
-				g_error("Output format init failed.");
+				g_error("Output format initialization failed.");
 
 		header = (struct datafeed_header *)packet->payload;
 		num_enabled_probes = 0;
