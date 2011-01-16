@@ -38,6 +38,9 @@
 
 extern struct hwcap_option hwcap_options[];
 
+/* demo.c */
+extern GIOChannel channels[2];
+
 gboolean debug = 0;
 int end_acquisition = FALSE;
 uint64_t limit_samples = 0;
@@ -597,7 +600,7 @@ int num_real_devices(void)
 static void run_session(void)
 {
 	struct device *device;
-	GPollFD *fds;
+	GPollFD *fds, my_gpollfd;
 	int num_devices, max_probes, *capabilities, ret, found, i, j;
 	unsigned int time_msec;
 	uint64_t tmp_u64;
@@ -760,8 +763,14 @@ static void run_session(void)
 		/* Construct g_poll()'s array. */
 		fds = malloc(sizeof(GPollFD) * num_sources);
 		for (i = 0; i < num_sources; i++) {
-			fds[i].fd = sources[i].fd;
-			fds[i].events = sources[i].events;
+#ifdef _WIN32
+			g_io_channel_win32_make_pollfd(&channels[0],
+					sources[i].events, &my_gpollfd);
+#else
+			my_gpollfd.fd = sources[i].fd;
+			my_gpollfd.events = sources[i].events;
+			fds[i] = my_gpollfd;
+#endif
 		}
 
 		ret = g_poll(fds, num_sources, source_timeout);
