@@ -602,8 +602,7 @@ static void run_session(void)
 	struct device *device;
 	GPollFD *fds, my_gpollfd;
 	int num_devices, max_probes, *capabilities, ret, found, i, j;
-	unsigned int time_msec;
-	uint64_t tmp_u64;
+	uint64_t tmp_u64, time_msec;
 	char **probelist, *val;
 
 	device_scan();
@@ -715,28 +714,37 @@ static void run_session(void)
 	}
 
 	if (opt_time) {
-		time_msec = strtoul(opt_time, &val, 10);
+		time_msec = parse_timestring(opt_time);
+		if (time_msec == 0)
+			g_error("Invalid time '%s'", opt_time);
+
 		capabilities = device->plugin->get_capabilities();
-		if (find_hwcap(capabilities, HWCAP_LIMIT_MSEC))
-			device->plugin->set_configuration(device->plugin_index,
-							  HWCAP_LIMIT_MSEC,
-							  opt_time);
-		else {
-			if (val && !strncasecmp(val, "s", 1))
-				time_msec *= 1000;
-			tmp_u64 = *((uint64_t *) device->plugin->
-			      get_device_info(device->plugin_index,
-					      DI_CUR_SAMPLERATE));
-			limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
+		if (find_hwcap(capabilities, HWCAP_LIMIT_MSEC)) {
+			if (device->plugin->set_configuration(device->plugin_index,
+							  HWCAP_LIMIT_MSEC, &time_msec) != SIGROK_OK)
+				g_error("Failed to configure time limit.");
 		}
-		device->plugin->set_configuration(device->plugin_index,
-					  HWCAP_LIMIT_SAMPLES, &limit_samples);
+		else {
+			/* time limit set, but device doesn't support this...
+			 * convert to samples based on the samplerate.
+			 */
+			tmp_u64 = *((uint64_t *) device->plugin->get_device_info(
+					device->plugin_index, DI_CUR_SAMPLERATE));
+			limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
+			if (limit_samples == 0)
+				g_error("Not enough time at this samplerate.");
+
+			if (device->plugin->set_configuration(device->plugin_index,
+						  HWCAP_LIMIT_SAMPLES, &limit_samples) != SIGROK_OK)
+				g_error("Failed to configure time-based sample limit.");
+		}
 	}
 
 	if (opt_samples) {
 		limit_samples = parse_sizestring(opt_samples);
-		device->plugin->set_configuration(device->plugin_index,
-					  HWCAP_LIMIT_SAMPLES, &limit_samples);
+		if (device->plugin->set_configuration(device->plugin_index,
+					  HWCAP_LIMIT_SAMPLES, &limit_samples) != SIGROK_OK)
+			g_error("Failed to configure sample limit.");
 	}
 
 	if (device->plugin->set_configuration(device->plugin_index,

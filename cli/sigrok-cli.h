@@ -30,6 +30,7 @@ char **parse_probestring(int max_probes, const char *probestring);
 char **parse_triggerstring(struct device *device, const char *triggerstring);
 uint64_t parse_sizestring(const char *sizestring);
 struct device *parse_devicestring(const char *devicestring);
+uint64_t parse_timestring(const char *timestring);
 
 /* anykey.c */
 void add_anykey(void);

@@ -245,3 +245,27 @@ struct device *parse_devicestring(const char *devicestring)
 
 	return device;
 }
+
+uint64_t parse_timestring(const char *timestring)
+{
+	uint64_t time_msec;
+	char *s;
+
+	time_msec = strtoull(timestring, &s, 10);
+	if (time_msec == 0 && s == timestring)
+		return 0;
+
+	if (s && *s) {
+		while (*s == ' ')
+			s++;
+		if (!strcmp(s, "s"))
+			time_msec *= 1000;
+		else if (!strcmp(s, "ms"))
+			; /* redundant */
+		else
+			return 0;
+	}
+
+	return time_msec;
+}
+
