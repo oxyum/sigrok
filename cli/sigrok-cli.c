@@ -366,7 +366,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		break;
 	}
 
-	if (sample_size == -1)
+	if (sample_size == -1 || packet->length == 0)
 		return;
 
 	/* Don't store any samples until triggered. */
