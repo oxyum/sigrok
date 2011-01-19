@@ -304,14 +304,18 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	switch (packet->type) {
 	case DF_HEADER:
 		/* Initialize the output module. */
-		if (!(o = malloc(sizeof(struct output))))
-			g_error("Output module malloc failed.");
+		if (!(o = malloc(sizeof(struct output)))) {
+			printf("Output module malloc failed.\n");
+			exit(1);
+		}
 		o->format = output_format;
 		o->device = device;
 		o->param = output_format_param;
 		if (o->format->init)
-			if (o->format->init(o) != SIGROK_OK)
-				g_error("Output format initialization failed.");
+			if (o->format->init(o) != SIGROK_OK) {
+				printf("Output format initialization failed.\n");
+				exit(1);
+			}
 
 		header = (struct datafeed_header *)packet->payload;
 		num_enabled_probes = 0;
@@ -329,8 +333,10 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		 */
 		if (opt_save_filename) {
 			ret = datastore_new(unitsize, &(device->datastore));
-			if (ret != SIGROK_OK)
-				g_error("Couldn't create datastore.");
+			if (ret != SIGROK_OK) {
+				printf("Couldn't create datastore.\n");
+				exit(1);
+			}
 		}
 		break;
 	case DF_END:
@@ -549,22 +555,22 @@ static void load_input_file(void)
 	input_format = inputs[i];
 
 	if (stat(opt_input_file, &st) == -1) {
-		g_error("Failed to load %s: %s", opt_input_file,
+		printf("Failed to load %s: %s\n", opt_input_file,
 			strerror(errno));
-		return;
+		exit(1);
 	}
 
 	/* Initialize the input module. */
 	if (!(in = malloc(sizeof(struct input)))) {
-		g_error("Failed to allocate input module.");
-		return;
+		printf("Failed to allocate input module.\n");
+		exit(1);
 	}
 	in->format = input_format;
 	in->param = input_format_param;
 	if (in->format->init) {
 		if (in->format->init(in) != SIGROK_OK) {
-			g_error("Input format init failed.");
-			return;
+			printf("Input format init failed.\n");
+			exit(1);
 		}
 	}
 
@@ -717,14 +723,18 @@ static void run_session(void)
 
 	if (opt_time) {
 		time_msec = parse_timestring(opt_time);
-		if (time_msec == 0)
-			g_error("Invalid time '%s'", opt_time);
+		if (time_msec == 0) {
+			printf("Invalid time '%s'\n", opt_time);
+			exit(1);
+		}
 
 		capabilities = device->plugin->get_capabilities();
 		if (find_hwcap(capabilities, HWCAP_LIMIT_MSEC)) {
 			if (device->plugin->set_configuration(device->plugin_index,
-							  HWCAP_LIMIT_MSEC, &time_msec) != SIGROK_OK)
-				g_error("Failed to configure time limit.");
+							  HWCAP_LIMIT_MSEC, &time_msec) != SIGROK_OK) {
+				printf("Failed to configure time limit.\n");
+				exit(1);
+			}
 		}
 		else {
 			/* time limit set, but device doesn't support this...
@@ -733,20 +743,26 @@ static void run_session(void)
 			tmp_u64 = *((uint64_t *) device->plugin->get_device_info(
 					device->plugin_index, DI_CUR_SAMPLERATE));
 			limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
-			if (limit_samples == 0)
-				g_error("Not enough time at this samplerate.");
+			if (limit_samples == 0) {
+				printf("Not enough time at this samplerate.\n");
+				exit(1);
+			}
 
 			if (device->plugin->set_configuration(device->plugin_index,
-						  HWCAP_LIMIT_SAMPLES, &limit_samples) != SIGROK_OK)
-				g_error("Failed to configure time-based sample limit.");
+						  HWCAP_LIMIT_SAMPLES, &limit_samples) != SIGROK_OK) {
+				printf("Failed to configure time-based sample limit.\n");
+				exit(1);
+			}
 		}
 	}
 
 	if (opt_samples) {
 		limit_samples = parse_sizestring(opt_samples);
 		if (device->plugin->set_configuration(device->plugin_index,
-					  HWCAP_LIMIT_SAMPLES, &limit_samples) != SIGROK_OK)
-			g_error("Failed to configure sample limit.");
+					  HWCAP_LIMIT_SAMPLES, &limit_samples) != SIGROK_OK) {
+			printf("Failed to configure sample limit.\n");
+			exit(1);
+		}
 	}
 
 	if (device->plugin->set_configuration(device->plugin_index,
