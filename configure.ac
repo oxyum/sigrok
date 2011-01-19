@@ -199,7 +199,7 @@ AC_CONFIG_FILES([Makefile
 
 AC_SUBST(FIRMWARE_DIR, '$(datadir)/sigrok/firmware')
 AC_SUBST(DECODERS_DIR, '$(datadir)/sigrok/decoders')
-AC_SUBST(MAKEFLAGS, '--no-print-directory --silent')
+AC_SUBST(MAKEFLAGS, '--no-print-directory')
 AC_SUBST(AM_LIBTOOLFLAGS, '--silent')
 
 AC_DEFINE_UNQUOTED(DECODERS_DIR, "$DECODERS_DIR",
