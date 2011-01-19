@@ -1,8 +1,8 @@
-.TH SIGROK-CLI 1 "April 7, 2010"
+.TH SIGROK-CLI 1 "January 19, 2011"
 .SH "NAME"
 sigrok-cli \- Command-line client for the sigrok logic analyzer software
 .SH "SYNOPSIS"
-.B sigrok-cli \fR[\fB\-VDdptofh\fR] [\fB\-V\fR|\fB\-\-version\fR] [\fB\-D\fR|\fB\-\-list-devices\fR] [\fB\-d\fR|\fB\-\-device\fR devid] [\fB\-p\fR|\fB\-\-probes\fR probelist] [\fB\-t\fR|\fB\-\-triggers\fR triggerlist] [\fB\-o\fR|\fB\-\-device-option\fR devopt] [\fB\-I\fR|\fB\-\-input\-file\fR filename] [\fB\-f\fR|\fB\-\-format\fR formatname] [\fB\-\-time\fR ms] [\fB\-\-samples\fR numsamples] [\fB\-\-continuous\fR] [\fB\-h\fR|\fB\-\-help\fR]
+.B sigrok-cli \fR[\fB\-VDdptoIfh\fR] [\fB\-V\fR|\fB\-\-version\fR] [\fB\-D\fR|\fB\-\-list-devices\fR] [\fB\-d\fR|\fB\-\-device\fR devid] [\fB\-p\fR|\fB\-\-probes\fR probelist] [\fB\-t\fR|\fB\-\-triggers\fR triggerlist] [\fB\-o\fR|\fB\-\-device-option\fR devopt] [\fB\-I\fR|\fB\-\-input\-file\fR filename] [\fB\-f\fR|\fB\-\-format\fR formatname] [\fB\-\-time\fR ms] [\fB\-\-samples\fR numsamples] [\fB\-\-continuous\fR] [\fB\-h\fR|\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .B sigrok-cli
 is a cross-platform command line utility for the
@@ -111,9 +111,12 @@ Set the output format to use.
 Supported formats currently include
 .BR bits ,
 .BR hex ,
+.BR ascii ,
 .BR binary ,
-.BR vcd ", and"
-.BR gnuplot .
+.BR vcd ,
+.BR ols ,
+.BR gnuplot ", and"
+.BR analog .
 .sp
 The
 .B bits
@@ -170,7 +173,8 @@ Alternatively, you can also use:
 .TP
 To capture data from 4 probes lasting 100ms at 10 MHz starting at the trigger condition 1:high, 2:rising, 3:low, 4:high, use:
 .TP
-.B "  sigrok-cli -f bits -p 1-4 --time 100 -o samplerate=10m --wait-trigger --triggers 1=1,2=r,3=0,4=1 "
+.B "  sigrok-cli -f bits -p 1-4 --time 100 -o samplerate=10m \\\\"
+.B "      --wait-trigger --triggers 1=1,2=r,3=0,4=1 "
 .SH "EXIT STATUS"
 .B sigrok-cli
 exits with 0 on success, 1 on most failures.
