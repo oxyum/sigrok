@@ -59,14 +59,14 @@ if test "x$LA_ASIX_SIGMA" = "xyes"; then
 	AC_DEFINE(HAVE_LA_ASIX_SIGMA, 1, [ASIX Sigma support])
 fi
 
-AC_ARG_ENABLE(link-mso19, AC_HELP_STRING([--enable-link-mso19],
-	      [enable Link Instruments MSO-19 support [default=yes]]),
-	      [LA_LINK_MSO19="$enableval"],
-	      [LA_LINK_MSO19=yes])
-AM_CONDITIONAL(LA_LINK_MSO19, test x$LA_LINK_MSO19 = xyes)
-if test "x$LA_LINK_MSO19" = "xyes"; then
-	AC_DEFINE(HAVE_LA_LINK_MSO19, 1, [Link Instruments MSO-19 support])
-fi
+# AC_ARG_ENABLE(link-mso19, AC_HELP_STRING([--enable-link-mso19],
+# 	      [enable Link Instruments MSO-19 support [default=yes]]),
+# 	      [LA_LINK_MSO19="$enableval"],
+# 	      [LA_LINK_MSO19=yes])
+# AM_CONDITIONAL(LA_LINK_MSO19, test x$LA_LINK_MSO19 = xyes)
+# if test "x$LA_LINK_MSO19" = "xyes"; then
+# 	AC_DEFINE(HAVE_LA_LINK_MSO19, 1, [Link Instruments MSO-19 support])
+# fi
 
 AC_ARG_ENABLE(ols, AC_HELP_STRING([--enable-ols],
 	      [enable OpenBench Logic Sniffer (OLS) support [default=yes]]),
@@ -185,7 +185,6 @@ AC_CONFIG_FILES([Makefile
 		 libsigrok/hardware/asix-sigma/Makefile
 		 libsigrok/hardware/common/Makefile
 		 libsigrok/hardware/demo/Makefile
-		 libsigrok/hardware/link-mso19/Makefile
 		 libsigrok/hardware/openbench-logic-sniffer/Makefile
 		 libsigrok/hardware/saleae-logic/Makefile
 		 libsigrok/hardware/zeroplus-logic-cube/Makefile
