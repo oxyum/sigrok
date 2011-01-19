@@ -126,12 +126,13 @@ if test "x$LA_ASIX_SIGMA" != xno; then
 		LIBS="$LIBS $libftdi_LIBS"])
 fi
 
-# libudev is only needed for some hardware drivers.
-if test "x$LA_LINK_MSO19" != xno; then
-	PKG_CHECK_MODULES([libudev], [libudev >= 151],
-		[CFLAGS="$CFLAGS $libudev_CFLAGS";
-		LIBS="$LIBS $libudev_LIBS"])
-fi
+# removed for 0.1 release
+## libudev is only needed for some hardware drivers.
+#if test "x$LA_LINK_MSO19" != xno; then
+#	PKG_CHECK_MODULES([libudev], [libudev >= 151],
+#		[CFLAGS="$CFLAGS $libudev_CFLAGS";
+#		LIBS="$LIBS $libudev_LIBS"])
+#fi
 
 # Python support.
 CPPFLAGS_PYTHON=""
