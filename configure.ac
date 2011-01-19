@@ -193,7 +193,6 @@ AC_CONFIG_FILES([Makefile
 		 libsigrok/libsigrok.pc
 		 libsigrokdecode/Makefile
 		 libsigrokdecode/libsigrokdecode.pc
-		 libsigrokdecode/decoders/Makefile
 		 cli/Makefile
 		])
 
