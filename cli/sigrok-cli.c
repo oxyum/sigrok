@@ -88,14 +88,14 @@ static GOptionEntry optargs[] = {
 	{"version", 'V', 0, G_OPTION_ARG_NONE, &opt_version, "Show version and support list", NULL},
 	{"list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL},
 	{"input-file", 'I', 0, G_OPTION_ARG_FILENAME, &opt_input_file, "Load input from file", NULL},
-	{"load-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_filename, "Load session from file", NULL},
-	{"save-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_filename, "Save session to file", NULL},
+	// {"load-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_filename, "Load session from file", NULL},
+	// {"save-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_filename, "Save session to file", NULL},
 	{"device", 'd', 0, G_OPTION_ARG_STRING, &opt_device, "Use device ID", NULL},
 	{"probes", 'p', 0, G_OPTION_ARG_STRING, &opt_probes, "Probes to use", NULL},
 	{"triggers", 't', 0, G_OPTION_ARG_STRING, &opt_triggers, "Trigger configuration", NULL},
 	{"wait-trigger", 'w', 0, G_OPTION_ARG_NONE, &opt_wait_trigger, "Wait for trigger", NULL},
 	{"device-option", 'o', 0, G_OPTION_ARG_STRING_ARRAY, &opt_devoption, "Device-specific option", NULL},
-	{"protocol-decoders", 'a', 0, G_OPTION_ARG_STRING, &opt_pds, "Protocol decoder sequence", NULL},
+	// {"protocol-decoders", 'a', 0, G_OPTION_ARG_STRING, &opt_pds, "Protocol decoder sequence", NULL},
 	{"format", 'f', 0, G_OPTION_ARG_STRING, &opt_format, "Output format", NULL},
 	{"time", 0, 0, G_OPTION_ARG_STRING, &opt_time, "How long to sample (ms)", NULL},
 	{"samples", 0, 0, G_OPTION_ARG_STRING, &opt_samples, "Number of samples to acquire", NULL},
@@ -136,6 +136,7 @@ static void show_version(void)
 	}
 	printf("\n");
 
+#if 0
 	/* TODO: Error handling. */
 	sigrokdecode_init();
 
@@ -145,6 +146,7 @@ static void show_version(void)
 	printf("\n");
 
 	sigrokdecode_shutdown();
+#endif
 }
 
 static void print_device_line(struct device *device)
