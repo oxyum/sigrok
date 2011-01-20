@@ -1,10 +1,10 @@
-.TH SIGROK-CLI 1 "January 19, 2011"
+.TH SIGROK\-CLI 1 "January 19, 2011"
 .SH "NAME"
-sigrok-cli \- Command-line client for the sigrok logic analyzer software
+sigrok\-cli \- Command-line client for the sigrok logic analyzer software
 .SH "SYNOPSIS"
-.B sigrok-cli \fR[\fB\-VDdptoIfh\fR] [\fB\-V\fR|\fB\-\-version\fR] [\fB\-D\fR|\fB\-\-list-devices\fR] [\fB\-d\fR|\fB\-\-device\fR devid] [\fB\-p\fR|\fB\-\-probes\fR probelist] [\fB\-t\fR|\fB\-\-triggers\fR triggerlist] [\fB\-o\fR|\fB\-\-device-option\fR devopt] [\fB\-I\fR|\fB\-\-input\-file\fR filename] [\fB\-f\fR|\fB\-\-format\fR formatname] [\fB\-\-time\fR ms] [\fB\-\-samples\fR numsamples] [\fB\-\-continuous\fR] [\fB\-h\fR|\fB\-\-help\fR]
+.B sigrok-cli \fR[\fB\-VDdptoIfh\fR] [\fB\-V\fR|\fB\-\-version\fR] [\fB\-D\fR|\fB\-\-list\-devices\fR] [\fB\-d\fR|\fB\-\-device\fR devid] [\fB\-p\fR|\fB\-\-probes\fR probelist] [\fB\-t\fR|\fB\-\-triggers\fR triggerlist] [\fB\-o\fR|\fB\-\-device-option\fR devopt] [\fB\-I\fR|\fB\-\-input\-file\fR filename] [\fB\-f\fR|\fB\-\-format\fR formatname] [\fB\-\-time\fR ms] [\fB\-\-samples\fR numsamples] [\fB\-\-continuous\fR] [\fB\-h\fR|\fB\-\-help\fR]
 .SH "DESCRIPTION"
-.B sigrok-cli
+.B sigrok\-cli
 is a cross-platform command line utility for the
 .B sigrok
 logic analyzer software.
@@ -21,12 +21,12 @@ save them in various file formats.
 .B "\-V, \-\-version"
 Show version, driver and module information.
 .TP
-.B "\-D, \-\-list-devices"
+.B "\-D, \-\-list\-devices"
 List all logic analyzer devices found on the system.
 .TP
 .BR "\-d, \-\-device " <devid>
 The device to use for acquisition, specified by ID as reported by
-.BR "\-\-list-devices" .
+.BR "\-\-list\-devices" .
 .TP
 .BR "\-p, \-\-probes " <probelist>
 A comma-separated list of probes to be used in the session.
@@ -35,12 +35,12 @@ The default is to use all the probes available on a device. You can name
 a probe like this:
 .BR "1=CLK" .
 A range of probes can also be given, in the form
-.BR "1-5" .
+.BR "1\-5" .
 .sp
 Example:
 .sp
  $
-.B "sigrok-cli --samples 100 --probes 1=CLK,2-4,7"
+.B "sigrok\-cli \-\-samples 100 \-\-probes 1=CLK,2\-4,7"
 .br
  CLK:11111111 11111111 11111111 11111111 [...]
    2:11111111 11111111 11111111 11111111 [...]
@@ -58,10 +58,10 @@ Also, while
 .B "5=MOSI,6=MISO"
 will only select probes 5 and 6, and set their names to MISO and MOSI, the
 command line
-.B "5=MOSI,6=MISO,1-8"
-will select probes 1-8 (including 5 and 6, of course), but the names specified
+.B "5=MOSI,6=MISO,1\-8"
+will select probes 1\-8 (including 5 and 6, of course), but the names specified
 for probes 5 and 6 will be reset to the defaults by the
-.B "1-8"
+.B "1\-8"
 probe selection.
 .TP
 .BR "\-t, \-\-triggers " <triggerlist>
@@ -83,10 +83,10 @@ effectively corresponds to
 Any kind of change on a pin.
 .sp
 Not every device supports all of these trigger types. Use the
-.B "-d <device-id>"
+.B "\-d <device-id>"
 argument (with no other arguments) to see which triggers your device supports.
 .TP
-.BR "\-o, \-\-device-option " <devopt>
+.BR "\-o, \-\-device\-option " <devopt>
 Set a device-specific option. The argument takes the form of
 .BR "option=value" .
 A common option is
@@ -94,15 +94,15 @@ A common option is
 with the argument being the samplerate in Hz. You can also specify the sample
 rate in kHz, MHz or GHz. The following are all equivalent:
 .sp
- sigrok-cli --samples 100 -o samplerate=1000000
- sigrok-cli --samples 100 -o samplerate=1m
- sigrok-cli --samples 100 -o "samplerate=1 MHz"
+ sigrok\-cli \-\-samples 100 \-o samplerate=1000000
+ sigrok\-cli \-\-samples 100 \-o samplerate=1m
+ sigrok\-cli \-\-samples 100 \-o "samplerate=1 MHz"
 .sp
 The
-.B \-\-device-option
+.B \-\-device\-option
 argument can be used multiple times as needed.
 .TP
-.BR "\-I, \-\-input-file " <filename>
+.BR "\-I, \-\-input\-file " <filename>
 Load input from a file instead of a device.
 .TP
 .BR "\-f, \-\-format " <formatname>
@@ -144,7 +144,7 @@ Sample for
 milliseconds, then quit. You can optionally follow the number by
 .B s
 to state the number of seconds to sample instead. For example,
-.B "--time 2s"
+.B "\-\-time 2s"
 will sample for two seconds.
 .TP
 .BR "\-\-samples " <numsamples>
@@ -161,34 +161,34 @@ Show a help text and exit.
 In order to get exactly 100 samples from the (only) detected logic analyzer
 hardware, run the following command:
 .TP
-.B "  sigrok-cli --samples 100"
+.B "  sigrok\-cli \-\-samples 100"
 .TP
 If you want to sample data for 3 seconds, use:
 .TP
-.B "  sigrok-cli --time 3000"
+.B "  sigrok\-cli \-\-time 3000"
 .TP
 Alternatively, you can also use:
 .TP
-.B "  sigrok-cli --time 3s"
+.B "  sigrok\-cli \-\-time 3s"
 .TP
 To capture data from 4 probes lasting 100ms at 10 MHz starting at the trigger condition 1:high, 2:rising, 3:low, 4:high, use:
 .TP
-.B "  sigrok-cli -f bits -p 1-4 --time 100 -o samplerate=10m \\\\"
-.B "      --wait-trigger --triggers 1=1,2=r,3=0,4=1 "
+.B "  sigrok\-cli \-f bits \-p 1\-4 \-\-time 100 \-o samplerate=10m \\\\"
+.B "      \-\-wait\-trigger \-\-triggers 1=1,2=r,3=0,4=1 "
 .SH "EXIT STATUS"
-.B sigrok-cli
+.B sigrok\-cli
 exits with 0 on success, 1 on most failures.
 .SH "SEE ALSO"
-\fBsigrok-gui\fP(1)
+\fBsigrok\-gui\fP(1)
 .SH "BUGS"
-Please report any bugs on the sigrok-devel mailing list
-.RB "(" sigrok-devel@lists.souceforge.net ")."
+Please report any bugs on the sigrok\-devel mailing list
+.RB "(" sigrok\-devel@lists.souceforge.net ")."
 .SH "LICENSE"
-.B sigrok-cli
+.B sigrok\-cli
 is covered by the GNU General Public License (GPL). Some portions are
 licensed under the "GPL v2 or later", some under "GPL v3 or later".
 .SH "AUTHORS"
 Please see the individual source code files.
 .PP
-This manual page was written by Uwe Hermann <uwe@hermann-uwe.de>.
+This manual page was written by Uwe Hermann <uwe@hermann\-uwe.de>.
 It is licensed under the terms of the GNU GPL (version 2 or later).
