@@ -180,6 +180,7 @@ AC_CONFIG_FILES([Makefile
 		 contrib/nsis/sigrok.nsi
 		 doc/Makefile
 		 libsigrok/Makefile
+		 libsigrok/firmware/Makefile
 		 libsigrok/hardware/Makefile
 		 libsigrok/hardware/asix-sigma/Makefile
 		 libsigrok/hardware/common/Makefile
@@ -202,6 +203,8 @@ AC_SUBST(DECODERS_DIR, '$(datadir)/sigrok/decoders')
 AC_SUBST(MAKEFLAGS, '--no-print-directory')
 AC_SUBST(AM_LIBTOOLFLAGS, '--silent')
 
+AC_DEFINE_UNQUOTED(FIRMWARE_DIR, "$FIRMWARE_DIR",
+                   [The firmware directory for logic analyzers.])
 AC_DEFINE_UNQUOTED(DECODERS_DIR, "$DECODERS_DIR",
                    [The protocol decoders directory.])
 
