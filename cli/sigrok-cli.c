@@ -392,6 +392,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	} else {
 		if (!(filter_out = malloc(packet->length)))
 			return;
+		memcpy(filter_out, packet->payload, packet->length);
 		filter_out_len = packet->length;
 	}
 
