@@ -284,7 +284,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	static struct output *o = NULL;
 	static int probelist[65] = { 0 };
 	static uint64_t received_samples = 0;
-	static int unitsize = 0;
+//	static int unitsize = 0;
 	static int triggered = 0;
 	struct probe *probe;
 	struct datafeed_header *header;
@@ -327,23 +327,22 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		 * this is totally broken, sigrok-cli.c cant just guess
 		 * unitsize, 1 probe isn't always 1 bit wide.
 		 */
-		if (device->probe_type == PROBE_TYPE_LOGIC)
-			unitsize = (num_enabled_probes + 7) / 8;
-		else
-			unitsize = packet->unitsize;
+#if 0
+//		unitsize = (num_enabled_probes + 7) / 8;
+		unitsize = packet->unitsize;
 
 		/*
 		 * Saving sessions will need a datastore to dump into
 		 * the session file.
 		 */
-		if (opt_save_filename &&
-				device->probe_type == PROBE_TYPE_LOGIC) {
+		if (opt_save_filename) {
 			ret = datastore_new(unitsize, &(device->datastore));
 			if (ret != SIGROK_OK) {
 				printf("Couldn't create datastore.\n");
 				exit(1);
 			}
 		}
+#endif
 		break;
 	case DF_END:
 		g_message("Received DF_END");
@@ -390,6 +389,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	if (limit_samples && received_samples >= limit_samples)
 		return;
 
+#if 0
 	if (packet->type == DF_LOGIC) {
 		/* filters only support DF_LOGIC */
 		ret = filter_probes(sample_size, unitsize, probelist,
@@ -398,15 +398,18 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		if (ret != SIGROK_OK)
 			return;
 	} else {
+#endif
 		if (!(filter_out = malloc(packet->length)))
 			return;
 		memcpy(filter_out, packet->payload, packet->length);
 		filter_out_len = packet->length;
+#if 0
 	}
 
-	if (device->datastore && device->probe_type == PROBE_TYPE_LOGIC)
+	if (device->datastore)
 		datastore_put(device->datastore, filter_out,
 			      filter_out_len, sample_size, probelist);
+#endif
 
 	if (current_decoder) {
 		/* TODO: Handle errors. */
