@@ -323,12 +323,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 				probelist[num_enabled_probes++] = probe->index;
 		}
 		/* How many bytes we need to store num_enabled_probes bits? */
-		/*
-		 * this is totally broken, sigrok-cli.c cant just guess
-		 * unitsize, 1 probe isn't always 1 bit wide.
-		 */
-//		unitsize = (num_enabled_probes + 7) / 8;
-		unitsize = packet->unitsize;
+		unitsize = (num_enabled_probes + 7) / 8;
 
 		/*
 		 * Saving sessions will need a datastore to dump into
@@ -397,7 +392,6 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	} else {
 		if (!(filter_out = malloc(packet->length)))
 			return;
-		memcpy(filter_out, packet->payload, packet->length);
 		filter_out_len = packet->length;
 	}
 
