@@ -2,7 +2,7 @@
 .SH "NAME"
 sigrok\-cli \- Command-line client for the sigrok logic analyzer software
 .SH "SYNOPSIS"
-.B sigrok-cli \fR[\fB\-hVDiodptwf\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] [\fB\-D\fR|\fB\-\-list\-devices\fR] [\fB\-i\fR|\fB\-\-input\-file\fR filename] [\fB\-o\fR|\fB\-\-output\-file\fR filename] [\fB\-d\fR|\fB\-\-device\fR device] [\fB\-p\fR|\fB\-\-probes\fR probelist] [\fB\-t\fR|\fB\-\-triggers\fR triggerlist] [\fB\-w\fR|\fB\-\-wait\-triggers\fR] [\fB\-a\fR|\fB\-\-protocol\-decoders\fR sequence] [\fB\-f\fR|\fB\-\-format\fR format] [\fB\-\-time\fR ms] [\fB\-\-samples\fR numsamples] [\fB\-\-continuous\fR] [\fB\-h\fR|\fB\-\-help\fR]
+.B sigrok\-cli \fR[\fB\-hVDiodptwaf\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] [\fB\-D\fR|\fB\-\-list\-devices\fR] [\fB\-i\fR|\fB\-\-input\-file\fR filename] [\fB\-o\fR|\fB\-\-output\-file\fR filename] [\fB\-d\fR|\fB\-\-device\fR device] [\fB\-p\fR|\fB\-\-probes\fR probelist] [\fB\-t\fR|\fB\-\-triggers\fR triggerlist] [\fB\-w\fR|\fB\-\-wait\-triggers\fR] [\fB\-a\fR|\fB\-\-protocol\-decoders\fR sequence] [\fB\-f\fR|\fB\-\-format\fR format] [\fB\-\-time\fR ms] [\fB\-\-samples\fR numsamples] [\fB\-\-continuous\fR]
 .SH "DESCRIPTION"
 .B sigrok\-cli
 is a cross-platform command line utility for the
@@ -31,23 +31,34 @@ List all logic analyzer devices found on the system.
 Load input from a file instead of a device.
 .TP
 .BR "\-o, \-\-output\-file " <filename>
-Save output to a file instead of writing it to stdout. The default format used when saving is the sigrok session file format. This can be changed with the \-\-format option, below.
+Save output to a file instead of writing it to stdout. The default format
+used when saving is the sigrok session file format. This can be changed with
+the
+.B \-\-format
+option, below.
 .TP
 .BR "\-d, \-\-device " <device>
 The device to use for acquisition. It can be specified by ID as reported by
-.BR "\-\-list\-devices"
-, or by the name of the driver as reported by "\-V".
+.BR "\-\-list\-devices" ,
+or by the name of the driver as reported by
+.BR \-\-version .
 .sp
-A device can optionally be followed by a colon\-separated list of device options, where each option takes the form "key=value". For example, to set the samplerate on the first device you might specify
+A device can optionally be followed by a colon-separated list of device
+options, where each option takes the form
+.BR key=value .
+For example, to set the samplerate on the first device you might specify
 .sp
-sigrok-cli \-d 0:samplerate=1m
+.RB "  $ " "sigrok\-cli \-d 0:samplerate=1m"
 .sp
-Samplerate is a option common to most devices. The argument specifies the samplerate in Hz. You can also specify the samplerate in kHz, MHz or GHz. The following are all equivalent:
+Samplerate is a option common to most devices. The argument specifies the
+samplerate in Hz. You can also specify the samplerate in kHz, MHz or GHz.
+The following are all equivalent:
 .sp
- sigrok\-cli \-\-samples 100 \-d 0:samplerate=1000000
- sigrok\-cli \-\-samples 100 \-d 0:samplerate=1m
- sigrok\-cli \-\-samples 100 \-d "0:samplerate=1 MHz"
+.RB "  $ " "sigrok\-cli \-\-samples 100 \-d 0:samplerate=1000000"
 .sp
+.RB "  $ " "sigrok\-cli \-\-samples 100 \-d 0:samplerate=1m"
+.sp
+.RB "  $ " "sigrok\-cli \-\-samples 100 \-d ""0:samplerate=1 MHz""
 .TP
 .BR "\-p, \-\-probes " <probelist>
 A comma-separated list of probes to be used in the session.
@@ -108,7 +119,12 @@ Not every device supports all of these trigger types. Use the
 argument (with no other arguments) to see which triggers your device supports.
 .TP
 .BR "\-f, \-\-format " <formatname>
-Set the output format to use. Use the \-V option to see a list of available output formats. The format name may optionally be followed by a colon\-separated list of options, where ##each option takes the form "key=value".
+Set the output format to use. Use the
+.B \-V
+option to see a list of available output formats. The format name may
+optionally be followed by a colon-separated list of options, where each
+option takes the form
+.BR "key=value" .
 .sp
 Supported formats currently include
 .BR bits ,
