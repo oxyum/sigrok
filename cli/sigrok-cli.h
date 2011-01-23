@@ -29,6 +29,7 @@ void add_source(int fd, int events, int timeout,
 char **parse_probestring(int max_probes, const char *probestring);
 char **parse_triggerstring(struct device *device, const char *triggerstring);
 uint64_t parse_sizestring(const char *sizestring);
+GHashTable *parse_generic_arg(const char *arg);
 struct device *parse_devicestring(const char *devicestring);
 uint64_t parse_timestring(const char *timestring);
 

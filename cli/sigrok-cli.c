@@ -34,7 +34,7 @@
 #include "sigrok-cli.h"
 #include "config.h"
 
-#define DEFAULT_OUTPUT_FORMAT "bits64"
+#define DEFAULT_OUTPUT_FORMAT "bits:width=64"
 
 extern struct hwcap_option hwcap_options[];
 
@@ -72,12 +72,10 @@ static gboolean opt_version = FALSE;
 static gboolean opt_list_devices = FALSE;
 static gboolean opt_wait_trigger = FALSE;
 static gchar *opt_input_file = NULL;
-static gchar *opt_load_filename = NULL;
-static gchar *opt_save_filename = NULL;
+static gchar *opt_output_file = NULL;
 static gchar *opt_device = NULL;
 static gchar *opt_probes = NULL;
 static gchar *opt_triggers = NULL;
-static gchar **opt_devoption = NULL;
 static gchar *opt_pds = NULL;
 static gchar *opt_format = NULL;
 static gchar *opt_time = NULL;
@@ -87,14 +85,12 @@ static gchar *opt_continuous = NULL;
 static GOptionEntry optargs[] = {
 	{"version", 'V', 0, G_OPTION_ARG_NONE, &opt_version, "Show version and support list", NULL},
 	{"list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL},
-	{"input-file", 'I', 0, G_OPTION_ARG_FILENAME, &opt_input_file, "Load input from file", NULL},
-	{"load-file", 'L', 0, G_OPTION_ARG_FILENAME, &opt_load_filename, "Load session from file", NULL},
-	{"save-file", 'S', 0, G_OPTION_ARG_FILENAME, &opt_save_filename, "Save session to file", NULL},
+	{"input-file", 'i', 0, G_OPTION_ARG_FILENAME, &opt_input_file, "Load input from file", NULL},
+	{"output-file", 'o', 0, G_OPTION_ARG_FILENAME, &opt_output_file, "Save output to file", NULL},
 	{"device", 'd', 0, G_OPTION_ARG_STRING, &opt_device, "Use device ID", NULL},
 	{"probes", 'p', 0, G_OPTION_ARG_STRING, &opt_probes, "Probes to use", NULL},
 	{"triggers", 't', 0, G_OPTION_ARG_STRING, &opt_triggers, "Trigger configuration", NULL},
 	{"wait-trigger", 'w', 0, G_OPTION_ARG_NONE, &opt_wait_trigger, "Wait for trigger", NULL},
-	{"device-option", 'o', 0, G_OPTION_ARG_STRING_ARRAY, &opt_devoption, "Device-specific option", NULL},
 	{"protocol-decoders", 'a', 0, G_OPTION_ARG_STRING, &opt_pds, "Protocol decoder sequence", NULL},
 	{"format", 'f', 0, G_OPTION_ARG_STRING, &opt_format, "Output format", NULL},
 	{"time", 0, 0, G_OPTION_ARG_STRING, &opt_time, "How long to sample (ms)", NULL},
@@ -329,7 +325,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		 * Saving sessions will need a datastore to dump into
 		 * the session file.
 		 */
-		if (opt_save_filename) {
+		if (opt_output_file) {
 			ret = datastore_new(unitsize, &(device->datastore));
 			if (ret != SIGROK_OK) {
 				printf("Couldn't create datastore.\n");
@@ -409,7 +405,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 
 	/* Don't dump samples on stdout when also saving the session. */
 	output_len = 0;
-	if (!opt_save_filename) {
+	if (!opt_output_file) {
 		if (o->format->data && packet->type == o->format->df_type) {
 			if (limit_samples && (received_samples + packet->length
 			    / sample_size > limit_samples * sample_size))
@@ -507,7 +503,7 @@ static int select_probes(struct device *device)
 	int max_probes, i;
 
 	if (!opt_probes)
-		return 0;
+		return SIGROK_OK;
 
 	/*
 	 * This only works because a device by default initializes
@@ -516,7 +512,7 @@ static int select_probes(struct device *device)
 	max_probes = g_slist_length(device->probes);
 	probelist = parse_probestring(max_probes, opt_probes);
 	if (!probelist) {
-		return 1;
+		return SIGROK_ERR;
 	}
 
 	for (i = 0; i < max_probes; i++) {
@@ -530,7 +526,7 @@ static int select_probes(struct device *device)
 	}
 	g_free(probelist);
 
-        return 0;
+	return SIGROK_OK;
 }
 
 static void load_input_file(void)
@@ -582,11 +578,6 @@ static void load_input_file(void)
 	session_stop();
 }
 
-static void load_session_file(void)
-{
-	/* TODO: Not yet implemented. */
-}
-
 int num_real_devices(void)
 {
 	struct device *device;
@@ -604,13 +595,67 @@ int num_real_devices(void)
 	return num_devices;
 }
 
+int set_device_options(struct device *device, GHashTable *args)
+{
+	GHashTableIter iter;
+	gpointer key, value;
+	int ret, i;
+	uint64_t tmp_u64;
+	gboolean found;
+
+	g_hash_table_iter_init(&iter, args);
+	while (g_hash_table_iter_next(&iter, &key, &value)) {
+		found = FALSE;
+		for (i = 0; hwcap_options[i].capability; i++) {
+			if (strcmp(hwcap_options[i].shortname, key))
+				continue;
+			if (value == NULL && hwcap_options[i].type != T_NULL) {
+				printf("Option '%s' needs a value.\n", (char *)key);
+				return SIGROK_ERR;
+			}
+			found = TRUE;
+			switch (hwcap_options[i].type) {
+			case T_UINT64:
+				tmp_u64 = parse_sizestring(value);
+				ret = device->plugin-> set_configuration(device-> plugin_index,
+						hwcap_options[i]. capability, &tmp_u64);
+				break;
+			case T_CHAR:
+				ret = device->plugin-> set_configuration(device-> plugin_index,
+						hwcap_options[i]. capability, value);
+				break;
+			case T_NULL:
+				ret = device->plugin-> set_configuration(device-> plugin_index,
+						hwcap_options[i]. capability, NULL);
+				break;
+			default:
+				ret = SIGROK_ERR;
+			}
+
+			if (ret != SIGROK_OK) {
+				printf("Failed to set device option '%s'.\n", (char *)key);
+				return ret;
+			}
+			else
+				break;
+		}
+		if (!found) {
+			printf("Unknown device option '%s'.\n", (char *) key);
+			return SIGROK_ERR;
+		}
+	}
+
+	return SIGROK_OK;
+}
+
 static void run_session(void)
 {
 	struct device *device;
 	GPollFD *fds, my_gpollfd;
-	int num_devices, max_probes, *capabilities, ret, found, i, j;
+	GHashTable *devargs;
+	int num_devices, max_probes, *capabilities, ret, i;
 	uint64_t tmp_u64, time_msec;
-	char **probelist, *val;
+	char **probelist, *devspec;
 
 	device_scan();
 	num_devices = num_real_devices();
@@ -620,29 +665,23 @@ static void run_session(void)
 		return;
 	}
 
-	if (!opt_device) {
-		if (num_devices == 1)
-			/* No device specified, but there is only one. */
-			device = parse_devicestring("0");
-		else {
-			g_warning("%d devices found, please select one.",
-				  num_devices);
-			return;
-		}
-	} else {
-		device = parse_devicestring(opt_device);
+	if (opt_device) {
+		devargs = parse_generic_arg(opt_device);
+		devspec = g_hash_table_lookup(devargs, "sigrok_key");
+		device = parse_devicestring(devspec);
 		if (!device) {
 			g_warning("Device not found.");
 			return;
 		}
-	}
-	if (select_probes(device) > 0)
-            return;
-
-	if (opt_continuous) {
-		capabilities = device->plugin->get_capabilities();
-		if (!find_hwcap(capabilities, HWCAP_CONTINUOUS)) {
-			g_warning("This device does not support continuous sampling.");
+		g_hash_table_remove(devargs, "sigrok_key");
+	} else {
+		if (num_devices == 1) {
+			/* No device specified, but there is only one. */
+			devargs = NULL;
+			device = parse_devicestring("0");
+		} else {
+			g_warning("%d devices found, please select one.",
+				  num_devices);
 			return;
 		}
 	}
@@ -656,6 +695,21 @@ static void run_session(void)
 		printf("Failed to use device.\n");
 		session_destroy();
 		return;
+	}
+
+	if (set_device_options(device, devargs) != SIGROK_OK)
+		return;
+	g_hash_table_destroy(devargs);
+
+	if (select_probes(device) != SIGROK_OK)
+            return;
+
+	if (opt_continuous) {
+		capabilities = device->plugin->get_capabilities();
+		if (!find_hwcap(capabilities, HWCAP_CONTINUOUS)) {
+			g_warning("This device does not support continuous sampling.");
+			return;
+		}
 	}
 
 	if (opt_triggers) {
@@ -673,51 +727,6 @@ static void run_session(void)
 			}
 		}
 		g_free(probelist);
-	}
-
-	if (opt_devoption) {
-		for (i = 0; opt_devoption[i]; i++) {
-			if (!(val = strchr(opt_devoption[i], '='))) {
-				printf("No value given for device option '%s'.\n", opt_devoption[i]);
-				session_destroy();
-				return;
-			}
-
-			found = FALSE;
-			*val++ = 0;
-			for (j = 0; hwcap_options[j].capability; j++) {
-				if (!strcmp(hwcap_options[j].shortname, opt_devoption[i])) {
-					found = TRUE;
-					switch (hwcap_options[j].type) {
-					case T_UINT64:
-						tmp_u64 = parse_sizestring(val);
-						ret = device->plugin-> set_configuration(device-> plugin_index,
-								hwcap_options[j]. capability, &tmp_u64);
-						break;
-					case T_CHAR:
-						ret = device->plugin-> set_configuration(device-> plugin_index,
-								hwcap_options[j]. capability, val);
-						break;
-					default:
-						ret = SIGROK_ERR;
-					}
-
-					if (ret != SIGROK_OK) {
-						printf("Failed to set device option '%s'.\n", opt_devoption[i]);
-						session_destroy();
-						return;
-					}
-					else
-						break;
-				}
-			}
-			if (!found) {
-				printf("Unknown device option '%s'.\n",
-				       opt_devoption[i]);
-				session_destroy();
-				return;
-			}
-		}
 	}
 
 	if (opt_time) {
@@ -819,8 +828,8 @@ static void run_session(void)
 		clear_anykey();
 
 	session_stop();
-	if (opt_save_filename)
-		if (session_save(opt_save_filename) != SIGROK_OK)
+	if (opt_output_file)
+		if (session_save(opt_output_file) != SIGROK_OK)
 			printf("Failed to save session.\n");
 	session_destroy();
 }
@@ -851,9 +860,13 @@ static void logger(const gchar *log_domain, GLogLevelFlags log_level,
 int main(int argc, char **argv)
 {
 	struct output_format **outputs;
-	int i;
 	GOptionContext *context;
 	GError *error;
+	GHashTable *fmtargs;
+	GHashTableIter iter;
+	gpointer key, value;
+	int i;
+	char *fmtspec;
 
 	/* No decoder at the moment. */
 	current_decoder = NULL;
@@ -882,15 +895,28 @@ int main(int argc, char **argv)
 
 	if (!opt_format)
 		opt_format = DEFAULT_OUTPUT_FORMAT;
+
+	fmtargs = parse_generic_arg(opt_format);
+	fmtspec = g_hash_table_lookup(fmtargs, "sigrok_key");
+	if (!fmtspec) {
+		printf("Invalid output format.\n");
+		return 1;
+	}
+
 	outputs = output_list();
 	for (i = 0; outputs[i]; i++) {
-		if (!strncasecmp(outputs[i]->extension, opt_format,
-		     strlen(outputs[i]->extension))) {
-			output_format = outputs[i];
-			output_format_param =
-			    opt_format + strlen(outputs[i]->extension);
+		if (strcmp(outputs[i]->extension, fmtspec))
+			continue;
+		g_hash_table_remove(fmtargs, "sigrok_key");
+		output_format = outputs[i];
+		g_hash_table_iter_init(&iter, fmtargs);
+		while (g_hash_table_iter_next(&iter, &key, &value)) {
+			/* only supporting one parameter per output module
+			 * for now, and only its value */
+			output_format_param = g_strdup(value);
 			break;
 		}
+		break;
 	}
 	if (!output_format) {
 		printf("invalid output format %s\n", opt_format);
@@ -903,8 +929,6 @@ int main(int argc, char **argv)
 		show_device_list();
 	else if (opt_input_file)
 		load_input_file();
-	else if (opt_load_filename)
-		load_session_file();
 	else if (opt_samples || opt_time || opt_continuous)
 		run_session();
 	else if (opt_device)
@@ -916,6 +940,7 @@ int main(int argc, char **argv)
 		sigrokdecode_shutdown();
 
 	g_option_context_free(context);
+	g_hash_table_destroy(fmtargs);
 	sigrok_cleanup();
 
 	return 0;

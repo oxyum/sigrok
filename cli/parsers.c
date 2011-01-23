@@ -197,6 +197,32 @@ uint64_t parse_sizestring(const char *sizestring)
 	return val;
 }
 
+GHashTable *parse_generic_arg(const char *arg)
+{
+	GHashTable *hash;
+	int i;
+	char **elements, *e;
+
+	if (!arg || !arg[0])
+		return NULL;
+
+	hash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+	elements = g_strsplit(arg, ":", 0);
+	g_hash_table_insert(hash, g_strdup("sigrok_key"), g_strdup(elements[0]));
+	for (i = 1; elements[i]; i++) {
+		e = strchr(elements[i], '=');
+		if (!e)
+			g_hash_table_insert(hash, g_strdup(elements[i]), NULL);
+		else {
+			*e++ = '\0';
+			g_hash_table_insert(hash, g_strdup(elements[i]), g_strdup(e));
+		}
+	}
+	g_strfreev(elements);
+
+	return hash;
+}
+
 struct device *parse_devicestring(const char *devicestring)
 {
 	struct device *device, *d;
