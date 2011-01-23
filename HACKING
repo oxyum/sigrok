@@ -23,17 +23,23 @@ Creating a Windows installer
 ----------------------------
 
 In order to create a self-contained Windows installer EXE file for sigrok,
-you can do the following.
+you can do the following (currently must be done on a Windows/MinGW system):
 
-Requirements:
+Build sigrok and install it into a temporary folder:
 
- $ apt-get install mingw32 nsis
+ $ ./configure --prefix=$PWD/contrib/nsis/dist && make && make install
 
-Creating the installer
+Build the GUI in gui/ (optional if you comment out some lines in sigrok.nsi).
 
- $ ./configure
+ $ cd gui
+ $ qmake
+ $ make
+ $ cd ..
+
+Create the installer (assumes all required libs in certain directories) via:
+
  $ cd contrib/nsis
- $ makensis *.nsi
+ $ makensis sigrok.nsi
 
 This will create a sigrok-installer-$VERSION.exe self-extracting installer.
 
