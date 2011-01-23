@@ -39,6 +39,28 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 LT_INIT
 
+# Library version for libsigrok.
+# Carefully read the libtool docs before updating these numbers!
+# The algorithm for determining which number to change (and how) is nontrivial!
+# http://www.gnu.org/software/libtool/manual/libtool.html#Updating-version-info
+SIGROK_LT_CURRENT=0
+SIGROK_LT_REVISION=0
+SIGROK_LT_AGE=0
+SIGROK_LT_VERSION="$SIGROK_LT_CURRENT:$SIGROK_LT_REVISION:$SIGROK_LT_AGE"
+SIGROK_LT_LDFLAGS="-version-info $SIGROK_LT_VERSION"
+AC_SUBST(SIGROK_LT_LDFLAGS)
+
+# Library version for libsigrokdecode.
+# Carefully read the libtool docs before updating these numbers!
+# The algorithm for determining which number to change (and how) is nontrivial!
+# http://www.gnu.org/software/libtool/manual/libtool.html#Updating-version-info
+SIGROKDECODE_LT_CURRENT=0
+SIGROKDECODE_LT_REVISION=0
+SIGROKDECODE_LT_AGE=0
+SIGROKDECODE_LT_VERSION="$SIGROKDECODE_LT_CURRENT:$SIGROKDECODE_LT_REVISION:$SIGROKDECODE_LT_AGE"
+SIGROKDECODE_LT_LDFLAGS="-version-info $SIGROKDECODE_LT_VERSION"
+AC_SUBST(SIGROKDECODE_LT_LDFLAGS)
+
 # Logic analyzer hardware support '--enable' options.
 
 AC_ARG_ENABLE(alsa, AC_HELP_STRING([--enable-alsa],
