@@ -212,6 +212,31 @@ AC_TYPE_UINT64_T
 # Checks for library functions.
 AC_CHECK_FUNCS([gettimeofday memset strchr strerror strncasecmp strtol strtoul strtoull])
 
+# EXPAND_DIR(VARNAME, DIR)
+# Expands occurrences of ${prefix} and ${exec_prefix} in the given DIR,
+# and assigns the resulting string to VARNAME.
+AC_DEFUN([EXPAND_DIR], [
+	$1=$2
+	$1=`(
+	test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+	test "x$exec_prefix" = xNONE && exec_prefix="${prefix}"
+	eval echo \""[$]$1"\"
+	)`
+])
+
+EXPAND_DIR(FIRMWARE_DIR, "$prefix/share/sigrok/firmware")
+EXPAND_DIR(DECODERS_DIR, "$prefix/share/sigrok/decoders")
+
+AC_DEFINE_UNQUOTED(FIRMWARE_DIR, "$FIRMWARE_DIR",
+                   [The firmware directory for logic analyzers.])
+AC_DEFINE_UNQUOTED(DECODERS_DIR, "$DECODERS_DIR",
+                   [The protocol decoders directory.])
+
+AC_SUBST(FIRMWARE_DIR)
+AC_SUBST(DECODERS_DIR)
+AC_SUBST(MAKEFLAGS, '--no-print-directory')
+AC_SUBST(AM_LIBTOOLFLAGS, '--silent')
+
 AC_CONFIG_FILES([Makefile
 		 contrib/Makefile
 		 contrib/nsis/Makefile
@@ -236,16 +261,6 @@ AC_CONFIG_FILES([Makefile
 		 libsigrokdecode/decoders/Makefile
 		 cli/Makefile
 		])
-
-AC_SUBST(FIRMWARE_DIR, '$(datadir)/sigrok/firmware')
-AC_SUBST(DECODERS_DIR, '$(datadir)/sigrok/decoders')
-AC_SUBST(MAKEFLAGS, '--no-print-directory')
-AC_SUBST(AM_LIBTOOLFLAGS, '--silent')
-
-AC_DEFINE_UNQUOTED(FIRMWARE_DIR, "$FIRMWARE_DIR",
-                   [The firmware directory for logic analyzers.])
-AC_DEFINE_UNQUOTED(DECODERS_DIR, "$DECODERS_DIR",
-                   [The protocol decoders directory.])
 
 AC_OUTPUT
 
