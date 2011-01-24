@@ -303,11 +303,12 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		o->format = output_format;
 		o->device = device;
 		o->param = output_format_param;
-		if (o->format->init)
+		if (o->format->init) {
 			if (o->format->init(o) != SIGROK_OK) {
 				printf("Output format initialization failed.\n");
 				exit(1);
 			}
+		}
 
 		header = (struct datafeed_header *)packet->payload;
 		num_enabled_probes = 0;
@@ -692,8 +693,10 @@ static void run_session(void)
 	}
 
 	if (devargs) {
-		if (set_device_options(device, devargs) != SIGROK_OK)
+		if (set_device_options(device, devargs) != SIGROK_OK) {
+			session_destroy();
 			return;
+		}
 		g_hash_table_destroy(devargs);
 	}
 
@@ -703,7 +706,8 @@ static void run_session(void)
 	if (opt_continuous) {
 		capabilities = device->plugin->get_capabilities();
 		if (!find_hwcap(capabilities, HWCAP_CONTINUOUS)) {
-			g_warning("This device does not support continuous sampling.");
+			printf("This device does not support continuous sampling.");
+			session_destroy();
 			return;
 		}
 	}
@@ -729,7 +733,8 @@ static void run_session(void)
 		time_msec = parse_timestring(opt_time);
 		if (time_msec == 0) {
 			printf("Invalid time '%s'\n", opt_time);
-			exit(1);
+			session_destroy();
+			return;
 		}
 
 		capabilities = device->plugin->get_capabilities();
@@ -737,7 +742,8 @@ static void run_session(void)
 			if (device->plugin->set_configuration(device->plugin_index,
 							  HWCAP_LIMIT_MSEC, &time_msec) != SIGROK_OK) {
 				printf("Failed to configure time limit.\n");
-				exit(1);
+				session_destroy();
+				return;
 			}
 		}
 		else {
@@ -749,13 +755,15 @@ static void run_session(void)
 			limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
 			if (limit_samples == 0) {
 				printf("Not enough time at this samplerate.\n");
-				exit(1);
+				session_destroy();
+				return;
 			}
 
 			if (device->plugin->set_configuration(device->plugin_index,
 						  HWCAP_LIMIT_SAMPLES, &limit_samples) != SIGROK_OK) {
 				printf("Failed to configure time-based sample limit.\n");
-				exit(1);
+				session_destroy();
+				return;
 			}
 		}
 	}
@@ -765,7 +773,8 @@ static void run_session(void)
 		if (device->plugin->set_configuration(device->plugin_index,
 					  HWCAP_LIMIT_SAMPLES, &limit_samples) != SIGROK_OK) {
 			printf("Failed to configure sample limit.\n");
-			exit(1);
+			session_destroy();
+			return;
 		}
 	}
 
