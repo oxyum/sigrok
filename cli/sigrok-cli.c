@@ -45,6 +45,7 @@ gboolean debug = 0;
 int end_acquisition = FALSE;
 uint64_t limit_samples = 0;
 struct output_format *output_format = NULL;
+int default_output_format = FALSE;
 char *output_format_param = NULL;
 char *input_format_param = NULL;
 
@@ -280,6 +281,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	static uint64_t received_samples = 0;
 	static int unitsize = 0;
 	static int triggered = 0;
+	static FILE *outfile = NULL;
 	struct probe *probe;
 	struct datafeed_header *header;
 	int num_enabled_probes, sample_size, ret, i;
@@ -317,18 +319,25 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 			if (probe->enabled)
 				probelist[num_enabled_probes++] = probe->index;
 		}
-		/* How many bytes we need to store num_enabled_probes bits? */
+		/* How many bytes we need to store num_enabled_probes bits */
 		unitsize = (num_enabled_probes + 7) / 8;
 
-		/*
-		 * Saving sessions will need a datastore to dump into
-		 * the session file.
-		 */
+		outfile = stdout;
 		if (opt_output_file) {
-			ret = datastore_new(unitsize, &(device->datastore));
-			if (ret != SIGROK_OK) {
-				printf("Couldn't create datastore.\n");
-				exit(1);
+			if (default_output_format) {
+				/* output file is in session format, which means we'll
+				 * dump everything in the datastore as it comes in,
+				 * and save from there after the session. */
+				outfile = NULL;
+				ret = datastore_new(unitsize, &(device->datastore));
+				if (ret != SIGROK_OK) {
+					printf("Failed to create datastore.\n");
+					exit(1);
+				}
+			} else {
+				/* saving to a file in whatever format was set
+				 * with --format, so all we need is a filehandle */
+				outfile = fopen(opt_output_file, "w");
 			}
 		}
 		break;
@@ -341,7 +350,8 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		if (o->format->event) {
 			o->format->event(o, DF_END, &output_buf, &output_len);
 			if (output_len) {
-				fwrite(output_buf, 1, output_len, stdout);
+				if (outfile)
+					fwrite(output_buf, 1, output_len, outfile);
 				free(output_buf);
 				output_len = 0;
 			}
@@ -353,6 +363,8 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 			printf("Device stopped after %" PRIu64 " samples.\n",
 			       received_samples);
 		end_acquisition = TRUE;
+		if (outfile && outfile != stdout)
+			fclose(outfile);
 		free(o);
 		o = NULL;
 		break;
@@ -395,6 +407,11 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		datastore_put(device->datastore, filter_out,
 			      filter_out_len, sample_size, probelist);
 
+	if (opt_output_file && default_output_format)
+		/* saving to a session file, don't need to do anything else
+		 * to this data for now. */
+		goto cleanup;
+
 	if (current_decoder) {
 		/* TODO: Handle errors. */
 		sigrokdecode_run_decoder(dec, packet->payload, packet->length,
@@ -404,24 +421,24 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 
 	/* Don't dump samples on stdout when also saving the session. */
 	output_len = 0;
-	if (!opt_output_file) {
-		if (o->format->data && packet->type == o->format->df_type) {
-			if (limit_samples && (received_samples + packet->length
-			    / sample_size > limit_samples * sample_size))
-				len = limit_samples * sample_size
-					- received_samples;
-			else
-				len = filter_out_len;
-			o->format->data(o, filter_out, len, &output_buf,
-					&output_len);
-		}
-		if (output_len)
-			fwrite(output_buf, 1, output_len, stdout);
+	if (o->format->data && packet->type == o->format->df_type) {
+		if (limit_samples && (received_samples + packet->length
+			/ sample_size > limit_samples * sample_size))
+			len = limit_samples * sample_size
+				- received_samples;
+		else
+			len = filter_out_len;
+		o->format->data(o, filter_out, len, &output_buf, &output_len);
 	}
-	free(filter_out);
-	if (output_len)
+	if (output_len) {
+		fwrite(output_buf, 1, output_len, outfile);
 		free(output_buf);
+	}
+
+	cleanup:
+	free(filter_out);
 	received_samples += packet->length / sample_size;
+
 }
 
 static void remove_source(int fd)
@@ -573,8 +590,20 @@ static void load_input_file(void)
 
 	session_new();
 	session_datafeed_callback_add(datafeed_in);
+	if (session_device_add(in->vdevice) != SIGROK_OK) {
+		printf("Failed to use device.\n");
+		session_destroy();
+		return;
+	}
+
 	input_format->loadfile(in, opt_input_file);
 	session_stop();
+	if (opt_output_file && default_output_format) {
+		if (session_save(opt_output_file) != SIGROK_OK)
+			printf("Failed to save session.\n");
+	}
+	session_destroy();
+
 }
 
 int num_real_devices(void)
@@ -833,10 +862,12 @@ static void run_session(void)
 		clear_anykey();
 
 	session_stop();
-	if (opt_output_file)
+	if (opt_output_file && default_output_format) {
 		if (session_save(opt_output_file) != SIGROK_OK)
 			printf("Failed to save session.\n");
+	}
 	session_destroy();
+
 }
 
 static void logger(const gchar *log_domain, GLogLevelFlags log_level,
@@ -898,16 +929,19 @@ int main(int argc, char **argv)
 		register_pds(NULL, opt_pds);
 	}
 
-	if (!opt_format)
+	if (!opt_format) {
 		opt_format = DEFAULT_OUTPUT_FORMAT;
-
+		/* we'll need to remember this, so when saving to an file
+		 * later, sigrok session format will be used.
+		 */
+		default_output_format = TRUE;
+	}
 	fmtargs = parse_generic_arg(opt_format);
 	fmtspec = g_hash_table_lookup(fmtargs, "sigrok_key");
 	if (!fmtspec) {
 		printf("Invalid output format.\n");
 		return 1;
 	}
-
 	outputs = output_list();
 	for (i = 0; outputs[i]; i++) {
 		if (strcmp(outputs[i]->extension, fmtspec))
