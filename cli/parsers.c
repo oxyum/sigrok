@@ -226,46 +226,58 @@ GHashTable *parse_generic_arg(const char *arg)
 struct device *parse_devicestring(const char *devicestring)
 {
 	struct device *device, *d;
-	GSList *devices, *l;
+	struct device_plugin *plugin;
+	GSList *devices, *plugins, *l, *p;
 	int num_devices, device_num, device_cnt;
 	char *tmp;
 
 	if (!devicestring)
 		return NULL;
 
+	device = NULL;
 	device_num = strtol(devicestring, &tmp, 10);
 	if (tmp != devicestring) {
+		/* argument is numeric, meaning a device ID. Make all driver
+		 * plugins scan for devices.
+		 */
 		num_devices = num_real_devices();
 		if (device_num < 0 || device_num >= num_devices)
 			return NULL;
-	}
 
-	device = NULL;
-	device_cnt = 0;
-	devices = device_list();
-	for (l = devices; l; l = l->next) {
-		d = l->data;
-		if (strstr(d->plugin->name, "demo")) {
-			if (!strcmp(devicestring, "demo")) {
-				device = d;
-				break;
-			}
-			continue;
-		} else {
-			if (tmp == devicestring) {
-				/* selecting device by driver name */
-				if (!strcmp(d->plugin->name, devicestring)) {
-					device = d;
-					break;
-				}
-			} else if (device_cnt == device_num) {
-				/* selecting device by number */
+		device_cnt = 0;
+		devices = device_list();
+		for (l = devices; l; l = l->next) {
+			d = l->data;
+			if (strstr(d->plugin->name, "demo"))
+				continue;
+			if (device_cnt == device_num) {
 				if (device_num == device_cnt) {
 					device = d;
 					break;
 				}
 			}
 			device_cnt++;
+		}
+	} else {
+		/* select device by driver -- only initialize that driver,
+		 * no need to let them all scan
+		 */
+		device = NULL;
+		plugins = list_hwplugins();
+		for (p = plugins; p; p = p->next) {
+			plugin = p->data;
+			if (strcmp(plugin->name, devicestring))
+				continue;
+			num_devices = device_plugin_init(plugin);
+			if (num_devices == 1) {
+				devices = device_list();
+				device = devices->data;
+			} else if (num_devices > 1) {
+				printf("driver '%s' found %d devices, select by ID instead.\n",
+						devicestring, num_devices);
+			}
+			/* fall through: selected driver found no devices */
+			break;
 		}
 	}
 

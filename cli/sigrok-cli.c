@@ -165,7 +165,6 @@ static void show_device_list(void)
 	int devcnt;
 
 	devcnt = 0;
-	device_scan();
 	devices = device_list();
 
 	if (g_slist_length(devices) == 0)
@@ -196,7 +195,6 @@ static void show_device_detail(void)
 	int cap, *capabilities, i;
 	char *s, *title, *charopts, **stropts;
 
-	device_scan();
 	device = parse_devicestring(opt_device);
 	if (!device) {
 		printf("No such device. Use -D to list all devices.\n");
@@ -657,14 +655,7 @@ static void run_session(void)
 	uint64_t tmp_u64, time_msec;
 	char **probelist, *devspec;
 
-	device_scan();
-	num_devices = num_real_devices();
-
-	if (!opt_device && num_devices == 0) {
-		g_warning("No devices found.");
-		return;
-	}
-
+	devargs = NULL;
 	if (opt_device) {
 		devargs = parse_generic_arg(opt_device);
 		devspec = g_hash_table_lookup(devargs, "sigrok_key");
@@ -675,13 +666,16 @@ static void run_session(void)
 		}
 		g_hash_table_remove(devargs, "sigrok_key");
 	} else {
+		num_devices = num_real_devices();
 		if (num_devices == 1) {
 			/* No device specified, but there is only one. */
 			devargs = NULL;
 			device = parse_devicestring("0");
+		} else if (num_devices == 0) {
+			printf("No devices found.\n");
+			return;
 		} else {
-			g_warning("%d devices found, please select one.",
-				  num_devices);
+			printf("%d devices found, please select one.\n", num_devices);
 			return;
 		}
 	}
@@ -697,9 +691,11 @@ static void run_session(void)
 		return;
 	}
 
-	if (set_device_options(device, devargs) != SIGROK_OK)
-		return;
-	g_hash_table_destroy(devargs);
+	if (devargs) {
+		if (set_device_options(device, devargs) != SIGROK_OK)
+			return;
+		g_hash_table_destroy(devargs);
+	}
 
 	if (select_probes(device) != SIGROK_OK)
             return;
