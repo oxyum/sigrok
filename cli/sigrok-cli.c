@@ -137,8 +137,12 @@ static void show_version(void)
 	sigrokdecode_init();
 
 	printf("Supported protocol decoders:\n");
-	for (l = sigrokdecode_list_decoders(); l; l = l->next)
-		printf("  %s\n", (const char *)l->data);
+	for (l = sigrokdecode_list_decoders(); l; l = l->next) {
+		/* FIXME: This is just a quick hack! */
+		sigrokdecode_load_decoder(l->data, &dec);
+
+		printf("  %-20s %s\n", dec->id, dec->desc);
+	}
 	printf("\n");
 
 	sigrokdecode_shutdown();
