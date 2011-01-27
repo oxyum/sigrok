@@ -413,9 +413,13 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		goto cleanup;
 
 	if (current_decoder) {
-		/* TODO: Handle errors. */
-		sigrokdecode_run_decoder(dec, packet->payload, packet->length,
-					 &dec_out, &dec_out_size);
+		ret = sigrokdecode_run_decoder(dec, packet->payload,
+				packet->length, &dec_out, &dec_out_size);
+
+		if (ret != SIGROKDECODE_OK) {
+			fprintf(stderr, "Decoder runtime error (%d)\n", ret);
+			exit(1);
+		}
 		printf("Protocol decoder output:\n%s\n", dec_out);
 	}
 
