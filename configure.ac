@@ -63,10 +63,11 @@ AC_SUBST(SIGROKDECODE_LT_LDFLAGS)
 
 # Logic analyzer hardware support '--enable' options.
 
+# Disabled by default, unfinished.
 AC_ARG_ENABLE(alsa, AC_HELP_STRING([--enable-alsa],
-	      [enable alsa driver support [default=yes]]),
+	      [enable alsa driver support [default=no]]),
 	      [LA_ALSA="$enableval"],
-	      [LA_ALSA=yes])
+	      [LA_ALSA=no])
 AM_CONDITIONAL(LA_ALSA, test x$LA_ALSA = xyes)
 if test "x$LA_ALSA" = "xyes"; then
 	AC_DEFINE(HAVE_LA_ALSA, 1, [Alsa driver support])
@@ -90,10 +91,11 @@ if test "x$LA_DEMO" = "xyes"; then
 	AC_DEFINE(HAVE_LA_DEMO, 1, [Demo driver support])
 fi
 
+# Disabled by default, unfinished.
 AC_ARG_ENABLE(link-mso19, AC_HELP_STRING([--enable-link-mso19],
-	      [enable Link Instruments MSO-19 support [default=yes]]),
+	      [enable Link Instruments MSO-19 support [default=no]]),
 	      [LA_LINK_MSO19="$enableval"],
-	      [LA_LINK_MSO19=yes])
+	      [LA_LINK_MSO19=no])
 AM_CONDITIONAL(LA_LINK_MSO19, test x$LA_LINK_MSO19 = xyes)
 if test "x$LA_LINK_MSO19" = "xyes"; then
 	AC_DEFINE(HAVE_LA_LINK_MSO19, 1, [Link Instruments MSO-19 support])
