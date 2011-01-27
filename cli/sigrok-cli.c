@@ -50,7 +50,6 @@ char *output_format_param = NULL;
 char *input_format_param = NULL;
 
 /* Protocol decoder */
-struct sigrokdecode_decoder *dec;
 char *current_decoder;
 
 /* These live in hwplugin.c, for the frontend to override. */
@@ -106,6 +105,7 @@ static void show_version(void)
 	struct device_plugin *plugin;
 	struct input_format **inputs;
 	struct output_format **outputs;
+	struct sigrokdecode_decoder *dec;
 	int i;
 
 	printf("sigrok-cli %s\n\n", VERSION);
@@ -138,9 +138,7 @@ static void show_version(void)
 
 	printf("Supported protocol decoders:\n");
 	for (l = sigrokdecode_list_decoders(); l; l = l->next) {
-		/* FIXME: This is just a quick hack! */
-		sigrokdecode_load_decoder(l->data, &dec);
-
+		dec = l->data;
 		printf("  %-20s %s\n", dec->id, dec->desc);
 	}
 	printf("\n");
@@ -292,6 +290,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	uint64_t output_len, filter_out_len, len, dec_out_size;
 	char *output_buf, *filter_out;
 	uint8_t *dec_out;
+	struct sigrokdecode_decoder *dec;
 
 	/* If the first packet to come in isn't a header, don't even try. */
 	if (packet->type != DF_HEADER && o == NULL)
@@ -417,6 +416,9 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		goto cleanup;
 
 	if (current_decoder) {
+		/* TODO: Error handling. */
+		dec = sigrokdecode_get_decoder_by_id(current_decoder);
+		
 		ret = sigrokdecode_run_decoder(dec, packet->payload,
 				packet->length, &dec_out, &dec_out_size);
 
@@ -514,7 +516,6 @@ static int register_pds(struct device *device, const char *pdstring)
 	if (tokens[0] && strlen(tokens[0]) > 0) {
 		current_decoder = tokens[0];
 		/* TODO: Handle errors. */
-		sigrokdecode_load_decoder(current_decoder, &dec);
 	}
 
 	return 0;
