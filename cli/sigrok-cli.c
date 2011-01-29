@@ -259,7 +259,7 @@ static void show_device_detail(void)
 	}
 }
 
-static void datafeed_in(struct device *device, struct datafeed_packet *packet)
+static void datafeed_in(struct device *device, struct sr_datafeed_packet *packet)
 {
 	static struct sr_output *o = NULL;
 	static int probelist[65] = { 0 };
@@ -268,7 +268,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	static int triggered = 0;
 	static FILE *outfile = NULL;
 	struct probe *probe;
-	struct datafeed_header *header;
+	struct sr_datafeed_header *header;
 	int num_enabled_probes, sample_size, ret, i;
 	uint64_t output_len, filter_out_len, len, dec_out_size;
 	char *output_buf, *filter_out;
@@ -298,7 +298,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 			}
 		}
 
-		header = (struct datafeed_header *)packet->payload;
+		header = (struct sr_datafeed_header *)packet->payload;
 		num_enabled_probes = 0;
 		for (i = 0; i < header->num_logic_probes; i++) {
 			probe = g_slist_nth_data(device->probes, i);

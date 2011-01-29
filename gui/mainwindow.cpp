@@ -413,14 +413,14 @@ void MainWindow::on_action_Save_as_triggered()
 	file.close();
 }
 
-void datafeed_in(struct device *device, struct datafeed_packet *packet)
+void datafeed_in(struct device *device, struct sr_datafeed_packet *packet)
 {
 	static int num_probes = 0;
 	static int probelist[65] = {0};
 	static uint64_t received_samples = 0;
 	static int triggered = 0;
 	struct probe *probe;
-	struct datafeed_header *header;
+	struct sr_datafeed_header *header;
 	int num_enabled_probes, sample_size;
 	uint64_t sample;
 
@@ -438,7 +438,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	switch (packet->type) {
 	case DF_HEADER:
 		qDebug("DF_HEADER");
-		header = (struct datafeed_header *) packet->payload;
+		header = (struct sr_datafeed_header *) packet->payload;
 		num_probes = header->num_logic_probes;
 		num_enabled_probes = 0;
 		for (int i = 0; i < header->num_logic_probes; ++i) {
