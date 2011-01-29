@@ -587,7 +587,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	device->plugin->set_configuration(device->plugin_index,
 		HWCAP_LIMIT_SAMPLES, (char *)numBuf);
 
-	if (session_device_add(device) != SIGROK_OK) {
+	if (session_device_add(device) != SR_OK) {
 		qDebug("Failed to use device.");
 		session_destroy();
 		return;
@@ -595,20 +595,20 @@ void MainWindow::on_action_Get_samples_triggered()
 
 	/* Set the samplerate. */
 	if (device->plugin->set_configuration(device->plugin_index,
-	    HWCAP_SAMPLERATE, &samplerate) != SIGROK_OK) {
+	    HWCAP_SAMPLERATE, &samplerate) != SR_OK) {
 		qDebug("Failed to set sample rate.");
 		session_destroy();
 		return;
 	};
 
 	if (device->plugin->set_configuration(device->plugin_index,
-	    HWCAP_PROBECONFIG, (char *)device->probes) != SIGROK_OK) {
+	    HWCAP_PROBECONFIG, (char *)device->probes) != SR_OK) {
 		qDebug("Failed to configure probes.");
 		session_destroy();
 		return;
 	}
 
-	if (session_start() != SIGROK_OK) {
+	if (session_start() != SR_OK) {
 		qDebug("Failed to start session.");
 		session_destroy();
 		return;

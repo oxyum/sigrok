@@ -292,7 +292,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		o->device = device;
 		o->param = output_format_param;
 		if (o->format->init) {
-			if (o->format->init(o) != SIGROK_OK) {
+			if (o->format->init(o) != SR_OK) {
 				printf("Output format initialization failed.\n");
 				exit(1);
 			}
@@ -316,7 +316,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 				 * and save from there after the session. */
 				outfile = NULL;
 				ret = datastore_new(unitsize, &(device->datastore));
-				if (ret != SIGROK_OK) {
+				if (ret != SR_OK) {
 					printf("Failed to create datastore.\n");
 					exit(1);
 				}
@@ -380,7 +380,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		ret = filter_probes(sample_size, unitsize, probelist,
 				    packet->payload, packet->length,
 				    &filter_out, &filter_out_len);
-		if (ret != SIGROK_OK)
+		if (ret != SR_OK)
 			return;
 	} else {
 		if (!(filter_out = malloc(packet->length)))
@@ -461,7 +461,7 @@ static int select_probes(struct device *device)
 	int max_probes, i;
 
 	if (!opt_probes)
-		return SIGROK_OK;
+		return SR_OK;
 
 	/*
 	 * This only works because a device by default initializes
@@ -470,7 +470,7 @@ static int select_probes(struct device *device)
 	max_probes = g_slist_length(device->probes);
 	probelist = parse_probestring(max_probes, opt_probes);
 	if (!probelist) {
-		return SIGROK_ERR;
+		return SR_ERR;
 	}
 
 	for (i = 0; i < max_probes; i++) {
@@ -484,7 +484,7 @@ static int select_probes(struct device *device)
 	}
 	g_free(probelist);
 
-	return SIGROK_OK;
+	return SR_OK;
 }
 
 static void load_input_file(void)
@@ -521,7 +521,7 @@ static void load_input_file(void)
 	in->format = input_format;
 	in->param = input_format_param;
 	if (in->format->init) {
-		if (in->format->init(in) != SIGROK_OK) {
+		if (in->format->init(in) != SR_OK) {
 			printf("Input format init failed.\n");
 			exit(1);
 		}
@@ -532,7 +532,7 @@ static void load_input_file(void)
 
 	session_new();
 	session_datafeed_callback_add(datafeed_in);
-	if (session_device_add(in->vdevice) != SIGROK_OK) {
+	if (session_device_add(in->vdevice) != SR_OK) {
 		printf("Failed to use device.\n");
 		session_destroy();
 		return;
@@ -541,7 +541,7 @@ static void load_input_file(void)
 	input_format->loadfile(in, opt_input_file);
 	session_halt();
 	if (opt_output_file && default_output_format) {
-		if (session_save(opt_output_file) != SIGROK_OK)
+		if (session_save(opt_output_file) != SR_OK)
 			printf("Failed to save session.\n");
 	}
 	session_destroy();
@@ -581,7 +581,7 @@ int set_device_options(struct device *device, GHashTable *args)
 				continue;
 			if (value == NULL && hwcap_options[i].type != T_NULL) {
 				printf("Option '%s' needs a value.\n", (char *)key);
-				return SIGROK_ERR;
+				return SR_ERR;
 			}
 			found = TRUE;
 			switch (hwcap_options[i].type) {
@@ -599,10 +599,10 @@ int set_device_options(struct device *device, GHashTable *args)
 						hwcap_options[i]. capability, NULL);
 				break;
 			default:
-				ret = SIGROK_ERR;
+				ret = SR_ERR;
 			}
 
-			if (ret != SIGROK_OK) {
+			if (ret != SR_OK) {
 				printf("Failed to set device option '%s'.\n", (char *)key);
 				return ret;
 			}
@@ -611,11 +611,11 @@ int set_device_options(struct device *device, GHashTable *args)
 		}
 		if (!found) {
 			printf("Unknown device option '%s'.\n", (char *) key);
-			return SIGROK_ERR;
+			return SR_ERR;
 		}
 	}
 
-	return SIGROK_OK;
+	return SR_OK;
 }
 
 static void run_session(void)
@@ -655,21 +655,21 @@ static void run_session(void)
 	session_new();
 	session_datafeed_callback_add(datafeed_in);
 
-	if (session_device_add(device) != SIGROK_OK) {
+	if (session_device_add(device) != SR_OK) {
 		printf("Failed to use device.\n");
 		session_destroy();
 		return;
 	}
 
 	if (devargs) {
-		if (set_device_options(device, devargs) != SIGROK_OK) {
+		if (set_device_options(device, devargs) != SR_OK) {
 			session_destroy();
 			return;
 		}
 		g_hash_table_destroy(devargs);
 	}
 
-	if (select_probes(device) != SIGROK_OK)
+	if (select_probes(device) != SR_OK)
             return;
 
 	if (opt_continuous) {
@@ -709,7 +709,7 @@ static void run_session(void)
 		capabilities = device->plugin->get_capabilities();
 		if (find_hwcap(capabilities, HWCAP_LIMIT_MSEC)) {
 			if (device->plugin->set_configuration(device->plugin_index,
-							  HWCAP_LIMIT_MSEC, &time_msec) != SIGROK_OK) {
+							  HWCAP_LIMIT_MSEC, &time_msec) != SR_OK) {
 				printf("Failed to configure time limit.\n");
 				session_destroy();
 				return;
@@ -729,7 +729,7 @@ static void run_session(void)
 			}
 
 			if (device->plugin->set_configuration(device->plugin_index,
-						  HWCAP_LIMIT_SAMPLES, &limit_samples) != SIGROK_OK) {
+						  HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
 				printf("Failed to configure time-based sample limit.\n");
 				session_destroy();
 				return;
@@ -740,7 +740,7 @@ static void run_session(void)
 	if (opt_samples) {
 		limit_samples = parse_sizestring(opt_samples);
 		if (device->plugin->set_configuration(device->plugin_index,
-					  HWCAP_LIMIT_SAMPLES, &limit_samples) != SIGROK_OK) {
+					  HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
 			printf("Failed to configure sample limit.\n");
 			session_destroy();
 			return;
@@ -748,13 +748,13 @@ static void run_session(void)
 	}
 
 	if (device->plugin->set_configuration(device->plugin_index,
-		  HWCAP_PROBECONFIG, (char *)device->probes) != SIGROK_OK) {
+		  HWCAP_PROBECONFIG, (char *)device->probes) != SR_OK) {
 		printf("Failed to configure probes.\n");
 		session_destroy();
 		return;
 	}
 
-	if (session_start() != SIGROK_OK) {
+	if (session_start() != SR_OK) {
 		printf("Failed to start session.\n");
 		session_destroy();
 		return;
@@ -769,7 +769,7 @@ static void run_session(void)
 		clear_anykey();
 
 	if (opt_output_file && default_output_format) {
-		if (session_save(opt_output_file) != SIGROK_OK)
+		if (session_save(opt_output_file) != SR_OK)
 			printf("Failed to save session.\n");
 	}
 	session_destroy();
@@ -826,7 +826,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if (sigrok_init() != SIGROK_OK)
+	if (sigrok_init() != SR_OK)
 		return 1;
 
 	if (opt_pds) {
