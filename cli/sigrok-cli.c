@@ -43,7 +43,7 @@ extern GIOChannel channels[2];
 
 gboolean debug = 0;
 uint64_t limit_samples = 0;
-struct output_format *output_format = NULL;
+struct sr_output_format *output_format = NULL;
 int default_output_format = FALSE;
 char *output_format_param = NULL;
 char *input_format_param = NULL;
@@ -86,8 +86,8 @@ static void show_version(void)
 {
 	GSList *plugins, *p, *l;
 	struct device_plugin *plugin;
-	struct input_format **inputs;
-	struct output_format **outputs;
+	struct sr_input_format **inputs;
+	struct sr_output_format **outputs;
 	struct srd_decoder *dec;
 	int i;
 
@@ -101,7 +101,7 @@ static void show_version(void)
 	printf("\n");
 
 	printf("Supported input formats:\n");
-	inputs = input_list();
+	inputs = sr_input_list();
 	for (i = 0; inputs[i]; i++) {
 		printf("  %-20s %s\n", inputs[i]->extension,
 		       inputs[i]->description);
@@ -109,7 +109,7 @@ static void show_version(void)
 	printf("\n");
 
 	printf("Supported output formats:\n");
-	outputs = output_list();
+	outputs = sr_output_list();
 	for (i = 0; outputs[i]; i++) {
 		printf("  %-20s %s\n", outputs[i]->extension,
 		       outputs[i]->description);
@@ -261,7 +261,7 @@ static void show_device_detail(void)
 
 static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 {
-	static struct output *o = NULL;
+	static struct sr_output *o = NULL;
 	static int probelist[65] = { 0 };
 	static uint64_t received_samples = 0;
 	static int unitsize = 0;
@@ -284,7 +284,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	switch (packet->type) {
 	case DF_HEADER:
 		/* Initialize the output module. */
-		if (!(o = malloc(sizeof(struct output)))) {
+		if (!(o = malloc(sizeof(struct sr_output)))) {
 			printf("Output module malloc failed.\n");
 			exit(1);
 		}
@@ -490,12 +490,12 @@ static int select_probes(struct device *device)
 static void load_input_file(void)
 {
 	struct stat st;
-	struct input *in;
-	struct input_format **inputs, *input_format;
+	struct sr_input *in;
+	struct sr_input_format **inputs, *input_format;
 	int i;
 
 	/* Find an input module that can handle this file. */
-	inputs = input_list();
+	inputs = sr_input_list();
 	for (i = 0; inputs[i]; i++) {
 		if (inputs[i]->format_match(opt_input_file))
 			break;
@@ -514,7 +514,7 @@ static void load_input_file(void)
 	}
 
 	/* Initialize the input module. */
-	if (!(in = malloc(sizeof(struct input)))) {
+	if (!(in = malloc(sizeof(struct sr_input)))) {
 		printf("Failed to allocate input module.\n");
 		exit(1);
 	}
@@ -801,7 +801,7 @@ static void logger(const gchar *log_domain, GLogLevelFlags log_level,
 
 int main(int argc, char **argv)
 {
-	struct output_format **outputs;
+	struct sr_output_format **outputs;
 	GOptionContext *context;
 	GError *error;
 	GHashTable *fmtargs;
@@ -848,7 +848,7 @@ int main(int argc, char **argv)
 		printf("Invalid output format.\n");
 		return 1;
 	}
-	outputs = output_list();
+	outputs = sr_output_list();
 	for (i = 0; outputs[i]; i++) {
 		if (strcmp(outputs[i]->extension, fmtspec))
 			continue;
