@@ -82,7 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-	sigrok_cleanup();
+	sr_cleanup();
 
 	delete ui;
 }
@@ -264,7 +264,7 @@ void MainWindow::on_actionScan_triggered()
 	ui->comboBoxSampleRate->clear();
 	if (samplerates->list != NULL) {
 		for (int i = 0; samplerates->list[i]; ++i) {
-			str = sigrok_samplerate_string(samplerates->list[i]);
+			str = sr_samplerate_string(samplerates->list[i]);
 			s = QString(str);
 			free(str);
 			ui->comboBoxSampleRate->addItem(s,
@@ -273,7 +273,7 @@ void MainWindow::on_actionScan_triggered()
 	} else {
 		pos = 0;
 		for (uint64_t r = samplerates->low; r <= samplerates->high; ) {
-			str = sigrok_samplerate_string(r);
+			str = sr_samplerate_string(r);
 			s = QString(str);
 			free(str);
 			ui->comboBoxSampleRate->addItem(s,
@@ -449,7 +449,7 @@ void datafeed_in(struct device *device, struct datafeed_packet *packet)
 
 		qDebug() << "Acquisition with" << num_enabled_probes << "/"
 			 << num_probes << "probes at"
-			 << sigrok_samplerate_string(header->samplerate)
+			 << sr_samplerate_string(header->samplerate)
 			 << "starting at" << ctime(&header->starttime.tv_sec)
 			 << "(" << limit_samples << "samples)";
 
@@ -678,7 +678,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	ui->labelZoomFactor->setEnabled(true);
 	ui->action_Save_as->setEnabled(true);
 
-	// sigrok_hw_get_samples_shutdown(&ctx, 1000);
+	// sr_hw_get_samples_shutdown(&ctx, 1000);
 }
 
 void MainWindow::setSampleRate(uint64_t s)

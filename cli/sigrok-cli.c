@@ -131,7 +131,7 @@ static void show_version(void)
 
 static void print_device_line(struct device *device)
 {
-	struct sigrok_device_instance *sdi;
+	struct sr_device_instance *sdi;
 
 	sdi = device->plugin->get_device_info(device->plugin_index, DI_INSTANCE);
 	printf("%s", sdi->vendor);
@@ -233,24 +233,24 @@ static void show_device_detail(void)
 
 			if (samplerates->step) {
 				/* low */
-				if (!(s = sigrok_samplerate_string(samplerates->low)))
+				if (!(s = sr_samplerate_string(samplerates->low)))
 					continue;
 				printf(" (%s", s);
 				free(s);
 				/* high */
-				if (!(s = sigrok_samplerate_string(samplerates->high)))
+				if (!(s = sr_samplerate_string(samplerates->high)))
 					continue;
 				printf(" - %s", s);
 				free(s);
 				/* step */
-				if (!(s = sigrok_samplerate_string(samplerates->step)))
+				if (!(s = sr_samplerate_string(samplerates->step)))
 					continue;
 				printf(" in steps of %s)\n", s);
 				free(s);
 			} else {
 				printf(" - supported samplerates:\n");
 				for (i = 0; samplerates->list[i]; i++) {
-					printf("      %7s\n", sigrok_samplerate_string(samplerates->list[i]));
+					printf("      %7s\n", sr_samplerate_string(samplerates->list[i]));
 				}
 			}
 		} else {
@@ -814,8 +814,8 @@ int main(int argc, char **argv)
 	current_decoder = NULL;
 
 	g_log_set_default_handler(logger, NULL);
-	if (getenv("SIGROK_DEBUG"))
-		debug = strtol(getenv("SIGROK_DEBUG"), NULL, 10);
+	if (getenv("sr_DEBUG"))
+		debug = strtol(getenv("sr_DEBUG"), NULL, 10);
 
 	error = NULL;
 	context = g_option_context_new(NULL);
@@ -826,7 +826,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if (sigrok_init() != SR_OK)
+	if (sr_init() != SR_OK)
 		return 1;
 
 	if (opt_pds) {
@@ -886,7 +886,7 @@ int main(int argc, char **argv)
 
 	g_option_context_free(context);
 	g_hash_table_destroy(fmtargs);
-	sigrok_cleanup();
+	sr_cleanup();
 
 	return 0;
 }

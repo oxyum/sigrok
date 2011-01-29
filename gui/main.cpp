@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
 	w = new MainWindow;
 
-	if (sigrok_init() != SR_OK) {
+	if (sr_init() != SR_OK) {
 		std::cerr << "ERROR: Failed to init sigrok." << std::endl;
 		return 1;
 	}
