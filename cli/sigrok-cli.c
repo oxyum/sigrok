@@ -88,7 +88,7 @@ static void show_version(void)
 	struct device_plugin *plugin;
 	struct input_format **inputs;
 	struct output_format **outputs;
-	struct sigrokdecode_decoder *dec;
+	struct srd_decoder *dec;
 	int i;
 
 	printf("sigrok-cli %s\n\n", VERSION);
@@ -117,16 +117,16 @@ static void show_version(void)
 	printf("\n");
 
 	/* TODO: Error handling. */
-	sigrokdecode_init();
+	srd_init();
 
 	printf("Supported protocol decoders:\n");
-	for (l = sigrokdecode_list_decoders(); l; l = l->next) {
+	for (l = srd_list_decoders(); l; l = l->next) {
 		dec = l->data;
 		printf("  %-20s %s\n", dec->id, dec->desc);
 	}
 	printf("\n");
 
-	sigrokdecode_shutdown();
+	srd_shutdown();
 }
 
 static void print_device_line(struct device *device)
@@ -273,7 +273,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	uint64_t output_len, filter_out_len, len, dec_out_size;
 	char *output_buf, *filter_out;
 	uint8_t *dec_out;
-	struct sigrokdecode_decoder *dec;
+	struct srd_decoder *dec;
 
 	/* If the first packet to come in isn't a header, don't even try. */
 	if (packet->type != DF_HEADER && o == NULL)
@@ -400,12 +400,12 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 
 	if (current_decoder) {
 		/* TODO: Error handling. */
-		dec = sigrokdecode_get_decoder_by_id(current_decoder);
+		dec = srd_get_decoder_by_id(current_decoder);
 		
-		ret = sigrokdecode_run_decoder(dec, packet->payload,
+		ret = srd_run_decoder(dec, packet->payload,
 				packet->length, &dec_out, &dec_out_size);
 
-		if (ret != SIGROKDECODE_OK) {
+		if (ret != SRD_OK) {
 			fprintf(stderr, "Decoder runtime error (%d)\n", ret);
 			exit(1);
 		}
@@ -831,7 +831,7 @@ int main(int argc, char **argv)
 
 	if (opt_pds) {
 		/* TODO: Error handling. */
-		sigrokdecode_init();
+		srd_init();
 		register_pds(NULL, opt_pds);
 	}
 
@@ -882,7 +882,7 @@ int main(int argc, char **argv)
 		printf("%s", g_option_context_get_help(context, TRUE, NULL));
 
 	if (opt_pds)
-		sigrokdecode_shutdown();
+		srd_shutdown();
 
 	g_option_context_free(context);
 	g_hash_table_destroy(fmtargs);

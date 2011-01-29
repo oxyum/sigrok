@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 #if 0
 	uint8_t *inbuf = NULL, *outbuf = NULL;
 	uint64_t outbuflen = 0;
-	struct sigrokdecode_decoder *dec;
+	struct srd_decoder *dec;
 	int ret;
 #endif
 
@@ -67,8 +67,8 @@ int main(int argc, char *argv[])
 #if 0
 #define BUFLEN 50
 
-	if (sigrokdecode_init() != SIGROKDECODE_OK) {
-		std::cerr << "ERROR: Failed to init sigrokdecode." << std::endl;
+	if (srd_init() != SRD_OK) {
+		std::cerr << "ERROR: Failed to init libsigrokdecode." << std::endl;
 		return 1;
 	}
 
@@ -76,17 +76,17 @@ int main(int argc, char *argv[])
 	inbuf[0] = 'X'; /* Just a quick test. */
 	inbuf[1] = 'Y';
 
-	ret = sigrokdecode_load_decoder("i2c", &dec);
-	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
+	ret = srd_load_decoder("i2c", &dec);
+	ret = srd_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
 	std::cout << "outbuf (" << outbuflen << " bytes):" << std::endl;
 	std::cout << outbuf << std::endl;
 
-	ret = sigrokdecode_load_decoder("transitioncounter", &dec);
-	ret = sigrokdecode_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
+	ret = srd_load_decoder("transitioncounter", &dec);
+	ret = srd_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
 	std::cout << "outbuf (" << outbuflen << " bytes):" << std::endl;
 	std::cout << outbuf << std::endl;
 
-	sigrokdecode_shutdown();
+	srd_shutdown();
 #endif
 
 	w->show();
