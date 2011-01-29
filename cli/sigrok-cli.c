@@ -96,7 +96,7 @@ static void show_version(void)
 	plugins = list_hwplugins();
 	for (p = plugins; p; p = p->next) {
 		plugin = p->data;
-		printf("  %s\n", plugin->name);
+		printf("  %-20s %s\n", plugin->name, plugin->longname);
 	}
 	printf("\n");
 
