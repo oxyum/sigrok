@@ -126,7 +126,7 @@ static void show_version(void)
 	}
 	printf("\n");
 
-	srd_shutdown();
+	srd_exit();
 }
 
 static void print_device_line(struct sr_device *device)
@@ -884,11 +884,11 @@ int main(int argc, char **argv)
 		printf("%s", g_option_context_get_help(context, TRUE, NULL));
 
 	if (opt_pds)
-		srd_shutdown();
+		srd_exit();
 
 	g_option_context_free(context);
 	g_hash_table_destroy(fmtargs);
-	sr_cleanup();
+	sr_exit();
 
 	return 0;
 }

@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	std::cout << "outbuf (" << outbuflen << " bytes):" << std::endl;
 	std::cout << outbuf << std::endl;
 
-	srd_shutdown();
+	srd_exit();
 #endif
 
 	w->show();
