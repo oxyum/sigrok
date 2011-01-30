@@ -536,7 +536,8 @@ void add_source(int fd, int events, int timeout,
 					      * (num_sources + 1));
 
 	if (sources) {
-		memcpy(new_sources, sources, sizeof(GPollFD) * num_sources);
+		memcpy(new_sources, sources,
+		       sizeof(struct source) * num_sources);
 		free(sources);
 	}
 
