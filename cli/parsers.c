@@ -108,7 +108,7 @@ char **parse_triggerstring(struct sr_device *device, const char *triggerstring)
 	error = FALSE;
 	triggerlist = g_malloc0(max_probes * sizeof(char *));
 	tokens = g_strsplit(triggerstring, ",", max_probes);
-	trigger_types = device->plugin->get_device_info(0, DI_TRIGGER_TYPES);
+	trigger_types = device->plugin->get_device_info(0, SR_DI_TRIGGER_TYPES);
 	if (trigger_types == NULL)
 		return NULL;
 

@@ -241,7 +241,7 @@ void MainWindow::on_actionScan_triggered()
 	setCurrentLA(0 /* TODO */);
 
 	di_num_probes = (char *)device->plugin->get_device_info(
-			device->plugin_index, DI_NUM_PROBES);
+			device->plugin_index, SR_DI_NUM_PROBES);
 	if (di_num_probes != NULL) {
 		setNumChannels(GPOINTER_TO_INT(di_num_probes));
 	} else {
@@ -255,7 +255,7 @@ void MainWindow::on_actionScan_triggered()
 	ui->labelChannels->setText(s);
 
 	samplerates = (struct samplerates *)device->plugin->get_device_info(
-		      device->plugin_index, DI_SAMPLERATES);
+		      device->plugin_index, SR_DI_SAMPLERATES);
 	if (!samplerates) {
 		/* TODO: Error handling. */
 	}
@@ -425,7 +425,7 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	uint64_t sample;
 
 	/* If the first packet to come in isn't a header, don't even try. */
-	// if (packet->type != DF_HEADER && o == NULL)
+	// if (packet->type != SR_DF_HEADER && o == NULL)
 	//	return;
 
 	/* TODO: Also check elsewhere? */
@@ -436,8 +436,8 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	sample_size = -1;
 
 	switch (packet->type) {
-	case DF_HEADER:
-		qDebug("DF_HEADER");
+	case SR_DF_HEADER:
+		qDebug("SR_DF_HEADER");
 		header = (struct sr_datafeed_header *) packet->payload;
 		num_probes = header->num_logic_probes;
 		num_enabled_probes = 0;
@@ -455,23 +455,23 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 
 		/* TODO: realloc() */
 		break;
-	case DF_END:
-		qDebug("DF_END");
+	case SR_DF_END:
+		qDebug("SR_DF_END");
 		/* TODO: o */
 		end_acquisition = 1;
 		progress->setValue(received_samples); /* FIXME */
 		break;
-	case DF_TRIGGER:
-		qDebug("DF_TRIGGER");
+	case SR_DF_TRIGGER:
+		qDebug("SR_DF_TRIGGER");
 		/* TODO */
 		triggered = 1;
 		break;
-	case DF_LOGIC:
-		qDebug("DF_LOGIC");
+	case SR_DF_LOGIC:
+		qDebug("SR_DF_LOGIC");
 		sample_size = packet->unitsize;
 		break;
 	default:
-		qDebug("DF_XXXX, not yet handled");
+		qDebug("SR_DF_XXXX, not yet handled");
 		break;
 	}
 
@@ -585,7 +585,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	/* Set the number of samples we want to get from the device. */
 	snprintf(numBuf, 16, "%" PRIu64 "", limit_samples);
 	device->plugin->set_configuration(device->plugin_index,
-		HWCAP_LIMIT_SAMPLES, (char *)numBuf);
+		SR_HWCAP_LIMIT_SAMPLES, (char *)numBuf);
 
 	if (session_device_add(device) != SR_OK) {
 		qDebug("Failed to use device.");
@@ -595,14 +595,14 @@ void MainWindow::on_action_Get_samples_triggered()
 
 	/* Set the samplerate. */
 	if (device->plugin->set_configuration(device->plugin_index,
-	    HWCAP_SAMPLERATE, &samplerate) != SR_OK) {
+	    SR_HWCAP_SAMPLERATE, &samplerate) != SR_OK) {
 		qDebug("Failed to set sample rate.");
 		session_destroy();
 		return;
 	};
 
 	if (device->plugin->set_configuration(device->plugin_index,
-	    HWCAP_PROBECONFIG, (char *)device->probes) != SR_OK) {
+	    SR_HWCAP_PROBECONFIG, (char *)device->probes) != SR_OK) {
 		qDebug("Failed to configure probes.");
 		session_destroy();
 		return;

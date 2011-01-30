@@ -133,7 +133,7 @@ static void print_device_line(struct sr_device *device)
 {
 	struct sr_device_instance *sdi;
 
-	sdi = device->plugin->get_device_info(device->plugin_index, DI_INSTANCE);
+	sdi = device->plugin->get_device_info(device->plugin_index, SR_DI_INSTANCE);
 	printf("%s", sdi->vendor);
 	if (sdi->model && sdi->model[0])
 		printf(" %s", sdi->model);
@@ -190,7 +190,7 @@ static void show_device_detail(void)
 	print_device_line(device);
 
 	if ((charopts = (char *)device->plugin->get_device_info(
-			device->plugin_index, DI_TRIGGER_TYPES))) {
+			device->plugin_index, SR_DI_TRIGGER_TYPES))) {
 		printf("Supported triggers: ");
 		while (*charopts) {
 			printf("%c ", *charopts);
@@ -210,10 +210,10 @@ static void show_device_detail(void)
 			title = NULL;
 		}
 
-		if (hwo->capability == HWCAP_PATTERN_MODE) {
+		if (hwo->capability == SR_HWCAP_PATTERN_MODE) {
 			printf("    %s", hwo->shortname);
 			stropts = (char **)device->plugin->get_device_info(
-					device->plugin_index, DI_PATTERNMODES);
+					device->plugin_index, SR_DI_PATTERNMODES);
 			if (!stropts) {
 				printf("\n");
 				continue;
@@ -221,11 +221,11 @@ static void show_device_detail(void)
 			printf(" - supported modes:\n");
 			for (i = 0; stropts[i]; i++)
 				printf("      %s\n", stropts[i]);
-		} else if (hwo->capability == HWCAP_SAMPLERATE) {
+		} else if (hwo->capability == SR_HWCAP_SAMPLERATE) {
 			printf("    %s", hwo->shortname);
 			/* Supported samplerates */
 			samplerates = device->plugin->get_device_info(
-				device->plugin_index, DI_SAMPLERATES);
+				device->plugin_index, SR_DI_SAMPLERATES);
 			if (!samplerates) {
 				printf("\n");
 				continue;
@@ -277,13 +277,13 @@ static void datafeed_in(struct sr_device *device,
 	struct srd_decoder *dec;
 
 	/* If the first packet to come in isn't a header, don't even try. */
-	if (packet->type != DF_HEADER && o == NULL)
+	if (packet->type != SR_DF_HEADER && o == NULL)
 		return;
 
 	sample_size = -1;
 
 	switch (packet->type) {
-	case DF_HEADER:
+	case SR_DF_HEADER:
 		/* Initialize the output module. */
 		if (!(o = malloc(sizeof(struct sr_output)))) {
 			printf("Output module malloc failed.\n");
@@ -328,14 +328,14 @@ static void datafeed_in(struct sr_device *device,
 			}
 		}
 		break;
-	case DF_END:
-		g_message("cli: Received DF_END");
+	case SR_DF_END:
+		g_message("cli: Received SR_DF_END");
 		if (!o) {
 			g_message("cli: double end!");
 			break;
 		}
 		if (o->format->event) {
-			o->format->event(o, DF_END, &output_buf, &output_len);
+			o->format->event(o, SR_DF_END, &output_buf, &output_len);
 			if (output_len) {
 				if (outfile)
 					fwrite(output_buf, 1, output_len, outfile);
@@ -355,13 +355,14 @@ static void datafeed_in(struct sr_device *device,
 		free(o);
 		o = NULL;
 		break;
-	case DF_TRIGGER:
+	case SR_DF_TRIGGER:
 		if (o->format->event)
-			o->format->event(o, DF_TRIGGER, &output_buf, &output_len);
+			o->format->event(o, SR_DF_TRIGGER, &output_buf,
+					 &output_len);
 		triggered = 1;
 		break;
-	case DF_LOGIC:
-	case DF_ANALOG:
+	case SR_DF_LOGIC:
+	case SR_DF_ANALOG:
 		sample_size = packet->unitsize;
 		break;
 	}
@@ -376,8 +377,8 @@ static void datafeed_in(struct sr_device *device,
 	if (limit_samples && received_samples >= limit_samples)
 		return;
 
-	if (packet->type == DF_LOGIC) {
-		/* filters only support DF_LOGIC */
+	if (packet->type == SR_DF_LOGIC) {
+		/* filters only support SR_DF_LOGIC */
 		ret = filter_probes(sample_size, unitsize, probelist,
 				    packet->payload, packet->length,
 				    &filter_out, &filter_out_len);
@@ -580,22 +581,22 @@ int set_device_options(struct sr_device *device, GHashTable *args)
 		for (i = 0; hwcap_options[i].capability; i++) {
 			if (strcmp(hwcap_options[i].shortname, key))
 				continue;
-			if (value == NULL && hwcap_options[i].type != T_NULL) {
+			if (value == NULL && hwcap_options[i].type != SR_T_NULL) {
 				printf("Option '%s' needs a value.\n", (char *)key);
 				return SR_ERR;
 			}
 			found = TRUE;
 			switch (hwcap_options[i].type) {
-			case T_UINT64:
+			case SR_T_UINT64:
 				tmp_u64 = parse_sizestring(value);
 				ret = device->plugin-> set_configuration(device-> plugin_index,
 						hwcap_options[i]. capability, &tmp_u64);
 				break;
-			case T_CHAR:
+			case SR_T_CHAR:
 				ret = device->plugin-> set_configuration(device-> plugin_index,
 						hwcap_options[i]. capability, value);
 				break;
-			case T_NULL:
+			case SR_T_NULL:
 				ret = device->plugin-> set_configuration(device-> plugin_index,
 						hwcap_options[i]. capability, NULL);
 				break;
@@ -675,7 +676,7 @@ static void run_session(void)
 
 	if (opt_continuous) {
 		capabilities = device->plugin->get_capabilities();
-		if (!find_hwcap(capabilities, HWCAP_CONTINUOUS)) {
+		if (!find_hwcap(capabilities, SR_HWCAP_CONTINUOUS)) {
 			printf("This device does not support continuous sampling.");
 			session_destroy();
 			return;
@@ -708,9 +709,9 @@ static void run_session(void)
 		}
 
 		capabilities = device->plugin->get_capabilities();
-		if (find_hwcap(capabilities, HWCAP_LIMIT_MSEC)) {
+		if (find_hwcap(capabilities, SR_HWCAP_LIMIT_MSEC)) {
 			if (device->plugin->set_configuration(device->plugin_index,
-							  HWCAP_LIMIT_MSEC, &time_msec) != SR_OK) {
+							  SR_HWCAP_LIMIT_MSEC, &time_msec) != SR_OK) {
 				printf("Failed to configure time limit.\n");
 				session_destroy();
 				return;
@@ -721,7 +722,7 @@ static void run_session(void)
 			 * convert to samples based on the samplerate.
 			 */
 			tmp_u64 = *((uint64_t *) device->plugin->get_device_info(
-					device->plugin_index, DI_CUR_SAMPLERATE));
+					device->plugin_index, SR_DI_CUR_SAMPLERATE));
 			limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
 			if (limit_samples == 0) {
 				printf("Not enough time at this samplerate.\n");
@@ -730,7 +731,7 @@ static void run_session(void)
 			}
 
 			if (device->plugin->set_configuration(device->plugin_index,
-						  HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
+						  SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
 				printf("Failed to configure time-based sample limit.\n");
 				session_destroy();
 				return;
@@ -741,7 +742,7 @@ static void run_session(void)
 	if (opt_samples) {
 		limit_samples = parse_sizestring(opt_samples);
 		if (device->plugin->set_configuration(device->plugin_index,
-					  HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
+					  SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
 			printf("Failed to configure sample limit.\n");
 			session_destroy();
 			return;
@@ -749,7 +750,7 @@ static void run_session(void)
 	}
 
 	if (device->plugin->set_configuration(device->plugin_index,
-		  HWCAP_PROBECONFIG, (char *)device->probes) != SR_OK) {
+		  SR_HWCAP_PROBECONFIG, (char *)device->probes) != SR_OK) {
 		printf("Failed to configure probes.\n");
 		session_destroy();
 		return;
