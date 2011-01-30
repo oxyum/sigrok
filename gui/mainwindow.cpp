@@ -197,7 +197,7 @@ void MainWindow::on_actionScan_triggered()
 {
 	QString s;
 	int num_devices, pos;
-	struct device *device;
+	struct sr_device *device;
 	char *di_num_probes, *str;
 	struct samplerates *samplerates;
 	const static float mult[] = { 2.f, 2.5f, 2.f };
@@ -210,7 +210,7 @@ void MainWindow::on_actionScan_triggered()
 
 	ui->comboBoxLA->clear();
 	for (int i = 0; i < num_devices; ++i) {
-		device = (struct device *)g_slist_nth_data(devices, i);
+		device = (struct sr_device *)g_slist_nth_data(devices, i);
 		ui->comboBoxLA->addItem(device->plugin->name); /* TODO: Full name */
 	}
 
@@ -226,7 +226,7 @@ void MainWindow::on_actionScan_triggered()
 		/* TODO: Allow user to select one of the devices. */
 		s = tr("Found multiple logic analyzers: ");
 		for (int i = 0; i < num_devices; ++i) {
-			device = (struct device *)g_slist_nth_data(devices, i);
+			device = (struct sr_device *)g_slist_nth_data(devices, i);
 			s.append(device->plugin->name);
 			if (i != num_devices - 1)
 				s.append(", ");
@@ -236,7 +236,7 @@ void MainWindow::on_actionScan_triggered()
 		return;
 	}
 
-	device = (struct device *)g_slist_nth_data(devices, 0 /* opt_device */);
+	device = (struct sr_device *)g_slist_nth_data(devices, 0 /* opt_device */);
 	
 	setCurrentLA(0 /* TODO */);
 
@@ -413,7 +413,7 @@ void MainWindow::on_action_Save_as_triggered()
 	file.close();
 }
 
-void datafeed_in(struct device *device, struct sr_datafeed_packet *packet)
+void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 {
 	static int num_probes = 0;
 	static int probelist[65] = {0};
@@ -561,7 +561,7 @@ void MainWindow::on_action_Get_samples_triggered()
 			ui->comboBoxSampleRate->currentIndex()).toLongLong();
 	QString s;
 	int opt_device, ret, i;
-	struct device *device;
+	struct sr_device *device;
 	char numBuf[16];
 
 	opt_device = 0; /* FIXME */
@@ -580,7 +580,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	source_cb_remove = remove_source;
 	source_cb_add = add_source;
 
-	device = (struct device *)g_slist_nth_data(devices, opt_device);
+	device = (struct sr_device *)g_slist_nth_data(devices, opt_device);
 
 	/* Set the number of samples we want to get from the device. */
 	snprintf(numBuf, 16, "%" PRIu64 "", limit_samples);

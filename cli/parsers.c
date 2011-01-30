@@ -96,7 +96,7 @@ char **parse_probestring(int max_probes, const char *probestring)
 	return probelist;
 }
 
-char **parse_triggerstring(struct device *device, const char *triggerstring)
+char **parse_triggerstring(struct sr_device *device, const char *triggerstring)
 {
 	GSList *l;
 	struct probe *probe;
@@ -223,10 +223,10 @@ GHashTable *parse_generic_arg(const char *arg)
 	return hash;
 }
 
-struct device *parse_devicestring(const char *devicestring)
+struct sr_device *parse_devicestring(const char *devicestring)
 {
-	struct device *device, *d;
-	struct device_plugin *plugin;
+	struct sr_device *device, *d;
+	struct sr_device_plugin *plugin;
 	GSList *devices, *plugins, *l, *p;
 	int num_devices, device_num, device_cnt;
 	char *tmp;

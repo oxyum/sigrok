@@ -85,7 +85,7 @@ static GOptionEntry optargs[] = {
 static void show_version(void)
 {
 	GSList *plugins, *p, *l;
-	struct device_plugin *plugin;
+	struct sr_device_plugin *plugin;
 	struct sr_input_format **inputs;
 	struct sr_output_format **outputs;
 	struct srd_decoder *dec;
@@ -129,7 +129,7 @@ static void show_version(void)
 	srd_shutdown();
 }
 
-static void print_device_line(struct device *device)
+static void print_device_line(struct sr_device *device)
 {
 	struct sr_device_instance *sdi;
 
@@ -146,7 +146,7 @@ static void print_device_line(struct device *device)
 
 static void show_device_list(void)
 {
-	struct device *device, *demo_device;
+	struct sr_device *device, *demo_device;
 	GSList *devices, *l;
 	int devcnt;
 
@@ -175,7 +175,7 @@ static void show_device_list(void)
 
 static void show_device_detail(void)
 {
-	struct device *device;
+	struct sr_device *device;
 	struct hwcap_option *hwo;
 	struct samplerates *samplerates;
 	int cap, *capabilities, i;
@@ -259,7 +259,8 @@ static void show_device_detail(void)
 	}
 }
 
-static void datafeed_in(struct device *device, struct sr_datafeed_packet *packet)
+static void datafeed_in(struct sr_device *device,
+			struct sr_datafeed_packet *packet)
 {
 	static struct sr_output *o = NULL;
 	static int probelist[65] = { 0 };
@@ -437,7 +438,7 @@ static void datafeed_in(struct device *device, struct sr_datafeed_packet *packet
 /* Register the given PDs for this session. */
 /* TODO: Support both serial PDs and nested PDs. Parallel PDs even? */
 /* TODO: Only register here, run in streaming fashion later/elsewhere. */
-static int register_pds(struct device *device, const char *pdstring)
+static int register_pds(struct sr_device *device, const char *pdstring)
 {
 	char **tokens;
 
@@ -454,7 +455,7 @@ static int register_pds(struct device *device, const char *pdstring)
 	return 0;
 }
 
-static int select_probes(struct device *device)
+static int select_probes(struct sr_device *device)
 {
 	struct probe *probe;
 	char **probelist;
@@ -550,7 +551,7 @@ static void load_input_file(void)
 
 int num_real_devices(void)
 {
-	struct device *device;
+	struct sr_device *device;
 	GSList *devices, *l;
 	int num_devices;
 
@@ -565,7 +566,7 @@ int num_real_devices(void)
 	return num_devices;
 }
 
-int set_device_options(struct device *device, GHashTable *args)
+int set_device_options(struct sr_device *device, GHashTable *args)
 {
 	GHashTableIter iter;
 	gpointer key, value;
@@ -620,7 +621,7 @@ int set_device_options(struct device *device, GHashTable *args)
 
 static void run_session(void)
 {
-	struct device *device;
+	struct sr_device *device;
 	GPollFD *fds, my_gpollfd;
 	GHashTable *devargs;
 	int num_devices, max_probes, *capabilities, ret, i;
