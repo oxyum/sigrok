@@ -256,7 +256,10 @@ void MainWindow::on_actionScan_triggered()
 
 	/* Populate the combobox with supported samplerates. */
 	ui->comboBoxSampleRate->clear();
-	if (samplerates->list != NULL) {
+	if (!samplerates) {
+		ui->comboBoxSampleRate->addItem("No samplerate");
+		ui->comboBoxSampleRate->setEnabled(false);
+	} else if (samplerates->list != NULL) {
 		for (int i = 0; samplerates->list[i]; ++i) {
 			str = sr_samplerate_string(samplerates->list[i]);
 			s = QString(str);
@@ -264,6 +267,7 @@ void MainWindow::on_actionScan_triggered()
 			ui->comboBoxSampleRate->addItem(s,
 				QVariant::fromValue(samplerates->list[i]));
 		}
+		ui->comboBoxSampleRate->setEnabled(true);
 	} else {
 		pos = 0;
 		for (uint64_t r = samplerates->low; r <= samplerates->high; ) {
@@ -275,6 +279,7 @@ void MainWindow::on_actionScan_triggered()
 			r *= mult[pos++];
 			pos %= 3;
 		}
+		ui->comboBoxSampleRate->setEnabled(true);
 	}
 
 	/* FIXME */
@@ -290,7 +295,6 @@ void MainWindow::on_actionScan_triggered()
 		setupDockWidgets();
 
 	/* Enable all relevant fields now (i.e. make them non-gray). */
-	ui->comboBoxSampleRate->setEnabled(true);
 	ui->comboBoxNumSamples->setEnabled(true);
 	ui->labelChannels->setEnabled(true);
 	ui->action_Get_samples->setEnabled(true);
