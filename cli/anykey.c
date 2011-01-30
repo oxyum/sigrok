@@ -29,7 +29,6 @@
 #include <sigrok.h>
 #include "sigrok-cli.h"
 
-extern int end_acquisition;
 
 #ifdef _WIN32
 HANDLE stdin_handle;
@@ -45,7 +44,7 @@ static int received_anykey(int fd, int revents, void *user_data)
 	revents = revents;
 	user_data = user_data;
 
-	end_acquisition = TRUE;
+	session_stop();
 
 	return TRUE;
 }
@@ -70,7 +69,7 @@ void add_anykey(void)
 	tcsetattr(STDIN_FILENO, TCSADRAIN, &term);
 #endif
 
-	add_source(STDIN_FILENO, G_IO_IN, -1, received_anykey, NULL);
+	session_source_add(STDIN_FILENO, G_IO_IN, -1, received_anykey, NULL);
 
 	printf("Press any key to stop acquisition.\n");
 }

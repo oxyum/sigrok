@@ -42,7 +42,6 @@ extern struct hwcap_option hwcap_options[];
 extern GIOChannel channels[2];
 
 gboolean debug = 0;
-int end_acquisition = FALSE;
 uint64_t limit_samples = 0;
 struct output_format *output_format = NULL;
 int default_output_format = FALSE;
@@ -51,22 +50,6 @@ char *input_format_param = NULL;
 
 /* Protocol decoder */
 char *current_decoder;
-
-/* These live in hwplugin.c, for the frontend to override. */
-extern source_callback_add source_cb_add;
-extern source_callback_remove source_cb_remove;
-
-struct source {
-	int fd;
-	int events;
-	int timeout;
-	receive_data_callback cb;
-	void *user_data;
-};
-
-struct source *sources = NULL;
-int num_sources = 0;
-int source_timeout = -1;
 
 static gboolean opt_version = FALSE;
 static gboolean opt_list_devices = FALSE;
@@ -345,9 +328,9 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		}
 		break;
 	case DF_END:
-		g_message("Received DF_END");
-		if (end_acquisition) {
-			g_message("double end!");
+		g_message("cli: Received DF_END");
+		if (!o) {
+			g_message("cli: double end!");
 			break;
 		}
 		if (o->format->event) {
@@ -365,7 +348,7 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 		if (opt_continuous)
 			printf("Device stopped after %" PRIu64 " samples.\n",
 			       received_samples);
-		end_acquisition = TRUE;
+		session_halt();
 		if (outfile && outfile != stdout)
 			fclose(outfile);
 		free(o);
@@ -449,56 +432,6 @@ static void datafeed_in(struct device *device, struct datafeed_packet *packet)
 	free(filter_out);
 	received_samples += packet->length / sample_size;
 
-}
-
-static void remove_source(int fd)
-{
-	struct source *new_sources;
-	int old, new;
-
-	if (!sources)
-		return;
-
-	new_sources = calloc(1, sizeof(struct source) * num_sources);
-	for (old = 0; old < num_sources; old++)
-		if (sources[old].fd != fd)
-			memcpy(&new_sources[new++], &sources[old],
-			       sizeof(struct source));
-
-	if (old != new) {
-		free(sources);
-		sources = new_sources;
-		num_sources--;
-	} else {
-		/* Target fd was not found. */
-		free(new_sources);
-	}
-}
-
-void add_source(int fd, int events, int timeout,
-	        receive_data_callback callback, void *user_data)
-{
-	struct source *new_sources, *s;
-
-	new_sources = calloc(1, sizeof(struct source) * (num_sources + 1));
-
-	if (sources) {
-		memcpy(new_sources, sources,
-		       sizeof(struct source) * num_sources);
-		free(sources);
-	}
-
-	s = &new_sources[num_sources++];
-	s->fd = fd;
-	s->events = events;
-	s->timeout = timeout;
-	s->cb = callback;
-	s->user_data = user_data;
-	sources = new_sources;
-
-	if (timeout != source_timeout && timeout > 0
-	    && (source_timeout == -1 || timeout < source_timeout))
-		source_timeout = timeout;
 }
 
 /* Register the given PDs for this session. */
@@ -606,7 +539,7 @@ static void load_input_file(void)
 	}
 
 	input_format->loadfile(in, opt_input_file);
-	session_stop();
+	session_halt();
 	if (opt_output_file && default_output_format) {
 		if (session_save(opt_output_file) != SIGROK_OK)
 			printf("Failed to save session.\n");
@@ -721,8 +654,6 @@ static void run_session(void)
 
 	session_new();
 	session_datafeed_callback_add(datafeed_in);
-	source_cb_remove = remove_source;
-	source_cb_add = add_source;
 
 	if (session_device_add(device) != SIGROK_OK) {
 		printf("Failed to use device.\n");
@@ -832,45 +763,11 @@ static void run_session(void)
 	if (opt_continuous)
 		add_anykey();
 
-	fds = NULL;
-	while (!end_acquisition) {
-		if (fds)
-			free(fds);
-
-		/* Construct g_poll()'s array. */
-		fds = malloc(sizeof(GPollFD) * num_sources);
-		for (i = 0; i < num_sources; i++) {
-#ifdef _WIN32
-			g_io_channel_win32_make_pollfd(&channels[0],
-					sources[i].events, &my_gpollfd);
-#else
-			my_gpollfd.fd = sources[i].fd;
-			my_gpollfd.events = sources[i].events;
-			fds[i] = my_gpollfd;
-#endif
-		}
-
-		ret = g_poll(fds, num_sources, source_timeout);
-
-		for (i = 0; i < num_sources; i++) {
-			if (fds[i].revents > 0 || (ret == 0
-				&& source_timeout == sources[i].timeout)) {
-				/*
-				 * Invoke the source's callback on an event,
-				 * or if the poll timeout out and this source
-				 * asked for that timeout.
-				 */
-				sources[i].cb(fds[i].fd, fds[i].revents,
-					      sources[i].user_data);
-			}
-		}
-	}
-	free(fds);
+	session_run();
 
 	if (opt_continuous)
 		clear_anykey();
 
-	session_stop();
 	if (opt_output_file && default_output_format) {
 		if (session_save(opt_output_file) != SIGROK_OK)
 			printf("Failed to save session.\n");
