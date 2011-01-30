@@ -51,12 +51,6 @@ struct source *sources = NULL;
 int num_sources = 0;
 int source_timeout = -1;
 
-/* These live in hwplugin.c, for the frontend to override. */
-extern source_callback_add source_cb_add;
-extern source_callback_remove source_cb_remove;
-
-int end_acquisition = 0;
-
 GPollFD *fds;
 
 uint64_t limit_samples = 0; /* FIXME */
@@ -458,7 +452,7 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	case SR_DF_END:
 		qDebug("SR_DF_END");
 		/* TODO: o */
-		end_acquisition = 1;
+		session_halt();
 		progress->setValue(received_samples); /* FIXME */
 		break;
 	case SR_DF_TRIGGER:
@@ -499,61 +493,6 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	progress->setValue(received_samples);
 }
 
-void remove_source(int fd)
-{
-	struct source *new_sources;
-	int oldsource, newsource = 0;
-
-	if (!sources)
-		return;
-
-	new_sources = (struct source *)calloc(1, sizeof(struct source)
-					      * num_sources);
-	for (oldsource = 0; oldsource < num_sources; oldsource++) {
-		if (sources[oldsource].fd != fd)
-			memcpy(&new_sources[newsource++], &sources[oldsource],
-			       sizeof(struct source));
-	}
-
-	if (oldsource != newsource) {
-		free(sources);
-		sources = new_sources;
-		num_sources--;
-	} else {
-		/* Target fd was not found. */
-		free(new_sources);
-	}
-}
-
-void add_source(int fd, int events, int timeout,
-		receive_data_callback callback, void *user_data)
-{
-	struct source *new_sources, *s;
-
-	// add_source_fd(fd, events, timeout, callback, user_data);
-
-	new_sources = (struct source *)calloc(1, sizeof(struct source)
-					      * (num_sources + 1));
-
-	if (sources) {
-		memcpy(new_sources, sources,
-		       sizeof(struct source) * num_sources);
-		free(sources);
-	}
-
-	s = &new_sources[num_sources++];
-	s->fd = fd;
-	s->events = events;
-	s->timeout = timeout;
-	s->cb = callback;
-	s->user_data = user_data;
-	sources = new_sources;
-
-	if (timeout != source_timeout && timeout > 0
-	    && (source_timeout == -1 || timeout < source_timeout))
-		source_timeout = timeout;
-}
-
 void MainWindow::on_action_Get_samples_triggered()
 {
 	uint64_t numSamplesLocal = ui->comboBoxNumSamples->itemData(
@@ -561,7 +500,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	uint64_t samplerate = ui->comboBoxSampleRate->itemData(
 			ui->comboBoxSampleRate->currentIndex()).toLongLong();
 	QString s;
-	int opt_device, ret, i;
+	int opt_device;
 	struct sr_device *device;
 	char numBuf[16];
 
@@ -577,9 +516,6 @@ void MainWindow::on_action_Get_samples_triggered()
 
 	session_new();
 	session_datafeed_callback_add(datafeed_in);
-
-	source_cb_remove = remove_source;
-	source_cb_add = add_source;
 
 	device = (struct sr_device *)g_slist_nth_data(devices, opt_device);
 
@@ -620,36 +556,9 @@ void MainWindow::on_action_Get_samples_triggered()
 	progress->setWindowModality(Qt::WindowModal);
 	progress->setMinimumDuration(100);
 
-	fds = NULL;
-	while (!end_acquisition) {
-		if (fds)
-			free(fds);
+	session_run();
 
-		/* Construct g_poll()'s array. */
-		fds = (GPollFD *)malloc(sizeof(GPollFD) * num_sources);
-		for (i = 0; i < num_sources; ++i) {
-			fds[i].fd = sources[i].fd;
-			fds[i].events = sources[i].events;
-		}
-
-		ret = g_poll(fds, num_sources, source_timeout);
-
-		for (i = 0; i < num_sources; ++i) {
-			if (fds[i].revents > 0 || (ret == 0
-			    && source_timeout == sources[i].timeout)) {
-				/*
-				 * Invoke the source's callback on an event,
-				 * or if the poll timeout out and this source
-				 * asked for that timeout.
-				 */
-				sources[i].cb(fds[i].fd, fds[i].revents,
-					      sources[i].user_data);
-			}
-		}
-	}
-	free(fds);
-
-	session_stop();
+	session_halt();
 	session_destroy();
 
 	for (int i = 0; i < getNumChannels(); ++i) {
