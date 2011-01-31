@@ -813,8 +813,8 @@ int main(int argc, char **argv)
 	current_decoder = NULL;
 
 	g_log_set_default_handler(logger, NULL);
-	if (getenv("sr_DEBUG"))
-		debug = strtol(getenv("sr_DEBUG"), NULL, 10);
+	if (getenv("SIGROK_DEBUG"))
+		debug = strtol(getenv("SIGROK_DEBUG"), NULL, 10);
 
 	error = NULL;
 	context = g_option_context_new(NULL);
