@@ -268,7 +268,7 @@ static void datafeed_in(struct sr_device *device,
 	struct probe *probe;
 	struct sr_datafeed_header *header;
 	int num_enabled_probes, sample_size, ret, i;
-	uint64_t output_len, filter_out_len, len, dec_out_size;
+	uint64_t output_len, filter_out_len, dec_out_size;
 	char *output_buf, *filter_out;
 	uint8_t *dec_out;
 	struct srd_decoder *dec;
@@ -281,6 +281,7 @@ static void datafeed_in(struct sr_device *device,
 
 	switch (packet->type) {
 	case SR_DF_HEADER:
+		g_message("cli: Received SR_DF_HEADER");
 		/* Initialize the output module. */
 		if (!(o = malloc(sizeof(struct sr_output)))) {
 			printf("Output module malloc failed.\n");
@@ -353,12 +354,14 @@ static void datafeed_in(struct sr_device *device,
 		o = NULL;
 		break;
 	case SR_DF_TRIGGER:
+		g_message("cli: Received SR_DF_TRIGGER");
 		if (o->format->event)
 			o->format->event(o, SR_DF_TRIGGER, &output_buf,
 					 &output_len);
 		triggered = 1;
 		break;
 	case SR_DF_LOGIC:
+		g_message("cli: Received SR_DF_LOGIC");
 	case SR_DF_ANALOG:
 		sample_size = packet->unitsize;
 		break;
@@ -388,6 +391,15 @@ static void datafeed_in(struct sr_device *device,
 		filter_out_len = packet->length;
 	}
 
+	/* what comes out of the filter is guaranteed to be packed into the
+	 * minimum size needed to support the number if samples at this sample
+	 * size. however, the driver may have submitted too much -- cut off
+	 * the buffer of the last packet according to the sample limit.
+	 */
+	if (limit_samples && (received_samples + packet->length / sample_size >
+			limit_samples * sample_size))
+		filter_out_len = limit_samples * sample_size - received_samples;
+
 	if (device->datastore)
 		datastore_put(device->datastore, filter_out,
 			      filter_out_len, sample_size, probelist);
@@ -413,15 +425,8 @@ static void datafeed_in(struct sr_device *device,
 
 	/* Don't dump samples on stdout when also saving the session. */
 	output_len = 0;
-	if (o->format->data && packet->type == o->format->df_type) {
-		if (limit_samples && (received_samples + packet->length
-			/ sample_size > limit_samples * sample_size))
-			len = limit_samples * sample_size
-				- received_samples;
-		else
-			len = filter_out_len;
-		o->format->data(o, filter_out, len, &output_buf, &output_len);
-	}
+	if (o->format->data && packet->type == o->format->df_type)
+		o->format->data(o, filter_out, filter_out_len, &output_buf, &output_len);
 	if (output_len) {
 		fwrite(output_buf, 1, output_len, outfile);
 		free(output_buf);
@@ -486,7 +491,7 @@ static int select_probes(struct sr_device *device)
 	return SR_OK;
 }
 
-static void load_input_file(void)
+static void load_input_file_format(void)
 {
 	struct stat st;
 	struct sr_input *in;
@@ -538,12 +543,28 @@ static void load_input_file(void)
 	}
 
 	input_format->loadfile(in, opt_input_file);
-	session_halt();
 	if (opt_output_file && default_output_format) {
 		if (session_save(opt_output_file) != SR_OK)
 			printf("Failed to save session.\n");
 	}
 	session_destroy();
+
+}
+
+static void load_input_file(void)
+{
+
+	if (session_load(opt_input_file) == SR_OK) {
+		/* sigrok session file */
+		session_datafeed_callback_add(datafeed_in);
+		session_start();
+		session_run();
+		session_stop();
+	}
+	else {
+		/* fall back on input modules */
+		load_input_file_format();
+	}
 
 }
 
@@ -620,9 +641,8 @@ int set_device_options(struct sr_device *device, GHashTable *args)
 static void run_session(void)
 {
 	struct sr_device *device;
-	GPollFD *fds, my_gpollfd;
 	GHashTable *devargs;
-	int num_devices, max_probes, *capabilities, ret, i;
+	int num_devices, max_probes, *capabilities, i;
 	uint64_t tmp_u64, time_msec;
 	char **probelist, *devspec;
 
