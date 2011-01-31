@@ -38,9 +38,6 @@
 
 extern struct hwcap_option hwcap_options[];
 
-/* demo.c */
-extern GIOChannel channels[2];
-
 gboolean debug = 0;
 uint64_t limit_samples = 0;
 struct sr_output_format *output_format = NULL;
