@@ -738,9 +738,12 @@ static void run_session(void)
 			/* time limit set, but device doesn't support this...
 			 * convert to samples based on the samplerate.
 			 */
-			tmp_u64 = *((uint64_t *) device->plugin->get_device_info(
-					device->plugin_index, SR_DI_CUR_SAMPLERATE));
-			limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
+			limit_samples = 0;
+			if (device_has_hwcap(device, SR_HWCAP_SAMPLERATE)) {
+				tmp_u64 = *((uint64_t *) device->plugin->get_device_info(
+						device->plugin_index, SR_DI_CUR_SAMPLERATE));
+				limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
+			}
 			if (limit_samples == 0) {
 				printf("Not enough time at this samplerate.\n");
 				session_destroy();
