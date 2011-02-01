@@ -361,7 +361,7 @@ static void datafeed_in(struct sr_device *device,
 		triggered = 1;
 		break;
 	case SR_DF_LOGIC:
-		g_message("cli: Received SR_DF_LOGIC");
+		g_message("cli: Received SR_DF_LOGIC, %"PRIu64" bytes", packet->length);
 	case SR_DF_ANALOG:
 		sample_size = packet->unitsize;
 		break;
@@ -420,16 +420,16 @@ static void datafeed_in(struct sr_device *device,
 			fprintf(stderr, "Decoder runtime error (%d)\n", ret);
 			exit(1);
 		}
-		printf("Protocol decoder output:\n%s\n", dec_out);
-	}
-
-	/* Don't dump samples on stdout when also saving the session. */
-	output_len = 0;
-	if (o->format->data && packet->type == o->format->df_type)
-		o->format->data(o, filter_out, filter_out_len, &output_buf, &output_len);
-	if (output_len) {
-		fwrite(output_buf, 1, output_len, outfile);
-		free(output_buf);
+		if (dec_out_size)
+			printf("Protocol decoder output:\n%s\n", dec_out);
+	} else {
+		output_len = 0;
+		if (o->format->data && packet->type == o->format->df_type)
+			o->format->data(o, filter_out, filter_out_len, &output_buf, &output_len);
+		if (output_len) {
+			fwrite(output_buf, 1, output_len, outfile);
+			free(output_buf);
+		}
 	}
 
 	cleanup:
