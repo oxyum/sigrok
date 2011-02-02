@@ -145,6 +145,7 @@ if test "x$LA_SALEAE_LOGIC" != xno \
 PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.5],
 	[CFLAGS="$CFLAGS $libusb_CFLAGS";
 	LIBS="$LIBS $libusb_LIBS"])
+AC_CHECK_LIB(usb-1.0, libusb_init)
 fi
 
 # libzip is always needed.
