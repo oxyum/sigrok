@@ -40,19 +40,6 @@ extern "C" {
 #include <sigrok.h>
 }
 
-struct source {
-	int fd;
-	int events;
-	int timeout;
-	receive_data_callback cb;
-	void *user_data;
-};
-struct source *sources = NULL;
-int num_sources = 0;
-int source_timeout = -1;
-
-GPollFD *fds;
-
 uint64_t limit_samples = 0; /* FIXME */
 
 QProgressDialog *progress = NULL;
