@@ -28,6 +28,7 @@ extern "C" {
 #include <QtGui/QApplication>
 #include <QTranslator>
 #include <QLocale>
+#include <QDebug>
 #include "mainwindow.h"
 
 uint8_t *sample_buffer;
@@ -38,12 +39,6 @@ int main(int argc, char *argv[])
 	QString locale = QLocale::system().name();
 	QApplication a(argc, argv);
 	QTranslator translator;
-#if 0
-	uint8_t *inbuf = NULL, *outbuf = NULL;
-	uint64_t outbuflen = 0;
-	struct srd_decoder *dec;
-	int ret;
-#endif
 
 	translator.load(QString("locale/sigrok-gui_") + locale);
 	a.installTranslator(&translator);
@@ -60,34 +55,16 @@ int main(int argc, char *argv[])
 	w = new MainWindow;
 
 	if (sr_init() != SR_OK) {
-		std::cerr << "ERROR: Failed to init sigrok." << std::endl;
+		qDebug() << "ERROR: libsigrok init failed.";
 		return 1;
 	}
-
-#if 0
-#define BUFLEN 50
+	qDebug() << "libsigrok initialized successfully.";
 
 	if (srd_init() != SRD_OK) {
-		std::cerr << "ERROR: Failed to init libsigrokdecode." << std::endl;
+		std::cerr << "ERROR: libsigrokdecode init failed." << std::endl;
 		return 1;
 	}
-
-	inbuf = (uint8_t *)calloc(1000, 1);
-	inbuf[0] = 'X'; /* Just a quick test. */
-	inbuf[1] = 'Y';
-
-	ret = srd_load_decoder("i2c", &dec);
-	ret = srd_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
-	std::cout << "outbuf (" << outbuflen << " bytes):" << std::endl;
-	std::cout << outbuf << std::endl;
-
-	ret = srd_load_decoder("transitioncounter", &dec);
-	ret = srd_run_decoder(dec, inbuf, BUFLEN, &outbuf, &outbuflen);
-	std::cout << "outbuf (" << outbuflen << " bytes):" << std::endl;
-	std::cout << outbuf << std::endl;
-
-	srd_exit();
-#endif
+	qDebug() << "libsigrokdecode initialized successfully.";
 
 	w->show();
 	return a.exec();
