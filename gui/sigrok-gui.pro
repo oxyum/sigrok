@@ -47,7 +47,12 @@ TRANSLATIONS  = locale/sigrok-gui_de_DE.ts \
 # CONFIG       += link_pkgconfig debug_and_release build_all
 CONFIG       += link_pkgconfig release
 
-PKGCONFIG     = glib-2.0 libusb-1.0 libzip libsigrok libsigrokdecode
+# One entry per line to avoid issues on some OSes with some qmake versions.
+PKGCONFIG    += glib-2.0
+PKGCONFIG    += libusb-1.0
+PKGCONFIG    += libzip
+PKGCONFIG    += libsigrok
+PKGCONFIG    += libsigrokdecode
 
 RESOURCES    += sigrok-gui.qrc
 
