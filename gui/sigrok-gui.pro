@@ -44,7 +44,9 @@ TRANSLATIONS  = locale/sigrok-gui_de_DE.ts \
                 locale/sigrok-gui_nl_NL.ts \
                 locale/sigrok-gui_fr_FR.ts
 
-CONFIG       += link_pkgconfig debug_and_release build_all
+# CONFIG       += link_pkgconfig debug_and_release build_all
+CONFIG       += link_pkgconfig release
+
 PKGCONFIG     = glib-2.0 libusb-1.0 libzip
 
 LIBS         += -L/usr/local/lib -L../libsigrok/.libs -L../libsigrokdecode \
