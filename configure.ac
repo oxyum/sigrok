@@ -142,10 +142,19 @@ AC_CHECK_LIB(gthread-2.0, g_thread_init)
 if test "x$LA_SALEAE_LOGIC" != xno \
    -o "x$LA_ASIX_SIGMA" != xno \
    -o "x$LA_ZEROPLUS_LOGIC_CUBE" != xno; then
-PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.5],
-	[CFLAGS="$CFLAGS $libusb_CFLAGS";
-	LIBS="$LIBS $libusb_LIBS"])
-AC_CHECK_LIB(usb-1.0, libusb_init)
+	case "$build" in
+	*freebsd*)
+		# FreeBSD comes with an "integrated" libusb-1.0-style USB API.
+		AC_DEFINE_UNQUOTED(HAVE_LIBUSB_1_0, [1],
+			[Specifies whether we have a libusb.h header.])
+		;;
+	*)
+		PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.5],
+			[CFLAGS="$CFLAGS $libusb_CFLAGS";
+			LIBS="$LIBS $libusb_LIBS"])
+		AC_CHECK_LIB(usb-1.0, libusb_init)
+		;;
+	esac
 fi
 
 # libzip is always needed.
