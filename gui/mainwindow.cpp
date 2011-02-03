@@ -163,11 +163,10 @@ void MainWindow::on_actionAbout_triggered()
 	struct sr_output_format **outputs;
 	struct srd_decoder *dec;
 
-	QString s = tr("%1 %2<br />\nCopyright (C) 2010 "
-		"Uwe Hermann &lt;uwe@hermann-uwe.de&gt;<br />\n"
-		"GNU GPL, version 2 or later<br /><a href=\"%3\">%3</a>\n<p>")
+	QString s = tr("%1 %2<br />%3<br /><a href=\"%4\">%4</a>\n<p>")
 		.arg(QApplication::applicationName())
 		.arg(QApplication::applicationVersion())
+		.arg(tr("GNU GPL, version 2 or later"))
 		.arg(QApplication::organizationDomain());
 
 	s.append("<b>" + tr("Supported hardware drivers:") + "</b><table>");
