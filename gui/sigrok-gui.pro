@@ -45,7 +45,7 @@ TRANSLATIONS  = locale/sigrok-gui_de_DE.ts \
                 locale/sigrok-gui_fr_FR.ts
 
 # CONFIG       += link_pkgconfig debug_and_release build_all
-CONFIG       += link_pkgconfig release
+CONFIG       += link_pkgconfig release warn_on
 
 # One entry per line to avoid issues on some OSes with some qmake versions.
 PKGCONFIG    += glib-2.0
