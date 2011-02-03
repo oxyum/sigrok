@@ -1,7 +1,7 @@
 /*
  * This file is part of the sigrok project.
  *
- * Copyright (C) 2010 Uwe Hermann <uwe@hermann-uwe.de>
+ * Copyright (C) 2010-2011 Uwe Hermann <uwe@hermann-uwe.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
+
+extern "C" {
+#include <sigrokdecode.h>
+}
 
 #include <QDebug>
 #include <QMessageBox>
@@ -153,12 +157,54 @@ int MainWindow::getNumChannels(void)
 
 void MainWindow::on_actionAbout_triggered()
 {
+	GSList *l;
+	struct sr_device_plugin *plugin;
+	struct sr_input_format **inputs;
+	struct sr_output_format **outputs;
+	struct srd_decoder *dec;
+
 	QString s = tr("%1 %2<br />\nCopyright (C) 2010 "
 		"Uwe Hermann &lt;uwe@hermann-uwe.de&gt;<br />\n"
-		"GNU GPL, version 2 or later<br /><a href=\"%3\">%3</a>\n")
+		"GNU GPL, version 2 or later<br /><a href=\"%3\">%3</a>\n<p>")
 		.arg(QApplication::applicationName())
 		.arg(QApplication::applicationVersion())
 		.arg(QApplication::organizationDomain());
+
+	s.append("<b>" + tr("Supported hardware drivers:") + "</b><table>");
+	for (l = list_hwplugins(); l; l = l->next) {
+		plugin = (struct sr_device_plugin *)l->data;
+		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			 .arg(QString(plugin->name))
+			 .arg(QString(plugin->longname)));
+	}
+	s.append("</table><p>");
+
+	s.append("<b>" + tr("Supported input formats:") + "</b><table>");
+	inputs = sr_input_list();
+	for (int i = 0; inputs[i]; ++i) {
+		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			 .arg(QString(inputs[i]->extension))
+			 .arg(QString(inputs[i]->description)));
+	}
+	s.append("</table><p>");
+
+	s.append("<b>" + tr("Supported output formats:") + "</b><table>");
+	outputs = sr_output_list();
+	for (int i = 0; outputs[i]; ++i) {
+		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			.arg(QString(outputs[i]->extension))
+			.arg(QString(outputs[i]->description)));
+	}
+	s.append("</table><p>");
+
+	s.append("<b>" + tr("Supported protocol decoders:") + "</b><table>");
+	for (l = srd_list_decoders(); l; l = l->next) {
+		dec = (struct srd_decoder *)l->data;
+		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			 .arg(QString(dec->id))
+			 .arg(QString(dec->desc)));
+	}
+	s.append("</table>");
 
 	QMessageBox::about(this, tr("About"), s);
 }
