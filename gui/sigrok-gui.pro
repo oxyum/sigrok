@@ -48,12 +48,13 @@ TRANSLATIONS  = locale/sigrok-gui_de_DE.ts \
 CONFIG       += link_pkgconfig release warn_on
 
 # One entry per line to avoid issues on some OSes with some qmake versions.
-PKGCONFIG     = gthread-2.0
-PKGCONFIG    += glib-2.0
-PKGCONFIG    += libusb-1.0
-PKGCONFIG    += libzip
+# Note: The order of the libs is VERY important, at least on MinGW!
+PKGCONFIG     = libsigrokdecode
 PKGCONFIG    += libsigrok
-PKGCONFIG    += libsigrokdecode
+PKGCONFIG    += libzip
+PKGCONFIG    += libusb-1.0
+PKGCONFIG    += glib-2.0
+PKGCONFIG    += gthread-2.0
 
 RESOURCES    += sigrok-gui.qrc
 
