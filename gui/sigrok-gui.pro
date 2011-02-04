@@ -1,7 +1,7 @@
 ##
 ## This file is part of the sigrok project.
 ##
-## Copyright (C) 2010 Uwe Hermann <uwe@hermann-uwe.de>
+## Copyright (C) 2010-2011 Uwe Hermann <uwe@hermann-uwe.de>
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -44,19 +44,41 @@ TRANSLATIONS  = locale/sigrok-gui_de_DE.ts \
                 locale/sigrok-gui_nl_NL.ts \
                 locale/sigrok-gui_fr_FR.ts
 
-# CONFIG       += link_pkgconfig debug_and_release build_all
-CONFIG       += link_pkgconfig release warn_on
-
-# One entry per line to avoid issues on some OSes with some qmake versions.
-# Note: The order of the libs is VERY important, at least on MinGW!
-PKGCONFIG     = libsigrokdecode
-PKGCONFIG    += libsigrok
-PKGCONFIG    += libzip
-PKGCONFIG    += libusb-1.0
-PKGCONFIG    += glib-2.0
-PKGCONFIG    += gthread-2.0
+CONFIG       += release warn_on
 
 RESOURCES    += sigrok-gui.qrc
+
+# Note: The order of the libs is VERY important, at least on MinGW!
+
+QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrokdecode)
+LIBS           += $$system(pkg-config --libs   libsigrokdecode)
+
+QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrok)
+LIBS           += $$system(pkg-config --libs   libsigrok)
+
+QMAKE_CXXFLAGS += $$system(pkg-config --cflags libzip)
+LIBS           += $$system(pkg-config --libs   libzip)
+
+QMAKE_CXXFLAGS += $$system(pkg-config --cflags libusb-1.0)
+LIBS           += $$system(pkg-config --libs   libusb-1.0)
+
+QMAKE_CXXFLAGS += $$system(pkg-config --cflags glib-2.0)
+LIBS           += $$system(pkg-config --libs   glib-2.0)
+
+QMAKE_CXXFLAGS += $$system(pkg-config --cflags gthread-2.0)
+LIBS           += $$system(pkg-config --libs   gthread-2.0)
+
+# Python
+win32 {
+	# We currently hardcode the paths to the Python 2.6 default install
+	# location as there's no 'python-config' script on Windows, it seems.
+	LIBS           += -Lc:/Python26/libs -lpython26
+	QMAKE_CXXFLAGS += -I'c:/Python26/include'
+} else {
+	# Linux and Mac OS X have 'python-config', let's hope the rest too...
+	LIBS        += $$system(python-config --ldflags)
+	QMAKE_CXXFLAGS += $$system(python-config --includes)
+}
 
 # Installation
 target.path   = /usr/local/bin
@@ -64,22 +86,6 @@ locale.path   = /usr/local/share/sigrok/translations
 locale.files  = locale/*.qm
 locale.extra  = lrelease sigrok-gui.pro
 INSTALLS     += target locale
-
-# Python
-win32 {
-	# We currently hardcode the paths to the Python 2.6 default install
-	# location as there's no 'python-config' script on Windows, it seems.
-	LIBS        += -Lc:/Python26/libs -lpython26
-	INCLUDEPATH += c:/Python26/include
-} else {
-	# Linux and Mac OS X have 'python-config', let's hope the rest too...
-	LIBS        += $$system(python-config --ldflags)
-	# Yuck. We have to use 'sed' magic here as 'python-config' returns
-	# the include paths with prefixed '-I' but the qmake INCLUDEPATH
-	# variable expects them _without_ the prefixed '-I' (and adds
-	# those itself).
-	INCLUDEPATH += $$system(python-config --includes | sed s/-I//g)
-}
 
 win32 {
 	RC_FILE = sigrok-gui.rc
