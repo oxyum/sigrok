@@ -321,7 +321,7 @@ static void datafeed_in(struct sr_device *device,
 			} else {
 				/* saving to a file in whatever format was set
 				 * with --format, so all we need is a filehandle */
-				outfile = fopen(opt_output_file, "w");
+				outfile = fopen(opt_output_file, "wb");
 			}
 		}
 		break;
