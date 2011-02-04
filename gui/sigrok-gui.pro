@@ -25,6 +25,8 @@ TEMPLATE      = app
 VERSION       = 0.1
 DEFINES      += APP_VERSION=\\\"$$VERSION\\\"
 
+UNAME         = $$system(uname -s)
+
 SOURCES      += main.cpp \
 	        mainwindow.cpp \
 	        configform.cpp \
@@ -59,8 +61,11 @@ LIBS           += $$system(pkg-config --libs   libsigrok)
 QMAKE_CXXFLAGS += $$system(pkg-config --cflags libzip)
 LIBS           += $$system(pkg-config --libs   libzip)
 
+# FreeBSD comes with an "integrated" libusb-1.0-style USB API.
+!contains(UNAME, FreeBSD) {
 QMAKE_CXXFLAGS += $$system(pkg-config --cflags libusb-1.0)
 LIBS           += $$system(pkg-config --libs   libusb-1.0)
+}
 
 QMAKE_CXXFLAGS += $$system(pkg-config --cflags glib-2.0)
 LIBS           += $$system(pkg-config --libs   glib-2.0)
