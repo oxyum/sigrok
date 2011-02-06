@@ -73,3 +73,12 @@ void DecodersForm::on_closeButton_clicked()
 {
 	close();
 }
+
+void DecodersForm::on_listWidget_currentItemChanged(QListWidgetItem *current,
+						    QListWidgetItem *previous)
+{
+	if (!current)
+		current = previous;
+
+	ui->stackedWidget->setCurrentIndex(ui->listWidget->row(current));
+}

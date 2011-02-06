@@ -22,6 +22,7 @@
 #define DECODERSFORM_H
 
 #include <QDialog>
+#include <QListWidgetItem>
 
 /* TODO: Don't hardcode maximum number of decoders. */
 #define MAX_NUM_DECODERS 64
@@ -43,6 +44,8 @@ private:
 	Ui::DecodersForm *ui;
 
 private slots:
+	void on_listWidget_currentItemChanged(QListWidgetItem *current,
+					      QListWidgetItem *previous);
 	void on_closeButton_clicked();
 };
 
