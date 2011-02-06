@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <sigrok.h>
 #include "sigrok-cli.h"
 #include "config.h"
