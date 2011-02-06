@@ -61,6 +61,11 @@ ATTRS{idVendor}=="0403", ATTRS{idProduct}=="dc48", MODE="664", GROUP="plugdev"
 # lsusb: "3195:f190 Silicon Labs"
 ATTRS{idVendor}=="3195", ATTRS{idProduct}=="f190", MODE="664", GROUP="plugdev"
 
+# Microchip PICkit2
+# http://www.microchip.com/pickit2
+# lsusb: "04d8:0033 Microchip Technology, Inc. PICkit2"
+ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="0033", MODE="664", GROUP="plugdev"
+
 # Openbench Logic Sniffer
 # http://www.gadgetfactory.net/gf/project/butterflylogic/
 # http://dangerousprototypes.com/open-logic-sniffer/
