@@ -34,6 +34,8 @@ extern "C" {
 #include "ui_configform.h"
 #include "channelform.h"
 #include "ui_channelform.h"
+#include "decodersform.h"
+#include "ui_decodersform.h"
 
 extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -726,3 +728,8 @@ void MainWindow::updateScrollBars(int value)
 	lock = 0;
 }
 
+void MainWindow::on_actionConfigure_triggered()
+{
+	DecodersForm *form = new DecodersForm();
+	form->show();
+}

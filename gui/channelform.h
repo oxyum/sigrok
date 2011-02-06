@@ -81,4 +81,4 @@ private:
 	int scrollBarValue;
 };
 
-#endif // SIGROK_CHANNELFORM_H
+#endif

@@ -74,6 +74,7 @@ public slots:
 	void configChannelTitleBarLayoutChanged(int index);
 
 private slots:
+	void on_actionConfigure_triggered();
 	void on_action_New_triggered();
 	void on_action_Get_samples_triggered();
 	void on_action_Save_as_triggered();

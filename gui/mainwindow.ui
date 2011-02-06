@@ -274,6 +274,9 @@
   </action>
   <action name="actionConfigure">
    <property name="text">
+    <string>&amp;Configure</string>
+   </property>
+   <property name="toolTip">
     <string>Configure</string>
    </property>
   </action>

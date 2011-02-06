@@ -1,7 +1,7 @@
 /*
  * This file is part of the sigrok project.
  *
- * Copyright (C) 2010 Uwe Hermann <uwe@hermann-uwe.de>
+ * Copyright (C) 2011 Uwe Hermann <uwe@hermann-uwe.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,29 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef SIGROK_SAMPLEIODEVICE_H
-#define SIGROK_SAMPLEIODEVICE_H
+#include "decodersform.h"
+#include "ui_decodersform.h"
 
-#include <QIODevice>
-
-class SampleIODevice : public QIODevice
+DecodersForm::DecodersForm(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::DecodersForm)
 {
-public:
-	SampleIODevice();
-	~SampleIODevice();
-	bool open(OpenMode openMode);
+	ui->setupUi(this);
+}
 
-protected:
-	qint64 readData(char *data, qint64 maxlen);
-	qint64 writeData(const char *data, qint64 len);
-	bool isSequential() const;
-	qint64 bytesAvailable() const;
-};
+DecodersForm::~DecodersForm()
+{
+	delete ui;
+}
 
-#endif
+void DecodersForm::changeEvent(QEvent *e)
+{
+	QDialog::changeEvent(e);
+	switch (e->type()) {
+	case QEvent::LanguageChange:
+		ui->retranslateUi(this);
+		break;
+	default:
+		break;
+	}
+}
