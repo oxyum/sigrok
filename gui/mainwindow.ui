@@ -122,7 +122,7 @@
      <x>0</x>
      <y>0</y>
      <width>880</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -141,12 +141,6 @@
     <addaction name="actionAbout_Qt"/>
     <addaction name="actionAbout"/>
    </widget>
-   <widget class="QMenu" name="menuEdit">
-    <property name="title">
-     <string>&amp;Edit</string>
-    </property>
-    <addaction name="actionPreferences"/>
-   </widget>
    <widget class="QMenu" name="menuHardware">
     <property name="title">
      <string>Device</string>
@@ -154,9 +148,22 @@
     <addaction name="actionScan"/>
     <addaction name="action_Get_samples"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="actionPreferences"/>
+   </widget>
+   <widget class="QMenu" name="menuDecoders">
+    <property name="title">
+     <string>Decoders</string>
+    </property>
+    <addaction name="actionConfigure"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuHardware"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuDecoders"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -263,6 +270,11 @@
    </property>
    <property name="text">
     <string>&amp;Get samples...</string>
+   </property>
+  </action>
+  <action name="actionConfigure">
+   <property name="text">
+    <string>Configure</string>
    </property>
   </action>
  </widget>
