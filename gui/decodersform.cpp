@@ -32,22 +32,31 @@ DecodersForm::DecodersForm(QWidget *parent) :
     ui(new Ui::DecodersForm)
 {
 	int i;
-	GSList *l;
+	GSList *ll;
 	struct srd_decoder *dec;
 	QWidget *pages[MAX_NUM_DECODERS];
 
 	ui->setupUi(this);
 
-	for (l = srd_list_decoders(), i = 0; l; l = l->next, ++i) {
-		dec = (struct srd_decoder *)l->data;
+	for (ll = srd_list_decoders(), i = 0; ll; ll = ll->next, ++i) {
+		dec = (struct srd_decoder *)ll->data;
 
 		/* Add the decoder to the list. */
-		new QListWidgetItem(QString(dec->id), ui->listWidget);
+		new QListWidgetItem(QString(dec->name), ui->listWidget);
 
 		/* Add a page for the decoder details. */
-		pages[i] = new QLabel(QString("Test %1").arg(i));
+		pages[i] = new QWidget;
 
-		/* Add the widget as "Details" page for the current decoder. */
+		/* Add some decoder data to that page. */
+		QVBoxLayout *l = new QVBoxLayout;
+		l->addWidget(new QLabel("ID: " + QString(dec->id)));
+		l->addWidget(new QLabel("Name: " + QString(dec->name)));
+		l->addWidget(new QLabel("Desc: " + QString(dec->desc)));
+		l->insertStretch(-1);
+
+		pages[i]->setLayout(l);
+
+		/* Add the decoder's page to the stackedWidget. */
 		ui->stackedWidget->addWidget(pages[i]);
 	}
 }
