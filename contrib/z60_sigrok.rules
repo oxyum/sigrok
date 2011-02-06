@@ -66,6 +66,12 @@ ATTRS{idVendor}=="3195", ATTRS{idProduct}=="f190", MODE="664", GROUP="plugdev"
 # lsusb: "04d8:0033 Microchip Technology, Inc. PICkit2"
 ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="0033", MODE="664", GROUP="plugdev"
 
+# RockyLogic Ant18e
+# http://www.rockylogic.com/products/ant18e.html
+# lsusb: "0403:f918 Future Technology Devices International,
+#        Ltd Ant8 Logic Probe"
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="f918", MODE="664", GROUP="plugdev"
+
 # Openbench Logic Sniffer
 # http://www.gadgetfactory.net/gf/project/butterflylogic/
 # http://dangerousprototypes.com/open-logic-sniffer/
