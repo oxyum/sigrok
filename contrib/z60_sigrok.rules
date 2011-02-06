@@ -39,6 +39,11 @@ ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0498", MODE="664", GROUP="plugdev"
 # http://dangerousprototypes.com/2009/11/03/bus-pirate-logic-analyzer-mode/
 # lsusb "0403:6001 Future Technology Devices International,
 #        Ltd FT232 USB-Serial (UART) IC"
+#
+# ChronoVu LA8
+# http://www.chronovu.com/
+# lsusb "0403:6001 Future Technology Devices International,
+#       Ltd FT232 USB-Serial (UART) IC"
 ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="664", GROUP="plugdev"
 
 # CWAV USBee SX
