@@ -23,6 +23,9 @@
 
 #include <QDialog>
 
+/* TODO: Don't hardcode maximum number of decoders. */
+#define MAX_NUM_DECODERS 64
+
 namespace Ui {
 	class DecodersForm;
 }

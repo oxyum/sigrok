@@ -18,6 +18,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+extern "C" {
+#include <sigrokdecode.h>
+#include <glib.h>
+}
+
+#include <QLabel>
 #include "decodersform.h"
 #include "ui_decodersform.h"
 
@@ -25,7 +31,25 @@ DecodersForm::DecodersForm(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DecodersForm)
 {
+	int i;
+	GSList *l;
+	struct srd_decoder *dec;
+	QWidget *pages[MAX_NUM_DECODERS];
+
 	ui->setupUi(this);
+
+	for (l = srd_list_decoders(), i = 0; l; l = l->next, ++i) {
+		dec = (struct srd_decoder *)l->data;
+
+		/* Add the decoder to the list. */
+		new QListWidgetItem(QString(dec->id), ui->listWidget);
+
+		/* Add a page for the decoder details. */
+		pages[i] = new QLabel(QString("Test %1").arg(i));
+
+		/* Add the widget as "Details" page for the current decoder. */
+		ui->stackedWidget->addWidget(pages[i]);
+	}
 }
 
 DecodersForm::~DecodersForm()
