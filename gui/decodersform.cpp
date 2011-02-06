@@ -51,7 +51,12 @@ DecodersForm::DecodersForm(QWidget *parent) :
 		QVBoxLayout *l = new QVBoxLayout;
 		l->addWidget(new QLabel("ID: " + QString(dec->id)));
 		l->addWidget(new QLabel("Name: " + QString(dec->name)));
+		l->addWidget(new QLabel("Long name: " + QString(dec->longname)));
 		l->addWidget(new QLabel("Desc: " + QString(dec->desc)));
+		l->addWidget(new QLabel("Long desc: " + QString(dec->longdesc)));
+		l->addWidget(new QLabel("Author: " + QString(dec->author)));
+		l->addWidget(new QLabel("Email: " + QString(dec->email)));
+		l->addWidget(new QLabel("License: " + QString(dec->license)));
 		l->insertStretch(-1);
 
 		pages[i]->setLayout(l);
