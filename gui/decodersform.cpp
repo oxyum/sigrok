@@ -44,3 +44,8 @@ void DecodersForm::changeEvent(QEvent *e)
 		break;
 	}
 }
+
+void DecodersForm::on_closeButton_clicked()
+{
+	close();
+}

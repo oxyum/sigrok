@@ -38,6 +38,9 @@ protected:
 
 private:
 	Ui::DecodersForm *ui;
+
+private slots:
+	void on_closeButton_clicked();
 };
 
 #endif
