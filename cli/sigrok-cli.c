@@ -174,7 +174,7 @@ static void show_device_detail(void)
 {
 	struct sr_device *device;
 	struct hwcap_option *hwo;
-	struct samplerates *samplerates;
+	struct sr_samplerates *samplerates;
 	int cap, *capabilities, i;
 	char *s, *title, *charopts, **stropts;
 

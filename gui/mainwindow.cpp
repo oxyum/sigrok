@@ -227,7 +227,7 @@ void MainWindow::on_actionScan_triggered()
 	int num_devices, pos;
 	struct sr_device *device;
 	char *di_num_probes, *str;
-	struct samplerates *samplerates;
+	struct sr_samplerates *samplerates;
 	const static float mult[] = { 2.f, 2.5f, 2.f };
 
 	statusBar()->showMessage(tr("Scanning for logic analyzers..."), 2000);
@@ -282,7 +282,7 @@ void MainWindow::on_actionScan_triggered()
 	s = QString(tr("Channels: %1")).arg(getNumChannels());
 	ui->labelChannels->setText(s);
 
-	samplerates = (struct samplerates *)device->plugin->get_device_info(
+	samplerates = (struct sr_samplerates *)device->plugin->get_device_info(
 		      device->plugin_index, SR_DI_SAMPLERATES);
 	if (!samplerates) {
 		/* TODO: Error handling. */
