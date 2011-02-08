@@ -482,7 +482,7 @@ static int select_probes(struct sr_device *device)
 			sr_device_probe_name(device, i + 1, probelist[i]);
 			g_free(probelist[i]);
 		} else {
-			probe = probe_find(device, i + 1);
+			probe = sr_device_probe_find(device, i + 1);
 			probe->enabled = FALSE;
 		}
 	}
