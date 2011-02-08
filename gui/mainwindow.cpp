@@ -451,7 +451,7 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	static int probelist[65] = {0};
 	static uint64_t received_samples = 0;
 	static int triggered = 0;
-	struct probe *probe;
+	struct sr_probe *probe;
 	struct sr_datafeed_header *header;
 	int num_enabled_probes, sample_size;
 	uint64_t sample;
@@ -474,7 +474,7 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 		num_probes = header->num_logic_probes;
 		num_enabled_probes = 0;
 		for (int i = 0; i < header->num_logic_probes; ++i) {
-			probe = (struct probe *)g_slist_nth_data(device->probes, i);
+			probe = (struct sr_probe *)g_slist_nth_data(device->probes, i);
 			if (probe->enabled)
 				probelist[num_enabled_probes++] = probe->index;
 		}

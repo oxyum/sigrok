@@ -265,7 +265,7 @@ static void datafeed_in(struct sr_device *device,
 	static int unitsize = 0;
 	static int triggered = 0;
 	static FILE *outfile = NULL;
-	struct probe *probe;
+	struct sr_probe *probe;
 	struct sr_datafeed_header *header;
 	int num_enabled_probes, sample_size, ret, i;
 	uint64_t output_len, filter_out_len, dec_out_size;
@@ -460,7 +460,7 @@ static int register_pds(struct sr_device *device, const char *pdstring)
 
 static int select_probes(struct sr_device *device)
 {
-	struct probe *probe;
+	struct sr_probe *probe;
 	char **probelist;
 	int max_probes, i;
 
