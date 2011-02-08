@@ -314,7 +314,7 @@ static void datafeed_in(struct sr_device *device,
 				 * dump everything in the datastore as it comes in,
 				 * and save from there after the session. */
 				outfile = NULL;
-				ret = datastore_new(unitsize, &(device->datastore));
+				ret = sr_datastore_new(unitsize, &(device->datastore));
 				if (ret != SR_OK) {
 					printf("Failed to create datastore.\n");
 					exit(1);
@@ -401,8 +401,8 @@ static void datafeed_in(struct sr_device *device,
 		filter_out_len = limit_samples * sample_size - received_samples;
 
 	if (device->datastore)
-		datastore_put(device->datastore, filter_out,
-			      filter_out_len, sample_size, probelist);
+		sr_datastore_put(device->datastore, filter_out,
+				 filter_out_len, sample_size, probelist);
 
 	if (opt_output_file && default_output_format)
 		/* saving to a session file, don't need to do anything else
