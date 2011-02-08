@@ -347,7 +347,7 @@ static void datafeed_in(struct sr_device *device,
 		if (opt_continuous)
 			printf("Device stopped after %" PRIu64 " samples.\n",
 			       received_samples);
-		session_halt();
+		sr_session_halt();
 		if (outfile && outfile != stdout)
 			fclose(outfile);
 		free(o);
@@ -534,32 +534,32 @@ static void load_input_file_format(void)
 	if (select_probes(in->vdevice) > 0)
             return;
 
-	session_new();
-	session_datafeed_callback_add(datafeed_in);
-	if (session_device_add(in->vdevice) != SR_OK) {
+	sr_session_new();
+	sr_session_datafeed_callback_add(datafeed_in);
+	if (sr_session_device_add(in->vdevice) != SR_OK) {
 		printf("Failed to use device.\n");
-		session_destroy();
+		sr_session_destroy();
 		return;
 	}
 
 	input_format->loadfile(in, opt_input_file);
 	if (opt_output_file && default_output_format) {
-		if (session_save(opt_output_file) != SR_OK)
+		if (sr_session_save(opt_output_file) != SR_OK)
 			printf("Failed to save session.\n");
 	}
-	session_destroy();
+	sr_session_destroy();
 
 }
 
 static void load_input_file(void)
 {
 
-	if (session_load(opt_input_file) == SR_OK) {
+	if (sr_session_load(opt_input_file) == SR_OK) {
 		/* sigrok session file */
-		session_datafeed_callback_add(datafeed_in);
-		session_start();
-		session_run();
-		session_stop();
+		sr_session_datafeed_callback_add(datafeed_in);
+		sr_session_start();
+		sr_session_run();
+		sr_session_stop();
 	}
 	else {
 		/* fall back on input modules */
@@ -671,18 +671,18 @@ static void run_session(void)
 		}
 	}
 
-	session_new();
-	session_datafeed_callback_add(datafeed_in);
+	sr_session_new();
+	sr_session_datafeed_callback_add(datafeed_in);
 
-	if (session_device_add(device) != SR_OK) {
+	if (sr_session_device_add(device) != SR_OK) {
 		printf("Failed to use device.\n");
-		session_destroy();
+		sr_session_destroy();
 		return;
 	}
 
 	if (devargs) {
 		if (set_device_options(device, devargs) != SR_OK) {
-			session_destroy();
+			sr_session_destroy();
 			return;
 		}
 		g_hash_table_destroy(devargs);
@@ -695,7 +695,7 @@ static void run_session(void)
 		capabilities = device->plugin->get_capabilities();
 		if (!find_hwcap(capabilities, SR_HWCAP_CONTINUOUS)) {
 			printf("This device does not support continuous sampling.");
-			session_destroy();
+			sr_session_destroy();
 			return;
 		}
 	}
@@ -703,7 +703,7 @@ static void run_session(void)
 	if (opt_triggers) {
 		probelist = sr_parse_triggerstring(device, opt_triggers);
 		if (!probelist) {
-			session_destroy();
+			sr_session_destroy();
 			return;
 		}
 
@@ -721,7 +721,7 @@ static void run_session(void)
 		time_msec = sr_parse_timestring(opt_time);
 		if (time_msec == 0) {
 			printf("Invalid time '%s'\n", opt_time);
-			session_destroy();
+			sr_session_destroy();
 			return;
 		}
 
@@ -730,7 +730,7 @@ static void run_session(void)
 			if (device->plugin->set_configuration(device->plugin_index,
 							  SR_HWCAP_LIMIT_MSEC, &time_msec) != SR_OK) {
 				printf("Failed to configure time limit.\n");
-				session_destroy();
+				sr_session_destroy();
 				return;
 			}
 		}
@@ -746,14 +746,14 @@ static void run_session(void)
 			}
 			if (limit_samples == 0) {
 				printf("Not enough time at this samplerate.\n");
-				session_destroy();
+				sr_session_destroy();
 				return;
 			}
 
 			if (device->plugin->set_configuration(device->plugin_index,
 						  SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
 				printf("Failed to configure time-based sample limit.\n");
-				session_destroy();
+				sr_session_destroy();
 				return;
 			}
 		}
@@ -764,7 +764,7 @@ static void run_session(void)
 		if (device->plugin->set_configuration(device->plugin_index,
 					  SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
 			printf("Failed to configure sample limit.\n");
-			session_destroy();
+			sr_session_destroy();
 			return;
 		}
 	}
@@ -772,29 +772,29 @@ static void run_session(void)
 	if (device->plugin->set_configuration(device->plugin_index,
 		  SR_HWCAP_PROBECONFIG, (char *)device->probes) != SR_OK) {
 		printf("Failed to configure probes.\n");
-		session_destroy();
+		sr_session_destroy();
 		return;
 	}
 
-	if (session_start() != SR_OK) {
+	if (sr_session_start() != SR_OK) {
 		printf("Failed to start session.\n");
-		session_destroy();
+		sr_session_destroy();
 		return;
 	}
 
 	if (opt_continuous)
 		add_anykey();
 
-	session_run();
+	sr_session_run();
 
 	if (opt_continuous)
 		clear_anykey();
 
 	if (opt_output_file && default_output_format) {
-		if (session_save(opt_output_file) != SR_OK)
+		if (sr_session_save(opt_output_file) != SR_OK)
 			printf("Failed to save session.\n");
 	}
-	session_destroy();
+	sr_session_destroy();
 
 }
 

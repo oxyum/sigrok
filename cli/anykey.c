@@ -44,7 +44,7 @@ static int received_anykey(int fd, int revents, void *user_data)
 	revents = revents;
 	user_data = user_data;
 
-	session_stop();
+	sr_session_stop();
 
 	return TRUE;
 }
@@ -69,7 +69,7 @@ void add_anykey(void)
 	tcsetattr(STDIN_FILENO, TCSADRAIN, &term);
 #endif
 
-	session_source_add(STDIN_FILENO, G_IO_IN, -1, received_anykey, NULL);
+	sr_session_source_add(STDIN_FILENO, G_IO_IN, -1, received_anykey, NULL);
 
 	printf("Press any key to stop acquisition.\n");
 }

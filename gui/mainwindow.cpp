@@ -490,7 +490,7 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	case SR_DF_END:
 		qDebug("SR_DF_END");
 		/* TODO: o */
-		session_halt();
+		sr_session_halt();
 		progress->setValue(received_samples); /* FIXME */
 		break;
 	case SR_DF_TRIGGER:
@@ -552,8 +552,8 @@ void MainWindow::on_action_Get_samples_triggered()
 		return;
 	}
 
-	session_new();
-	session_datafeed_callback_add(datafeed_in);
+	sr_session_new();
+	sr_session_datafeed_callback_add(datafeed_in);
 
 	device = (struct sr_device *)g_slist_nth_data(devices, opt_device);
 
@@ -562,9 +562,9 @@ void MainWindow::on_action_Get_samples_triggered()
 	device->plugin->set_configuration(device->plugin_index,
 		SR_HWCAP_LIMIT_SAMPLES, (char *)numBuf);
 
-	if (session_device_add(device) != SR_OK) {
+	if (sr_session_device_add(device) != SR_OK) {
 		qDebug("Failed to use device.");
-		session_destroy();
+		sr_session_destroy();
 		return;
 	}
 
@@ -572,20 +572,20 @@ void MainWindow::on_action_Get_samples_triggered()
 	if (device->plugin->set_configuration(device->plugin_index,
 	    SR_HWCAP_SAMPLERATE, &samplerate) != SR_OK) {
 		qDebug("Failed to set sample rate.");
-		session_destroy();
+		sr_session_destroy();
 		return;
 	};
 
 	if (device->plugin->set_configuration(device->plugin_index,
 	    SR_HWCAP_PROBECONFIG, (char *)device->probes) != SR_OK) {
 		qDebug("Failed to configure probes.");
-		session_destroy();
+		sr_session_destroy();
 		return;
 	}
 
-	if (session_start() != SR_OK) {
+	if (sr_session_start() != SR_OK) {
 		qDebug("Failed to start session.");
-		session_destroy();
+		sr_session_destroy();
 		return;
 	}
 
@@ -594,10 +594,10 @@ void MainWindow::on_action_Get_samples_triggered()
 	progress->setWindowModality(Qt::WindowModal);
 	progress->setMinimumDuration(100);
 
-	session_run();
+	sr_session_run();
 
-	session_halt();
-	session_destroy();
+	sr_session_halt();
+	sr_session_destroy();
 
 	for (int i = 0; i < getNumChannels(); ++i) {
 		channelForms[i]->setChannelNumber(i);
