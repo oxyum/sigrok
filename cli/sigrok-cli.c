@@ -148,7 +148,7 @@ static void show_device_list(void)
 	int devcnt;
 
 	devcnt = 0;
-	devices = device_list();
+	devices = sr_device_list();
 
 	if (g_slist_length(devices) == 0)
 		return;
@@ -479,7 +479,7 @@ static int select_probes(struct sr_device *device)
 
 	for (i = 0; i < max_probes; i++) {
 		if (probelist[i]) {
-			device_probe_name(device, i + 1, probelist[i]);
+			sr_device_probe_name(device, i + 1, probelist[i]);
 			g_free(probelist[i]);
 		} else {
 			probe = probe_find(device, i + 1);
@@ -575,7 +575,7 @@ int num_real_devices(void)
 	int num_devices;
 
 	num_devices = 0;
-	devices = device_list();
+	devices = sr_device_list();
 	for (l = devices; l; l = l->next) {
 		device = l->data;
 		if (!strstr(device->plugin->name, "demo"))
@@ -710,7 +710,7 @@ static void run_session(void)
 		max_probes = g_slist_length(device->probes);
 		for (i = 0; i < max_probes; i++) {
 			if (probelist[i]) {
-				device_trigger_set(device, i + 1, probelist[i]);
+				sr_device_trigger_set(device, i + 1, probelist[i]);
 				g_free(probelist[i]);
 			}
 		}
@@ -739,7 +739,7 @@ static void run_session(void)
 			 * convert to samples based on the samplerate.
 			 */
 			limit_samples = 0;
-			if (device_has_hwcap(device, SR_HWCAP_SAMPLERATE)) {
+			if (sr_device_has_hwcap(device, SR_HWCAP_SAMPLERATE)) {
 				tmp_u64 = *((uint64_t *) device->plugin->get_device_info(
 						device->plugin_index, SR_DI_CUR_SAMPLERATE));
 				limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;

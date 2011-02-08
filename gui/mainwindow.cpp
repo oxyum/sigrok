@@ -232,8 +232,8 @@ void MainWindow::on_actionScan_triggered()
 
 	statusBar()->showMessage(tr("Scanning for logic analyzers..."), 2000);
 
-	device_scan();
-	devices = device_list();
+	sr_device_scan();
+	devices = sr_device_list();
 	num_devices = g_slist_length(devices);
 
 	ui->comboBoxLA->clear();
@@ -260,7 +260,7 @@ void MainWindow::on_actionScan_triggered()
 				s.append(", ");
 		}
 		statusBar()->showMessage(s, 2000);
-		device_close_all();
+		sr_device_close_all();
 		return;
 	}
 

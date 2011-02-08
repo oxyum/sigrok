@@ -144,7 +144,7 @@ struct sr_device *parse_devicestring(const char *devicestring)
 			return NULL;
 
 		device_cnt = 0;
-		devices = device_list();
+		devices = sr_device_list();
 		for (l = devices; l; l = l->next) {
 			d = l->data;
 			if (strstr(d->plugin->name, "demo"))
@@ -167,9 +167,9 @@ struct sr_device *parse_devicestring(const char *devicestring)
 			plugin = p->data;
 			if (strcmp(plugin->name, devicestring))
 				continue;
-			num_devices = device_plugin_init(plugin);
+			num_devices = sr_device_plugin_init(plugin);
 			if (num_devices == 1) {
-				devices = device_list();
+				devices = sr_device_list();
 				device = devices->data;
 			} else if (num_devices > 1) {
 				printf("driver '%s' found %d devices, select by ID instead.\n",
