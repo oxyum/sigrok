@@ -36,7 +36,7 @@
 
 #define DEFAULT_OUTPUT_FORMAT "bits:width=64"
 
-extern struct hwcap_option hwcap_options[];
+extern struct sr_hwcap_option sr_hwcap_options[];
 
 gboolean debug = 0;
 uint64_t limit_samples = 0;
@@ -173,7 +173,7 @@ static void show_device_list(void)
 static void show_device_detail(void)
 {
 	struct sr_device *device;
-	struct hwcap_option *hwo;
+	struct sr_hwcap_option *hwo;
 	struct sr_samplerates *samplerates;
 	int cap, *capabilities, i;
 	char *s, *title, *charopts, **stropts;
@@ -199,7 +199,7 @@ static void show_device_detail(void)
 	title = "Supported options:\n";
 	capabilities = device->plugin->get_capabilities();
 	for (cap = 0; capabilities[cap]; cap++) {
-		if (!(hwo = find_hwcap_option(capabilities[cap])))
+		if (!(hwo = sr_find_hwcap_option(capabilities[cap])))
 			continue;
 
 		if (title) {
@@ -596,27 +596,27 @@ int set_device_options(struct sr_device *device, GHashTable *args)
 	g_hash_table_iter_init(&iter, args);
 	while (g_hash_table_iter_next(&iter, &key, &value)) {
 		found = FALSE;
-		for (i = 0; hwcap_options[i].capability; i++) {
-			if (strcmp(hwcap_options[i].shortname, key))
+		for (i = 0; sr_hwcap_options[i].capability; i++) {
+			if (strcmp(sr_hwcap_options[i].shortname, key))
 				continue;
-			if (value == NULL && hwcap_options[i].type != SR_T_NULL) {
+			if (value == NULL && sr_hwcap_options[i].type != SR_T_NULL) {
 				printf("Option '%s' needs a value.\n", (char *)key);
 				return SR_ERR;
 			}
 			found = TRUE;
-			switch (hwcap_options[i].type) {
+			switch (sr_hwcap_options[i].type) {
 			case SR_T_UINT64:
 				tmp_u64 = sr_parse_sizestring(value);
 				ret = device->plugin-> set_configuration(device-> plugin_index,
-						hwcap_options[i]. capability, &tmp_u64);
+						sr_hwcap_options[i]. capability, &tmp_u64);
 				break;
 			case SR_T_CHAR:
 				ret = device->plugin-> set_configuration(device-> plugin_index,
-						hwcap_options[i]. capability, value);
+						sr_hwcap_options[i]. capability, value);
 				break;
 			case SR_T_NULL:
 				ret = device->plugin-> set_configuration(device-> plugin_index,
-						hwcap_options[i]. capability, NULL);
+						sr_hwcap_options[i]. capability, NULL);
 				break;
 			default:
 				ret = SR_ERR;
@@ -693,7 +693,7 @@ static void run_session(void)
 
 	if (opt_continuous) {
 		capabilities = device->plugin->get_capabilities();
-		if (!find_hwcap(capabilities, SR_HWCAP_CONTINUOUS)) {
+		if (!sr_find_hwcap(capabilities, SR_HWCAP_CONTINUOUS)) {
 			printf("This device does not support continuous sampling.");
 			sr_session_destroy();
 			return;
@@ -726,7 +726,7 @@ static void run_session(void)
 		}
 
 		capabilities = device->plugin->get_capabilities();
-		if (find_hwcap(capabilities, SR_HWCAP_LIMIT_MSEC)) {
+		if (sr_find_hwcap(capabilities, SR_HWCAP_LIMIT_MSEC)) {
 			if (device->plugin->set_configuration(device->plugin_index,
 							  SR_HWCAP_LIMIT_MSEC, &time_msec) != SR_OK) {
 				printf("Failed to configure time limit.\n");
