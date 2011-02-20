@@ -379,9 +379,9 @@ static void datafeed_in(struct sr_device *device,
 
 	if (packet->type == SR_DF_LOGIC) {
 		/* filters only support SR_DF_LOGIC */
-		ret = filter_probes(sample_size, unitsize, probelist,
-				    packet->payload, packet->length,
-				    &filter_out, &filter_out_len);
+		ret = sr_filter_probes(sample_size, unitsize, probelist,
+				       packet->payload, packet->length,
+				       &filter_out, &filter_out_len);
 		if (ret != SR_OK)
 			return;
 	} else {
