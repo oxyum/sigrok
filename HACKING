@@ -19,6 +19,16 @@ Python idioms as far as it makes sense, but they should also indent the
 code with extactly one tab.
 
 
+Release engineering
+-------------------
+
+See
+
+ http://sigrok.org/wiki/Developers/Release_process
+
+for a list of items that need to be done when releasing a new tarball.
+
+
 Creating a Windows installer
 ----------------------------
 
