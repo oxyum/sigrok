@@ -22,8 +22,6 @@
 
 /* sigrok-cli.c */
 int num_real_devices(void);
-void add_source(int fd, int events, int timeout,
-		receive_data_callback callback, void *user_data);
 
 /* parsers.c */
 char **parse_probestring(int max_probes, const char *probestring);
