@@ -132,7 +132,7 @@ fi
 # Checks for libraries.
 
 # libglib-2.0 is always needed.
-AM_PATH_GLIB_2_0(2.0.0,
+AM_PATH_GLIB_2_0(2.22.0,
 	CFLAGS="$CFLAGS $GLIB_CFLAGS"; LIBS="$LIBS $GLIB_LIBS")
 
 # libgthread-2.0 is always needed (e.g. for the demo hardware driver).
