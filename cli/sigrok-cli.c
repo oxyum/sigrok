@@ -131,13 +131,15 @@ static void print_device_line(struct sr_device *device)
 	struct sr_device_instance *sdi;
 
 	sdi = device->plugin->get_device_info(device->plugin_index, SR_DI_INSTANCE);
-	printf("%s", sdi->vendor);
+
+	if (sdi->vendor && sdi->vendor[0])
+		printf("%s ", sdi->vendor);
 	if (sdi->model && sdi->model[0])
-		printf(" %s", sdi->model);
+		printf("%s ", sdi->model);
 	if (sdi->version && sdi->version[0])
-		printf(" %s", sdi->version);
+		printf("%s ", sdi->version);
 	if (device->probes)
-		printf(" with %d probes", g_slist_length(device->probes));
+		printf("with %d probes", g_slist_length(device->probes));
 	printf("\n");
 }
 
