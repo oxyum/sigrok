@@ -247,6 +247,7 @@ AC_CONFIG_FILES([Makefile
 		 libsigrok/hardware/zeroplus-logic-cube/Makefile
 		 libsigrok/input/Makefile
 		 libsigrok/output/Makefile
+		 libsigrok/output/text/Makefile
 		 libsigrok/libsigrok.pc
 		 libsigrokdecode/Makefile
 		 libsigrokdecode/libsigrokdecode.pc
