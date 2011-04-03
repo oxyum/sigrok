@@ -71,7 +71,7 @@ static GOptionEntry optargs[] = {
 	{"probes", 'p', 0, G_OPTION_ARG_STRING, &opt_probes, "Probes to use", NULL},
 	{"triggers", 't', 0, G_OPTION_ARG_STRING, &opt_triggers, "Trigger configuration", NULL},
 	{"wait-trigger", 'w', 0, G_OPTION_ARG_NONE, &opt_wait_trigger, "Wait for trigger", NULL},
-	{"protocol-decoders", 'a', 0, G_OPTION_ARG_STRING, &opt_pds, "Protocol decoder sequence", NULL},
+	// {"protocol-decoders", 'a', 0, G_OPTION_ARG_STRING, &opt_pds, "Protocol decoder sequence", NULL},
 	{"format", 'f', 0, G_OPTION_ARG_STRING, &opt_format, "Output format", NULL},
 	{"time", 0, 0, G_OPTION_ARG_STRING, &opt_time, "How long to sample (ms)", NULL},
 	{"samples", 0, 0, G_OPTION_ARG_STRING, &opt_samples, "Number of samples to acquire", NULL},
@@ -113,6 +113,7 @@ static void show_version(void)
 	}
 	printf("\n");
 
+#if 0
 	/* TODO: Error handling. */
 	srd_init();
 
@@ -124,6 +125,7 @@ static void show_version(void)
 	printf("\n");
 
 	srd_exit();
+#endif
 }
 
 static void print_device_line(struct sr_device *device)
