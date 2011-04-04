@@ -82,6 +82,15 @@ if test "x$LA_ASIX_SIGMA" = "xyes"; then
 	AC_DEFINE(HAVE_LA_ASIX_SIGMA, 1, [ASIX Sigma support])
 fi
 
+AC_ARG_ENABLE(chronovu-la8, AC_HELP_STRING([--enable-chronovu-la8],
+	      [enable ChronoVu LA8 support [default=yes]]),
+	      [LA_CHRONOVU_LA8="$enableval"],
+	      [LA_CHRONOVU_LA8=yes])
+AM_CONDITIONAL(LA_CHRONOVU_LA8, test x$LA_CHRONOVU_LA8 = xyes)
+if test "x$LA_CHRONOVU_LA8" = "xyes"; then
+	AC_DEFINE(HAVE_LA_CHRONOVU_LA8, 1, [ChronoVu LA8 support])
+fi
+
 AC_ARG_ENABLE(demo, AC_HELP_STRING([--enable-demo],
 	      [enable demo driver support [default=yes]]),
 	      [LA_DEMO="$enableval"],
@@ -141,6 +150,7 @@ AC_CHECK_LIB(gthread-2.0, g_thread_init)
 # libusb is only needed for some hardware drivers.
 if test "x$LA_SALEAE_LOGIC" != xno \
    -o "x$LA_ASIX_SIGMA" != xno \
+   -o "x$LA_CHRONOVU_LA8" != xno \
    -o "x$LA_ZEROPLUS_LOGIC_CUBE" != xno; then
 	case "$build" in
 	*freebsd*)
@@ -163,7 +173,8 @@ PKG_CHECK_MODULES([libzip], [libzip >= 0.8],
 	LIBS="$LIBS $libzip_LIBS"])
 
 # libftdi is only needed for some hardware drivers.
-if test "x$LA_ASIX_SIGMA" != xno; then
+if test "x$LA_ASIX_SIGMA" != xno \
+     -o "x$LA_CHRONOVU_LA8" != xno; then
 	PKG_CHECK_MODULES([libftdi], [libftdi >= 0.16],
 		[CFLAGS="$CFLAGS $libftdi_CFLAGS";
 		LIBS="$LIBS $libftdi_LIBS"])
@@ -239,6 +250,7 @@ AC_CONFIG_FILES([Makefile
 		 libsigrok/hardware/Makefile
 		 libsigrok/hardware/alsa/Makefile
 		 libsigrok/hardware/asix-sigma/Makefile
+		 libsigrok/hardware/chronovu-la8/Makefile
 		 libsigrok/hardware/common/Makefile
 		 libsigrok/hardware/demo/Makefile
 		 libsigrok/hardware/link-mso19/Makefile
