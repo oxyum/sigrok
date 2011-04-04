@@ -167,7 +167,7 @@ struct sr_device *parse_devicestring(const char *devicestring)
 			plugin = p->data;
 			if (strcmp(plugin->name, devicestring))
 				continue;
-			num_devices = sr_device_plugin_init(plugin);
+			num_devices = sr_init_hwplugins(plugin);
 			if (num_devices == 1) {
 				devices = sr_device_list();
 				device = devices->data;
