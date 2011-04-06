@@ -99,18 +99,14 @@ static void show_version(void)
 
 	printf("Supported input formats:\n");
 	inputs = sr_input_list();
-	for (i = 0; inputs[i]; i++) {
-		printf("  %-20s %s\n", inputs[i]->extension,
-		       inputs[i]->description);
-	}
+	for (i = 0; inputs[i]; i++)
+		printf("  %-20s %s\n", inputs[i]->id, inputs[i]->description);
 	printf("\n");
 
 	printf("Supported output formats:\n");
 	outputs = sr_output_list();
-	for (i = 0; outputs[i]; i++) {
-		printf("  %-20s %s\n", outputs[i]->extension,
-		       outputs[i]->description);
-	}
+	for (i = 0; outputs[i]; i++)
+		printf("  %-20s %s\n", outputs[i]->id, outputs[i]->description);
 	printf("\n");
 
 	/* TODO: Error handling. */
@@ -874,7 +870,7 @@ int main(int argc, char **argv)
 	}
 	outputs = sr_output_list();
 	for (i = 0; outputs[i]; i++) {
-		if (strcmp(outputs[i]->extension, fmtspec))
+		if (strcmp(outputs[i]->id, fmtspec))
 			continue;
 		g_hash_table_remove(fmtargs, "sigrok_key");
 		output_format = outputs[i];
