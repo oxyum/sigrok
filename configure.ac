@@ -141,7 +141,7 @@ fi
 # Checks for libraries.
 
 # libglib-2.0 is always needed.
-AM_PATH_GLIB_2_0(2.22.0,
+AM_PATH_GLIB_2_0([2.22.0],
 	CFLAGS="$CFLAGS $GLIB_CFLAGS"; LIBS="$LIBS $GLIB_LIBS")
 
 # libgthread-2.0 is always needed (e.g. for the demo hardware driver).
@@ -172,12 +172,33 @@ PKG_CHECK_MODULES([libzip], [libzip >= 0.8],
 	[CFLAGS="$CFLAGS $libzip_CFLAGS";
 	LIBS="$LIBS $libzip_LIBS"])
 
+# zlib is only needed for some hardware drivers.
+if test "x$LA_ASIX_SIGMA" != xno; then
+	case "$build" in
+	*mingw*)
+		CFLAGS="$CFLAGS -I/usr/local/include"
+		LIBS="$LIBS -L/usr/local/lib -lz"
+		;;
+	*)
+		# TODO: Nothing to do?
+		;;
+	esac
+fi
+
 # libftdi is only needed for some hardware drivers.
 if test "x$LA_ASIX_SIGMA" != xno \
      -o "x$LA_CHRONOVU_LA8" != xno; then
-	PKG_CHECK_MODULES([libftdi], [libftdi >= 0.16],
-		[CFLAGS="$CFLAGS $libftdi_CFLAGS";
-		LIBS="$LIBS $libftdi_LIBS"])
+	case "$build" in
+	*mingw*)
+		CFLAGS="$CFLAGS -I/usr/local/include"
+		LIBS="$LIBS -L/usr/local/lib -lftdi"
+		;;
+	*)
+		PKG_CHECK_MODULES([libftdi], [libftdi >= 0.16],
+			[CFLAGS="$CFLAGS $libftdi_CFLAGS";
+			LIBS="$LIBS $libftdi_LIBS"])
+		;;
+	esac
 fi
 
 # libudev is only needed for some hardware drivers.
