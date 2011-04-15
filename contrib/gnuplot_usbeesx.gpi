@@ -23,9 +23,9 @@
 #   background = white, borders = black, axes = gray,
 #   ch0 = black, ch1 = brown, ch2 = red, ch3 = orange,
 #   ch4 = yellow, ch5 = green, ch6 = blue, ch7 = violet
-set terminal png large size 1024, 768 xffffff x000000 x404040 \
-                                      x000000 xc25525 xff0000 xff7c00 \
-                                      xfbee13 x37ba34 x425adc x9500d3
+set terminal png large size 2048, 1536 xffffff x000000 x404040 \
+                                       x000000 xc25525 xff0000 xff7c00 \
+                                       xfbee13 x37ba34 x425adc x9500d3
 set autoscale
 set grid
 set ytics ("Channel 7" 2,  "Channel 6" 4,  "Channel 5" 6,  "Channel 4" 8, \
