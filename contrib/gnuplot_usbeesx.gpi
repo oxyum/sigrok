@@ -30,7 +30,7 @@ set autoscale
 set grid
 set ytics ("Channel 7" 2,  "Channel 6" 4,  "Channel 5" 6,  "Channel 4" 8, \
            "Channel 3" 10, "Channel 2" 12, "Channel 1" 14, "Channel 0" 16)
-set title "sigrok gnuplot output, http://www.sigrok.org"
+set title "sigrok gnuplot output, http://www.sigrok.org, CWAV USBee SX"
 set xlabel "Sample number"
 set ylabel "Channel"
 set output "sigrok_gnuplot.png"
