@@ -184,7 +184,7 @@ void MainWindow::on_actionAbout_triggered()
 	inputs = sr_input_list();
 	for (int i = 0; inputs[i]; ++i) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			 .arg(QString(inputs[i]->extension))
+			 .arg(QString(inputs[i]->id))
 			 .arg(QString(inputs[i]->description)));
 	}
 	s.append("</table><p>");
@@ -193,7 +193,7 @@ void MainWindow::on_actionAbout_triggered()
 	outputs = sr_output_list();
 	for (int i = 0; outputs[i]; ++i) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			.arg(QString(outputs[i]->extension))
+			.arg(QString(outputs[i]->id))
 			.arg(QString(outputs[i]->description)));
 	}
 	s.append("</table><p>");
