@@ -18,7 +18,14 @@
 ##
 
 AC_PREREQ(2.61)
-AC_INIT([sigrok], [0.2], [sigrok-devel@lists.sourceforge.net],
+
+m4_define([sigrok_major_version], [0])
+m4_define([sigrok_minor_version], [2])
+m4_define([sigrok_micro_version], [0])
+m4_define([sigrok_version],
+	  [sigrok_major_version.sigrok_minor_version.sigrok_micro_version])
+
+AC_INIT([sigrok], [sigrok_version], [sigrok-devel@lists.sourceforge.net],
 	[sigrok], [http://www.sigrok.org])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
