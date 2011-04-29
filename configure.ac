@@ -268,12 +268,32 @@ AC_SUBST(DECODERS_DIR, "$datadir/sigrok/decoders")
 AC_SUBST(MAKEFLAGS, '--no-print-directory')
 AC_SUBST(AM_LIBTOOLFLAGS, '--silent')
 
+SIGROK_MAJOR_VERSION=sigrok_major_version
+SIGROK_MINOR_VERSION=sigrok_minor_version
+SIGROK_MICRO_VERSION=sigrok_micro_version
+SIGROK_VERSION=sigrok_version
+
+AC_SUBST(SIGROK_MAJOR_VERSION)
+AC_SUBST(SIGROK_MINOR_VERSION)
+AC_SUBST(SIGROK_MICRO_VERSION)
+AC_SUBST(SIGROK_VERSION)
+
+AC_DEFINE(SIGROK_MAJOR_VERSION, [sigrok_major_version],
+	  [Define to the sigrok major version])
+AC_DEFINE(SIGROK_MINOR_VERSION, [sigrok_minor_version],
+	  [Define to the sigrok minor version])
+AC_DEFINE(SIGROK_MICRO_VERSION, [sigrok_micro_version],
+	  [Define to the sigrok micro version])
+AC_DEFINE(SIGROK_VERSION, [sigrok_version],
+	  [Define to the sigrok version])
+
 AC_CONFIG_FILES([Makefile
 		 contrib/Makefile
 		 contrib/nsis/Makefile
 		 contrib/nsis/sigrok.nsi
 		 doc/Makefile
 		 libsigrok/Makefile
+		 libsigrok/sigrok.h
 		 libsigrok/firmware/Makefile
 		 libsigrok/hardware/Makefile
 		 libsigrok/hardware/alsa/Makefile
