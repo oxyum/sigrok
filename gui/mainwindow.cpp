@@ -46,6 +46,9 @@ extern "C" {
 #include <sigrok.h>
 }
 
+#define DOCK_VERTICAL   0
+#define DOCK_HORIZONTAL 1
+
 uint64_t limit_samples = 0; /* FIXME */
 
 QProgressDialog *progress = NULL;
@@ -55,7 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	currentLA = -1;
 	numChannels = -1;
-	configChannelTitleBarLayout = 1; /* Horizontal layout */
+	configChannelTitleBarLayout = DOCK_VERTICAL; /* Vertical layout */
 	for (int i = 0; i < NUMCHANNELS; ++i)
 		dockWidgets[i] = NULL;
 
@@ -91,7 +94,7 @@ void MainWindow::setupDockWidgets(void)
 		f = QDockWidget::DockWidgetClosable |
 		    QDockWidget::DockWidgetMovable |
 		    QDockWidget::DockWidgetFloatable;
-		if (configChannelTitleBarLayout == 0)
+		if (configChannelTitleBarLayout == DOCK_VERTICAL)
 			f |= QDockWidget::DockWidgetVerticalTitleBar;
 		dockWidgets[i]->setFeatures(f);
 		dockWidgets[i]->setWidget(channelForms[i]);
@@ -703,7 +706,7 @@ void MainWindow::configChannelTitleBarLayoutChanged(int index)
 
 	configChannelTitleBarLayout = index;
 
-	if (configChannelTitleBarLayout == 0)
+	if (configChannelTitleBarLayout == DOCK_VERTICAL)
 		f |= QDockWidget::DockWidgetVerticalTitleBar;
 
 	for (int i = 0; i < getNumChannels(); ++i)
