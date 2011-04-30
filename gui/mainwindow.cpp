@@ -472,7 +472,7 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	switch (packet->type) {
 	case SR_DF_HEADER:
 		qDebug("SR_DF_HEADER");
-		header = (struct sr_datafeed_header *) packet->payload;
+		header = (struct sr_datafeed_header *)packet->payload;
 		num_probes = header->num_logic_probes;
 		num_enabled_probes = 0;
 		for (int i = 0; i < header->num_logic_probes; ++i) {
@@ -501,7 +501,8 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 		triggered = 1;
 		break;
 	case SR_DF_LOGIC:
-		qDebug("SR_DF_LOGIC");
+		qDebug() << "SR_DF_LOGIC (length =" << packet->length
+			 << ", unitsize = " << packet->unitsize << ")";
 		sample_size = packet->unitsize;
 		break;
 	default:
@@ -548,8 +549,8 @@ void MainWindow::on_action_Get_samples_triggered()
 
 	limit_samples = numSamplesLocal;
 
-	sample_buffer = (uint8_t *)malloc(limit_samples);
-	if (sample_buffer == NULL) {
+	/* TODO: Assumes unitsize == 1. */
+	if (!(sample_buffer = (uint8_t *)malloc(limit_samples))) {
 		/* TODO: Error handling. */
 		return;
 	}
