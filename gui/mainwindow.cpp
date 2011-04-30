@@ -69,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+	srd_exit();
 	sr_exit();
 
 	delete ui;
