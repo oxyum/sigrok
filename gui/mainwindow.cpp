@@ -694,12 +694,6 @@ void MainWindow::on_action_New_triggered()
 	/* TODO: Free sample buffer(s). */
 }
 
-uint8_t *MainWindow::getDemoSampleBuffer(void)
-{
-	/* TODO */
-	return NULL;
-}
-
 void MainWindow::configChannelTitleBarLayoutChanged(int index)
 {
 	QDockWidget::DockWidgetFeatures f =
