@@ -543,7 +543,6 @@ void MainWindow::on_action_Get_samples_triggered()
 	QString s;
 	int opt_device;
 	struct sr_device *device;
-	char numBuf[16];
 
 	opt_device = 0; /* FIXME */
 
@@ -561,9 +560,12 @@ void MainWindow::on_action_Get_samples_triggered()
 	device = (struct sr_device *)g_slist_nth_data(devices, opt_device);
 
 	/* Set the number of samples we want to get from the device. */
-	snprintf(numBuf, 16, "%" PRIu64 "", limit_samples);
-	device->plugin->set_configuration(device->plugin_index,
-		SR_HWCAP_LIMIT_SAMPLES, (char *)numBuf);
+	if (device->plugin->set_configuration(device->plugin_index,
+	    SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
+		qDebug("Failed to set sample limit.");
+		sr_session_destroy();
+		return;
+	}
 
 	if (sr_session_device_add(device) != SR_OK) {
 		qDebug("Failed to use device.");
@@ -574,7 +576,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	/* Set the samplerate. */
 	if (device->plugin->set_configuration(device->plugin_index,
 	    SR_HWCAP_SAMPLERATE, &samplerate) != SR_OK) {
-		qDebug("Failed to set sample rate.");
+		qDebug("Failed to set samplerate.");
 		sr_session_destroy();
 		return;
 	};
@@ -593,7 +595,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	}
 
 	progress = new QProgressDialog("Getting samples from logic analyzer...",
-				   "Abort", 0, numSamplesLocal, this);
+				       "Abort", 0, numSamplesLocal, this);
 	progress->setWindowModality(Qt::WindowModal);
 	progress->setMinimumDuration(100);
 
