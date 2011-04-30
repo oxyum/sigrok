@@ -299,7 +299,7 @@ void MainWindow::on_actionScan_triggered()
 			str = sr_samplerate_string(samplerates->list[i]);
 			s = QString(str);
 			free(str);
-			ui->comboBoxSampleRate->addItem(s,
+			ui->comboBoxSampleRate->insertItem(0, s,
 				QVariant::fromValue(samplerates->list[i]));
 		}
 		ui->comboBoxSampleRate->setEnabled(true);
@@ -309,13 +309,14 @@ void MainWindow::on_actionScan_triggered()
 			str = sr_samplerate_string(r);
 			s = QString(str);
 			free(str);
-			ui->comboBoxSampleRate->addItem(s,
+			ui->comboBoxSampleRate->insertItem(0, s,
 						QVariant::fromValue(r));
 			r *= mult[pos++];
 			pos %= 3;
 		}
 		ui->comboBoxSampleRate->setEnabled(true);
 	}
+	ui->comboBoxSampleRate->setCurrentIndex(0);
 
 	/* FIXME */
 	ui->comboBoxNumSamples->clear();
