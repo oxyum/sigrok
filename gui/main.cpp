@@ -49,10 +49,8 @@ int main(int argc, char *argv[])
 	QApplication::setOrganizationDomain("http://www.sigrok.org");
 
 	/* Disable this to actually allow running the (pre-alpha!) GUI. */
-	std::cerr << "The GUI is not yet usable, aborting." << std::endl;
+	qDebug() << "The GUI is not yet usable, aborting.";
 	return 1;
-
-	w = new MainWindow;
 
 	if (sr_init() != SR_OK) {
 		qDebug() << "ERROR: libsigrok init failed.";
@@ -61,11 +59,13 @@ int main(int argc, char *argv[])
 	qDebug() << "libsigrok initialized successfully.";
 
 	if (srd_init() != SRD_OK) {
-		std::cerr << "ERROR: libsigrokdecode init failed." << std::endl;
+		qDebug() << "ERROR: libsigrokdecode init failed.";
 		return 1;
 	}
 	qDebug() << "libsigrokdecode initialized successfully.";
 
+	w = new MainWindow;
 	w->show();
+
 	return a.exec();
 }
