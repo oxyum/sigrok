@@ -625,7 +625,8 @@ void MainWindow::on_action_Get_samples_triggered()
 		connect(sc, SIGNAL(valueChanged(int)),
 		        w, SLOT(updateScrollBars(int)));
 
-		channelForms[i]->update();
+		channelForms[i]->generatePainterPath();
+		// channelForms[i]->update();
 	}
 
 	/* Enable the relevant labels/buttons. */
