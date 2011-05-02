@@ -127,6 +127,7 @@ void ChannelForm::generatePainterPath(void)
 			oldval = newval;
 		}
 	}
+	current_x += step;
 	painterPath->lineTo(current_x, current_y);
 
 	/* Force a redraw. */
