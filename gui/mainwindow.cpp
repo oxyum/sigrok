@@ -637,6 +637,10 @@ void MainWindow::on_action_Get_samples_triggered()
 		connect(sc, SIGNAL(valueChanged(int)),
 		        w, SLOT(updateScrollBars(int)));
 
+		/* If any of the zoom factors change, update all of them.. */
+		connect(channelForms[i], SIGNAL(zoomFactorChanged(float)),
+		        w, SLOT(updateZoomFactors(float)));
+
 		channelForms[i]->generatePainterPath();
 		// channelForms[i]->update();
 	}
@@ -739,6 +743,23 @@ void MainWindow::updateScrollBars(int value)
 		// qDebug("updating scrollbar %d", i);
 		channelForms[i]->m_ui->channelScrollBar->setValue(value);
 		// qDebug("updating scrollbar %d (DONE)", i);
+	}
+	lock = 0;
+}
+
+void MainWindow::updateZoomFactors(float value)
+{
+	static int lock = 0;
+
+	/* TODO: There must be a better way to do this. */
+	if (lock == 1)
+		return;
+
+	lock = 1;
+	for (int i = 0; i < getNumChannels(); ++i) {
+		// qDebug("updating zoomFactor %d", i);
+		channelForms[i]->setZoomFactor(value);
+		// qDebug("updating zoomFactor %d (DONE)", i);
 	}
 	lock = 0;
 }

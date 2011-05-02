@@ -83,6 +83,7 @@ private slots:
 	void on_actionAbout_Qt_triggered();
 	void on_actionAbout_triggered();
 	void updateScrollBars(int value);
+	void updateZoomFactors(float value);
 };
 
 extern MainWindow *w;
