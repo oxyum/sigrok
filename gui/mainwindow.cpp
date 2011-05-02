@@ -539,17 +539,29 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 
 void MainWindow::on_action_Get_samples_triggered()
 {
-	uint64_t numSamplesLocal = ui->comboBoxNumSamples->itemData(
-			ui->comboBoxNumSamples->currentIndex()).toLongLong();
-	uint64_t samplerate = ui->comboBoxSampleRate->itemData(
-			ui->comboBoxSampleRate->currentIndex()).toLongLong();
+	uint64_t samplerate;
 	QString s;
 	int opt_device;
 	struct sr_device *device;
+	QComboBox *n = ui->comboBoxNumSamples;
 
 	opt_device = 0; /* FIXME */
 
-	limit_samples = numSamplesLocal;
+	/*
+	 * The number of samples to get is a drop-down list, but you can also
+	 * manually enter a value. If the latter, we have to get the value from
+	 * the lineEdit object, otherwise via itemData() and the list index.
+	 */
+	if (n->lineEdit() != NULL) {
+		limit_samples = n->lineEdit()->text().toLongLong();
+	} else {
+		limit_samples = n->itemData(n->currentIndex()).toLongLong();
+	}
+
+	samplerate = ui->comboBoxSampleRate->itemData(
+		ui->comboBoxSampleRate->currentIndex()).toLongLong();
+
+	/* TODO: Sanity checks. */
 
 	/* TODO: Assumes unitsize == 1. */
 	if (!(sample_buffer = (uint8_t *)malloc(limit_samples))) {
@@ -598,7 +610,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	}
 
 	progress = new QProgressDialog("Getting samples from logic analyzer...",
-				       "Abort", 0, numSamplesLocal, this);
+				       "Abort", 0, limit_samples, this);
 	progress->setWindowModality(Qt::WindowModal);
 	progress->setMinimumDuration(100);
 
@@ -609,9 +621,9 @@ void MainWindow::on_action_Get_samples_triggered()
 
 	for (int i = 0; i < getNumChannels(); ++i) {
 		channelForms[i]->setChannelNumber(i);
-		channelForms[i]->setNumSamples(numSamplesLocal);
+		channelForms[i]->setNumSamples(limit_samples);
 		// channelForms[i]->setSampleStart(0);
-		// channelForms[i]->setSampleEnd(numSamplesLocal);
+		// channelForms[i]->setSampleEnd(limit_samples);
 
 		QScrollBar *sc = channelForms[i]->m_ui->channelScrollBar;
 		sc->setMinimum(0);
