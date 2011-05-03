@@ -118,6 +118,13 @@ Not every device supports all of these trigger types. Use the
 .B "\-d <device>"
 argument (with no other arguments) to see which triggers your device supports.
 .TP
+.BR "\-w, \-\-wait-trigger"
+Don't output any sample data (even if it's actually received from the logic
+analyzer) before the trigger condition is met. In other words, do not output
+any pre-trigger data. This option is useful if you don't care about the data
+that came before the trigger (but the logic analyzer hardware delivers this
+data to sigrok nonetheless).
+.TP
 .BR "\-f, \-\-format " <formatname>
 Set the output format to use. Use the
 .B \-V
