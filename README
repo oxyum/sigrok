@@ -4,7 +4,7 @@ README
 
 The sigrok project aims at creating a portable, cross-platform,
 Free/Libre/Open-Source logic analyzer software that supports various
-(usually USB-based) logic analyzer hardware products.
+logic analyzer hardware products.
 
 There are two shared libraries with common code, a command line utility for
 basic usage and easy scriptability, as well as an intuitive GUI.
