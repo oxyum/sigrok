@@ -18,6 +18,25 @@ The Python decoders should also follow the usual Python conventions and use
 Python idioms as far as it makes sense, but they should also indent the
 code with extactly one tab.
 
+Random notes
+------------
+
+ - Consistently use g_try_malloc() / g_try_malloc0() in libsigrok. Do not use
+   standard malloc()/calloc() if it can be avoided (sometimes other libs such
+   as libftdi can return malloc()'d memory, for example).
+
+ - Always properly match allocations with the proper *free() functions. If
+   glib's g_try_malloc()/g_try_malloc0() was used, use g_free() to free the
+   memory. Otherwise use standard free(). Never use the wrong function!
+
+ - Never use g_malloc() or g_malloc0() in libsigrok. These functions do not
+   return NULL if not enough memory is available but rather lead to an
+   exit() or segfault instead. This behaviour is not acceptable for libsigrok.
+   Use g_try_malloc()/g_try_malloc0() instead and check the return value.
+
+ - libsigrok should never print any messages (neither to stdout nor stderr nor
+   elsewhere) "manually" via e.g. printf() or g_log() or similar functions.
+   Only sr_err()/sr_warn()/sr_info()/sr_dbg() should be used.
 
 Release engineering
 -------------------
