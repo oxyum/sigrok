@@ -49,6 +49,7 @@ char *input_format_param = NULL;
 char *current_decoder;
 
 static gboolean opt_version = FALSE;
+static gint opt_loglevel = SR_LOG_WARN; /* Show errors+warnings per default. */
 static gboolean opt_list_devices = FALSE;
 static gboolean opt_wait_trigger = FALSE;
 static gchar *opt_input_file = NULL;
@@ -64,6 +65,7 @@ static gchar *opt_continuous = NULL;
 
 static GOptionEntry optargs[] = {
 	{"version", 'V', 0, G_OPTION_ARG_NONE, &opt_version, "Show version and support list", NULL},
+	{"loglevel", 'l', 0, G_OPTION_ARG_INT, &opt_loglevel, "Select loglevel", NULL},
 	{"list-devices", 'D', 0, G_OPTION_ARG_NONE, &opt_list_devices, "List devices", NULL},
 	{"input-file", 'i', 0, G_OPTION_ARG_FILENAME, &opt_input_file, "Load input from file", NULL},
 	{"output-file", 'o', 0, G_OPTION_ARG_FILENAME, &opt_output_file, "Save output to file", NULL},
@@ -843,6 +845,13 @@ int main(int argc, char **argv)
 
 	if (!g_option_context_parse(context, &argc, &argv, &error)) {
 		g_warning("%s", error->message);
+		return 1;
+	}
+
+	/* Set the loglevel (amount of messages to output) for libsigrok. */
+	if (sr_set_loglevel(opt_loglevel) != SR_OK) {
+		fprintf(stderr, "cli: %s: sr_set_loglevel(%d) failed\n",
+			__func__, opt_loglevel);
 		return 1;
 	}
 
