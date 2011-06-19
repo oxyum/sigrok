@@ -256,8 +256,7 @@ static void show_device_detail(void)
 	}
 }
 
-static void datafeed_in(struct sr_device *device,
-			struct sr_datafeed_packet *packet)
+static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 {
 	static struct sr_output *o = NULL;
 	static int probelist[65] = { 0 };
@@ -267,6 +266,7 @@ static void datafeed_in(struct sr_device *device,
 	static FILE *outfile = NULL;
 	struct sr_probe *probe;
 	struct sr_datafeed_header *header;
+	struct sr_datafeed_logic *logic;
 	int num_enabled_probes, sample_size, ret, i;
 	uint64_t output_len, filter_out_len, dec_out_size;
 	char *output_buf, *filter_out;
@@ -278,7 +278,6 @@ static void datafeed_in(struct sr_device *device,
 		return;
 
 	sample_size = -1;
-
 	switch (packet->type) {
 	case SR_DF_HEADER:
 		g_message("cli: Received SR_DF_HEADER");
@@ -297,7 +296,7 @@ static void datafeed_in(struct sr_device *device,
 			}
 		}
 
-		header = (struct sr_datafeed_header *)packet->payload;
+		header = packet->payload;
 		num_enabled_probes = 0;
 		for (i = 0; i < header->num_logic_probes; i++) {
 			probe = g_slist_nth_data(device->probes, i);
@@ -361,13 +360,17 @@ static void datafeed_in(struct sr_device *device,
 		triggered = 1;
 		break;
 	case SR_DF_LOGIC:
-		g_message("cli: Received SR_DF_LOGIC, %"PRIu64" bytes", packet->length);
+		logic = packet->payload;
+		sample_size = logic->unitsize;
+		g_message("cli: Received SR_DF_LOGIC, %"PRIu64" bytes", logic->length);
+		break;
 	case SR_DF_ANALOG:
-		sample_size = packet->unitsize;
 		break;
 	}
 
-	if (sample_size == -1 || packet->length == 0)
+	/* not supporting anything but SR_DF_LOGIC for now */
+
+	if (sample_size == -1 || logic->length == 0)
 		return;
 
 	/* Don't store any samples until triggered. */
@@ -377,26 +380,22 @@ static void datafeed_in(struct sr_device *device,
 	if (limit_samples && received_samples >= limit_samples)
 		return;
 
-	if (packet->type == SR_DF_LOGIC) {
-		/* filters only support SR_DF_LOGIC */
-		ret = sr_filter_probes(sample_size, unitsize, probelist,
-				       packet->payload, packet->length,
-				       &filter_out, &filter_out_len);
-		if (ret != SR_OK)
-			return;
-	} else {
-		if (!(filter_out = malloc(packet->length)))
-			return;
-		memcpy(filter_out, packet->payload, packet->length);
-		filter_out_len = packet->length;
-	}
+	printf("offset: %"PRIu64" ms duration %"PRIu64" ms\n",
+			packet->timeoffset / 1000000, packet->duration / 1000000);
+
+	/* TODO: filters only support SR_DF_LOGIC */
+	ret = sr_filter_probes(sample_size, unitsize, probelist,
+				   logic->data, logic->length,
+				   &filter_out, &filter_out_len);
+	if (ret != SR_OK)
+		return;
 
 	/* what comes out of the filter is guaranteed to be packed into the
-	 * minimum size needed to support the number if samples at this sample
+	 * minimum size needed to support the number of samples at this sample
 	 * size. however, the driver may have submitted too much -- cut off
 	 * the buffer of the last packet according to the sample limit.
 	 */
-	if (limit_samples && (received_samples + packet->length / sample_size >
+	if (limit_samples && (received_samples + logic->length / sample_size >
 			limit_samples * sample_size))
 		filter_out_len = limit_samples * sample_size - received_samples;
 
@@ -414,7 +413,7 @@ static void datafeed_in(struct sr_device *device,
 		dec = srd_get_decoder_by_id(current_decoder);
 		
 		ret = srd_run_decoder(dec, packet->payload,
-				packet->length, &dec_out, &dec_out_size);
+				logic->length, &dec_out, &dec_out_size);
 
 		if (ret != SRD_OK) {
 			fprintf(stderr, "Decoder runtime error (%d)\n", ret);
@@ -434,7 +433,7 @@ static void datafeed_in(struct sr_device *device,
 
 	cleanup:
 	free(filter_out);
-	received_samples += packet->length / sample_size;
+	received_samples += logic->length / sample_size;
 
 }
 
