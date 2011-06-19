@@ -290,3 +290,14 @@ AC_CONFIG_FILES([Makefile
 
 AC_OUTPUT
 
+echo
+echo "Building drivers:"
+echo
+echo "ASIX SIGMA...................... " $LA_ASIX_SIGMA
+echo "ChronoVu LA8.................... " $LA_CHRONOVU_LA8
+echo "Link MSO-19..................... " $LA_LINK_MSO19
+echo "Openbench Logic Sniffer......... " $LA_OLS
+echo "Saleae Logic.................... " $LA_SALEAE_LOGIC
+echo "Zeroplus Logic Cube............. " $LA_ZEROPLUS_LOGIC_CUBE
+echo
+
