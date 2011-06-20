@@ -26,7 +26,7 @@ ACLOCAL_DIR=
 if [ "x$OS" = "xDarwin" ]; then
 	LIBTOOLIZE=glibtoolize
 	# fink installs aclocal macros here
-	ACLOCAL_DIR="-I /sw/share/aclocal"
+	ACLOCAL_DIR="-I /sw/share/aclocal -I /usr/share/aclocal"
 elif [ "x$OS" = "xMINGW32_NT-5.1" ]; then
 	ACLOCAL_DIR="-I /usr/local/share/aclocal"
 fi
