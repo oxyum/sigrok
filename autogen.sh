@@ -25,8 +25,18 @@ ACLOCAL_DIR=
 
 if [ "x$OS" = "xDarwin" ]; then
 	LIBTOOLIZE=glibtoolize
-	# fink installs aclocal macros here
-	ACLOCAL_DIR="-I /sw/share/aclocal -I /usr/share/aclocal"
+
+	if [ -d /sw/share/aclocal ]; then
+		# fink installs aclocal macros here
+		ACLOCAL_DIR="-I /sw/share/aclocal"
+	elif [ -d /opt/local/share/aclocal ]; then
+		# Macports installs aclocal macros here
+		ACLOCAL_DIR="-I /opt/local/share/aclocal"
+	elif [ -d /usr/share/aclocal ]; then
+		# Xcode installs aclocal macros here
+		ACLOCAL_DIR="-I /usr/share/aclocal"
+	fi
+
 elif [ "x$OS" = "xMINGW32_NT-5.1" ]; then
 	ACLOCAL_DIR="-I /usr/local/share/aclocal"
 fi
