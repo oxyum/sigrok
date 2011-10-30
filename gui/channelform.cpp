@@ -145,6 +145,7 @@ void ChannelForm::resizeEvent(QResizeEvent *event)
 
 void ChannelForm::paintEvent(QPaintEvent *event)
 {
+	int tickSize;
 	// qDebug() << "Paint event on ch" << getChannelNumber();
 
 	// QPainter p(m_ui->renderAreaWidget);
@@ -166,10 +167,13 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 	// p.scale(getZoomFactor(), 1.0);
 	p.drawPath(*painterPath);
 
-	for (int i = 0; i < width(); i += width() / 100)
+	tickSize = width() / 100;
+	/* Draw minor ticks */
+	for (int i = 0; i < width(); i += tickSize)
 		p.drawLine(i, 12, i, 15);
 
-	for (int i = width() / 10; i < width(); i += width() / 10) {
+	/* Draw major ticks every 10 minor tick */
+	for (int i = tickSize * 10; i < width(); i += tickSize * 10) {
 		p.drawText(i, 10, QString::number(i));
 		p.drawLine(i, 11, i, 17);
 	}
