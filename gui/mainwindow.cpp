@@ -264,7 +264,6 @@ void MainWindow::on_actionScan_triggered()
 				s.append(", ");
 		}
 		statusBar()->showMessage(s, 2000);
-		sr_device_close_all();
 		return;
 	}
 
@@ -458,6 +457,7 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	static int triggered = 0;
 	struct sr_probe *probe;
 	struct sr_datafeed_header *header;
+	struct sr_datafeed_logic *logic;
 	int num_enabled_probes, sample_size;
 	uint64_t sample;
 
@@ -504,9 +504,10 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 		triggered = 1;
 		break;
 	case SR_DF_LOGIC:
-		qDebug() << "SR_DF_LOGIC (length =" << packet->length
-			 << ", unitsize = " << packet->unitsize << ")";
-		sample_size = packet->unitsize;
+		logic = (sr_datafeed_logic*)packet->payload;
+		qDebug() << "SR_DF_LOGIC (length =" << logic->length
+			 << ", unitsize = " << logic->unitsize << ")";
+		sample_size = logic->unitsize;
 		break;
 	default:
 		qDebug("SR_DF_XXXX, not yet handled");
@@ -526,7 +527,7 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	/* TODO */
 
 	for (uint64_t i = 0; received_samples < limit_samples
-			     && i < packet->length; i += sample_size) {
+			     && i < logic->length; i += sample_size) {
 		sample = 0;
 		memcpy(&sample, (char *)packet->payload + i, sample_size);
 		sample_buffer[i] = (uint8_t)(sample & 0xff); /* FIXME */
