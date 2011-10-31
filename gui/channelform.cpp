@@ -168,11 +168,11 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 	p.drawPath(*painterPath);
 
 	tickSize = width() / 100;
-	/* Draw minor ticks */
+	/* Draw minor ticks. */
 	for (int i = 0; i < width(); i += tickSize)
 		p.drawLine(i, 12, i, 15);
 
-	/* Draw major ticks every 10 minor tick */
+	/* Draw major ticks every 10 minor tick. */
 	for (int i = tickSize * 10; i < width(); i += tickSize * 10) {
 		p.drawText(i, 10, QString::number(i));
 		p.drawLine(i, 11, i, 17);

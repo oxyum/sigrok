@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 
 	/* Disable this to actually allow running the (pre-alpha!) GUI. */
 	qDebug() << "The GUI is not yet usable, aborting.";
-	return 1;
+	// return 1;
 
 	if (sr_init() != SR_OK) {
 		qDebug() << "ERROR: libsigrok init failed.";
