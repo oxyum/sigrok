@@ -23,50 +23,7 @@
 #include <gtk/gtk.h>
 
 GtkWidget *log_init(void);
-
-static void dev_list_refresh(GtkListStore *devlist)
-{
-	GSList *devices, *l;
-
-	gtk_list_store_clear(devlist);
-
-	devices = sr_device_list();
-	for (l = devices; l; l = l->next) {
-		struct sr_device *device = l->data;
-		struct sr_device_instance *sdi =
-			device->plugin->get_device_info(device->plugin_index,
-							SR_DI_INSTANCE);
-		GtkTreeIter iter;
-		gtk_list_store_append(devlist, &iter);
-		gtk_list_store_set(devlist, &iter, 0,
-			sdi->model ? sdi->model : sdi->vendor, -1);
-	}
-}
-
-GtkWidget *toolbar_init(void)
-{
-	GtkToolbar *toolbar = GTK_TOOLBAR(gtk_toolbar_new());
-	GtkToolItem *toolitem = gtk_tool_item_new();
-	GtkWidget *dev = gtk_combo_box_new();
-
-	gtk_container_add(GTK_CONTAINER(toolitem), dev);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
-
-	/* Populate device list */
-	GtkListStore *devlist = gtk_list_store_new(1, G_TYPE_STRING);
-	dev_list_refresh(devlist);
-	GtkCellRenderer *cel = gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(dev), cel, TRUE);
-	gtk_cell_layout_add_attribute(GTK_CELL_LAYOUT(dev), cel, "text", 0);
-	gtk_combo_box_set_model(GTK_COMBO_BOX(dev), GTK_TREE_MODEL(devlist));
-
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
-	g_signal_connect_swapped(toolitem, "clicked",
-				G_CALLBACK(dev_list_refresh), devlist);
-	
-	return GTK_WIDGET(toolbar);
-}
+GtkWidget *toolbar_init(GtkWindow *parent);
 
 int main(int argc, char **argv)
 {
@@ -83,10 +40,9 @@ int main(int argc, char **argv)
 
 	vbox = gtk_vbox_new(FALSE, 0);
 
-	gtk_box_pack_start(GTK_BOX(vbox), toolbar_init(), FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), toolbar_init(window), FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), log_init(), TRUE, TRUE, 0);
 
-	g_message("Testing the logger");
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(GTK_WIDGET(window));
 
