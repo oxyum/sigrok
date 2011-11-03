@@ -31,6 +31,7 @@ int main(int argc, char **argv)
 	GtkWidget *vbox;
 	gtk_init(&argc, &argv);
 	sr_init();
+	sr_session_new();
 
 	window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 	gtk_window_set_title(window, "Sigrok-GTK");
@@ -50,6 +51,7 @@ int main(int argc, char **argv)
 
 	gtk_main();
 
+	sr_session_destroy();
 	gtk_exit(0);
 
 	return 0;

@@ -35,6 +35,12 @@ static void dev_selected(GtkComboBox *dev, GObject *parent)
 	}
 	gtk_tree_model_get(devlist, &iter, 0, &name, 1, &device, -1);
 
+	sr_session_device_clear();
+	if (sr_session_device_add(device) != SR_OK) {
+		g_error("Failed to use device.\n");
+		sr_session_destroy();
+		device = NULL;
+	}
 	g_object_set_data(parent, "device", device);
 }
 
