@@ -40,9 +40,12 @@ GtkWidget *log_init(void)
 	GtkWidget *sw, *tv;
 
 	sw = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+				GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 	tv = gtk_text_view_new();
-        gtk_widget_modify_font(tv,
+	gtk_widget_modify_font(tv,
                         pango_font_description_from_string("Monospace"));
+	gtk_text_view_set_wrap_mode(tv, GTK_WRAP_CHAR);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(tv), FALSE);
 
 	gtk_container_add(GTK_CONTAINER(sw), tv);
