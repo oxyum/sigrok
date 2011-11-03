@@ -22,7 +22,7 @@
 
 #include <gtk/gtk.h>
 
-void dev_selected(GtkComboBox *dev, GObject *parent)
+static void dev_selected(GtkComboBox *dev, GObject *parent)
 {
 	GtkTreeModel *devlist = gtk_combo_box_get_model(dev);
 	GtkTreeIter iter;
@@ -38,15 +38,42 @@ void dev_selected(GtkComboBox *dev, GObject *parent)
 	g_object_set_data(parent, "device", device);
 }
 
-void prop_edited(GtkCellRendererText *renderer, gchar *path,
-		gchar *new_text, GtkListStore *props)
+static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
+			GtkListStore *props)
 {
+	(void)cel;
+
+	struct sr_device *device = g_object_get_data(G_OBJECT(props), "device");
 	GtkTreeIter iter;
+	int type, cap;
+	guint64 tmp_u64;
+	int ret;
+
 	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(props), &iter, path);
-	gtk_list_store_set(props, &iter, 2, new_text, -1);
+	gtk_tree_model_get(GTK_TREE_MODEL(props), &iter,
+				0, &cap, 1, &type, -1);
+
+	switch (type) {
+	case SR_T_UINT64:
+		tmp_u64 = sr_parse_sizestring(text);
+		ret = device->plugin->set_configuration(device->plugin_index,
+				cap, &tmp_u64);
+		break;
+	case SR_T_CHAR:
+		ret = device->plugin-> set_configuration(device->plugin_index,
+				cap, text);
+		break;
+	case SR_T_NULL:
+		ret = device->plugin->set_configuration(device->plugin_index,
+				cap, NULL);
+		break;
+	}
+
+	if(!ret)
+		gtk_list_store_set(props, &iter, 3, text, -1);
 }
 
-void dev_set_options(GtkWindow *parent)
+static void dev_set_options(GtkWindow *parent)
 {
 	struct sr_device *device = g_object_get_data(G_OBJECT(parent), "device");
 	if(!device)
@@ -54,8 +81,7 @@ void dev_set_options(GtkWindow *parent)
 
 	GtkWidget *dialog = gtk_dialog_new_with_buttons("Device Properties",
 					parent, GTK_DIALOG_MODAL,
-					GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-					GTK_STOCK_OK, GTK_RESPONSE_OK,
+					GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 					NULL);
 	GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
 	gtk_widget_set_size_request(sw, 300, 200);
@@ -65,39 +91,40 @@ void dev_set_options(GtkWindow *parent)
 				TRUE, TRUE, 0);
 
 	/* Populate list store with config options */
-	GtkListStore *props = gtk_list_store_new(3, G_TYPE_INT,
+	GtkListStore *props = gtk_list_store_new(4, G_TYPE_INT, G_TYPE_INT,
 					G_TYPE_STRING, G_TYPE_STRING);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(tv), GTK_TREE_MODEL(props));
 	int *capabilities = device->plugin->get_capabilities();
 	int cap;
+	GtkTreeIter iter;
 	for (cap = 0; capabilities[cap]; cap++) {
 		struct sr_hwcap_option *hwo;
 		if (!(hwo = sr_find_hwcap_option(capabilities[cap])))
 			continue;
-		GtkTreeIter iter;
 		gtk_list_store_append(props, &iter);
 		gtk_list_store_set(props, &iter, 0, capabilities[cap],
-					1, hwo->shortname, -1);
+					1, hwo->type, 2, hwo->shortname, -1);
 	}
+
+	/* Save device with list so that property can be set by edited
+	 * handler. */
+	g_object_set_data(G_OBJECT(props), "device", device);
 
 	/* Add columns to the tree view */
 	GtkTreeViewColumn *col;
 	col = gtk_tree_view_column_new_with_attributes("Property",
 				gtk_cell_renderer_text_new(),
-				"text", 1, NULL);
+				"text", 2, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
 	GtkCellRenderer *cel = gtk_cell_renderer_text_new();
 	g_object_set(cel, "editable", TRUE, NULL);
 	g_signal_connect(cel, "edited", G_CALLBACK(prop_edited), props);
 	col = gtk_tree_view_column_new_with_attributes("Value",
-				cel, "text", 2, NULL);
+				cel, "text", 3, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
 
 	gtk_widget_show_all(dialog);
-	if(gtk_dialog_run(GTK_DIALOG(dialog)) != GTK_RESPONSE_OK) {
-		gtk_widget_destroy(dialog);
-		return;
-	}
+	gtk_dialog_run(GTK_DIALOG(dialog));
 
 	gtk_widget_destroy(dialog);
 }
