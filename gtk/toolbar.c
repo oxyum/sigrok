@@ -84,6 +84,8 @@ static void dev_set_options(GtkWindow *parent)
 					GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 					NULL);
 	GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_widget_set_size_request(sw, 300, 200);
 	GtkWidget *tv = gtk_tree_view_new();
 	gtk_container_add(GTK_CONTAINER(sw), tv);
@@ -121,6 +123,101 @@ static void dev_set_options(GtkWindow *parent)
 	g_signal_connect(cel, "edited", G_CALLBACK(prop_edited), props);
 	col = gtk_tree_view_column_new_with_attributes("Value",
 				cel, "text", 3, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
+
+	gtk_widget_show_all(dialog);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+
+	gtk_widget_destroy(dialog);
+}
+
+static void probe_toggled(GtkCellRenderer *cel, gchar *path,
+			GtkTreeModel *probes)
+{
+	struct sr_device *device = g_object_get_data(G_OBJECT(probes), "device");
+	GtkTreeIter iter;
+	struct sr_probe *probe;
+	gint i;
+	gboolean en;
+
+	(void)cel;
+
+	gtk_tree_model_get_iter_from_string(probes, &iter, path);
+	gtk_tree_model_get(probes, &iter, 0, &i, 1, &en, -1);
+	probe = sr_device_probe_find(device, i);
+	probe->enabled = !en;
+	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, 1, probe->enabled, -1);
+}
+
+static void probe_named(GtkCellRendererText *cel, gchar *path, gchar *text,
+			GtkTreeModel *probes)
+{
+	struct sr_device *device = g_object_get_data(G_OBJECT(probes), "device");
+	GtkTreeIter iter;
+	gint i;
+
+	(void)cel;
+
+	gtk_tree_model_get_iter_from_string(probes, &iter, path);
+	gtk_tree_model_get(probes, &iter, 0, &i, -1);
+	sr_device_probe_name(device, i, text);
+	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, 2, text, -1);
+}
+
+static void dev_set_probes(GtkWindow *parent)
+{
+	struct sr_device *device = g_object_get_data(G_OBJECT(parent), "device");
+	if(!device)
+		return;
+
+	GtkWidget *dialog = gtk_dialog_new_with_buttons("Configure Probes",
+					parent, GTK_DIALOG_MODAL,
+					GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+					NULL);
+	GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_widget_set_size_request(sw, 300, 200);
+	GtkWidget *tv = gtk_tree_view_new();
+	gtk_container_add(GTK_CONTAINER(sw), tv);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), sw,
+				TRUE, TRUE, 0);
+
+	/* Populate list store with probe options */
+	GtkListStore *probes = gtk_list_store_new(3, G_TYPE_INT, G_TYPE_BOOLEAN,
+					G_TYPE_STRING);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(tv), GTK_TREE_MODEL(probes));
+	GtkTreeIter iter;
+	GSList *p;
+	int i;
+	for (p = device->probes, i = 1; p; p = g_slist_next(p), i++) {
+		struct sr_probe *probe = p->data;
+		gtk_list_store_append(probes, &iter);
+		gtk_list_store_set(probes, &iter, 0, i,
+					1, probe->enabled, 2, probe->name, -1);
+	}
+
+	/* Save device with list so that property can be set by edited
+	 * handler. */
+	g_object_set_data(G_OBJECT(probes), "device", device);
+
+	/* Add columns to the tree view */
+	GtkTreeViewColumn *col;
+	col = gtk_tree_view_column_new_with_attributes("Probe",
+				gtk_cell_renderer_text_new(),
+				"text", 0, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
+	GtkCellRenderer *cel = gtk_cell_renderer_toggle_new();
+	g_object_set(cel, "activatable", TRUE, NULL);
+	g_signal_connect(cel, "toggled", G_CALLBACK(probe_toggled), probes);
+	col = gtk_tree_view_column_new_with_attributes("En",
+				cel, "active", 1, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
+	cel = gtk_cell_renderer_text_new();
+	g_object_set(cel, "editable", TRUE, NULL);
+	g_signal_connect(cel, "edited", G_CALLBACK(probe_named), probes);
+	col = gtk_tree_view_column_new_with_attributes("Signal Name",
+				cel, "text", 2, "sensitive", 1, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
 
 	gtk_widget_show_all(dialog);
@@ -179,6 +276,11 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 	g_signal_connect_swapped(toolitem, "clicked",
 				G_CALLBACK(dev_set_options), parent);
 	
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_COLOR_PICKER);
+	gtk_toolbar_insert(toolbar, toolitem, -1);
+	g_signal_connect_swapped(toolitem, "clicked",
+				G_CALLBACK(dev_set_probes), parent);
+
 	return GTK_WIDGET(toolbar);
 }
 
