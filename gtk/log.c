@@ -29,10 +29,12 @@ static void logger(const gchar *log_domain, GLogLevelFlags log_level,
 
 	/* Avoid compiler warnings. */
 	(void)log_domain;
-	(void)user_data;
+	(void)log_level;
 
 	gtk_text_buffer_get_end_iter(tb, &iter);
 	gtk_text_buffer_insert(tb, &iter, message, -1);
+	gtk_text_buffer_insert(tb, &iter, "\n", -1);
+	gtk_text_view_scroll_mark_onscreen(tv, gtk_text_buffer_get_insert(tb));
 }
 
 GtkWidget *log_init(void)
@@ -45,7 +47,7 @@ GtkWidget *log_init(void)
 	tv = gtk_text_view_new();
 	gtk_widget_modify_font(tv,
                         pango_font_description_from_string("Monospace"));
-	gtk_text_view_set_wrap_mode(tv, GTK_WRAP_CHAR);
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(tv), GTK_WRAP_CHAR);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(tv), FALSE);
 
 	gtk_container_add(GTK_CONTAINER(sw), tv);
