@@ -37,7 +37,7 @@ static void dev_selected(GtkComboBox *dev, GObject *parent)
 
 	sr_session_device_clear();
 	if (sr_session_device_add(device) != SR_OK) {
-		g_error("Failed to use device.\n");
+		g_critical("Failed to use device.");
 		sr_session_destroy();
 		device = NULL;
 	}
@@ -253,9 +253,83 @@ static void dev_list_refresh(GtkListStore *devlist)
 	}
 }
 
+static void capture_run(GObject *toolitem, GObject *parent)
+{
+	struct sr_device *device = g_object_get_data(G_OBJECT(parent), "device");
+	GtkEntry *timesamples = g_object_get_data(toolitem, "timesamples");
+	GtkComboBox *timeunit = g_object_get_data(toolitem, "timeunit");
+	gint i = gtk_combo_box_get_active(timeunit);
+	guint64 time_msec = 0;
+	guint64 limit_samples = 0;
+	
+	switch(i) {
+	case 0: /* Samples */
+		limit_samples = sr_parse_sizestring(
+					gtk_entry_get_text(timesamples));
+		break;
+	case 1: /* Milliseconds */
+		time_msec = strtoull(gtk_entry_get_text(timesamples), NULL, 10);
+		break;
+	case 2: /* Seconds */
+		time_msec = strtoull(gtk_entry_get_text(timesamples), NULL, 10)
+				* 1000;
+		break;
+	}
+
+	if(time_msec) {
+		int *capabilities = device->plugin->get_capabilities();
+		if (sr_find_hwcap(capabilities, SR_HWCAP_LIMIT_MSEC)) {
+			if (device->plugin->set_configuration(device->plugin_index,
+							  SR_HWCAP_LIMIT_MSEC, &time_msec) != SR_OK) {
+				g_critical("Failed to configure time limit.");
+				sr_session_destroy();
+				return;
+			}
+		}
+		else {
+			/* time limit set, but device doesn't support this...
+			 * convert to samples based on the samplerate.
+			 */
+			limit_samples = 0;
+			if (sr_device_has_hwcap(device, SR_HWCAP_SAMPLERATE)) {
+				guint64 tmp_u64;
+				tmp_u64 = *((uint64_t *) device->plugin->get_device_info(
+						device->plugin_index, SR_DI_CUR_SAMPLERATE));
+				limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
+			}
+			if (limit_samples == 0) {
+				g_critical("Not enough time at this samplerate.");
+				return;
+			}
+
+			if (device->plugin->set_configuration(device->plugin_index,
+						  SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
+				g_critical("Failed to configure time-based sample limit.");
+				return;
+			}
+		}
+	}
+	if(limit_samples) {
+		if (device->plugin->set_configuration(device->plugin_index,
+					SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
+			g_critical("Failed to configure sample limit.");
+			return;
+		}
+	}
+
+	if (sr_session_start() != SR_OK) {
+		g_critical("Failed to start session.");
+		return;
+	}
+
+	sr_session_run();
+}
+
 GtkWidget *toolbar_init(GtkWindow *parent)
 {
 	GtkToolbar *toolbar = GTK_TOOLBAR(gtk_toolbar_new());
+
+	/* Device selection GtkComboBox */
 	GtkToolItem *toolitem = gtk_tool_item_new();
 	GtkWidget *dev = gtk_combo_box_new();
 
@@ -272,20 +346,52 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 	gtk_combo_box_set_model(GTK_COMBO_BOX(dev), GTK_TREE_MODEL(devlist));
 	g_signal_connect(dev, "changed", G_CALLBACK(dev_selected), parent);
 
+	/* Device Refresh button */
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
 	gtk_toolbar_insert(toolbar, toolitem, -1);
 	g_signal_connect_swapped(toolitem, "clicked",
 				G_CALLBACK(dev_list_refresh), devlist);
 	
+	/* Device Properties button */
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PROPERTIES);
 	gtk_toolbar_insert(toolbar, toolitem, -1);
 	g_signal_connect_swapped(toolitem, "clicked",
 				G_CALLBACK(dev_set_options), parent);
 	
+	/* Probe Configuration button */
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_COLOR_PICKER);
 	gtk_toolbar_insert(toolbar, toolitem, -1);
 	g_signal_connect_swapped(toolitem, "clicked",
 				G_CALLBACK(dev_set_probes), parent);
+
+	gtk_toolbar_insert(toolbar, gtk_separator_tool_item_new(), -1);
+
+	/* Time/Samples entry */
+	toolitem = gtk_tool_item_new();
+	GtkWidget *timesamples = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(timesamples), "100");
+	gtk_entry_set_alignment(GTK_ENTRY(timesamples), 1.0);
+	gtk_widget_set_size_request(timesamples, 100, -1);
+	gtk_container_add(GTK_CONTAINER(toolitem), timesamples);
+	gtk_toolbar_insert(toolbar, toolitem, -1);
+
+	/* Time unit combo box */
+	toolitem = gtk_tool_item_new();
+	GtkWidget *timeunit = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(timeunit), "samples");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(timeunit), "ms");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(timeunit), "s");
+	gtk_combo_box_set_active(GTK_COMBO_BOX(timeunit), 0);
+	gtk_container_add(GTK_CONTAINER(toolitem), timeunit);
+	gtk_toolbar_insert(toolbar, toolitem, -1);
+
+	/* Run Capture button */
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_EXECUTE);
+	g_object_set_data(G_OBJECT(toolitem), "timesamples", timesamples);
+	g_object_set_data(G_OBJECT(toolitem), "timeunit", timeunit);
+	gtk_toolbar_insert(toolbar, toolitem, -1);
+	g_signal_connect(toolitem, "clicked",
+				G_CALLBACK(capture_run), parent);
 
 	return GTK_WIDGET(toolbar);
 }
