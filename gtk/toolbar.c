@@ -325,6 +325,12 @@ static void capture_run(GObject *toolitem, GObject *parent)
 	sr_session_run();
 }
 
+void toggle_log(GtkToggleToolButton *button, GObject *parent)
+{
+	GtkWidget *log = g_object_get_data(parent, "logview");
+	gtk_widget_set_visible(log, gtk_toggle_tool_button_get_active(button));
+}
+
 GtkWidget *toolbar_init(GtkWindow *parent)
 {
 	GtkToolbar *toolbar = GTK_TOOLBAR(gtk_toolbar_new());
@@ -392,6 +398,12 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 	gtk_toolbar_insert(toolbar, toolitem, -1);
 	g_signal_connect(toolitem, "clicked",
 				G_CALLBACK(capture_run), parent);
+
+	/* View Log toggle button */
+	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_JUSTIFY_LEFT);
+	gtk_toolbar_insert(toolbar, toolitem, -1);
+	g_signal_connect(toolitem, "toggled",
+				G_CALLBACK(toggle_log), parent);
 
 	return GTK_WIDGET(toolbar);
 }

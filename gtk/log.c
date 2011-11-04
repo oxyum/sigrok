@@ -53,6 +53,7 @@ GtkWidget *log_init(void)
 	gtk_container_add(GTK_CONTAINER(sw), tv);
 
 	g_log_set_default_handler(logger, tv);
+	gtk_widget_show_all(tv);
 
 	return sw;
 }

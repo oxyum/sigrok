@@ -154,7 +154,7 @@ GtkWidget *sigview_init(void)
 int main(int argc, char **argv)
 {
 	GtkWindow *window;
-	GtkWidget *vbox, *vpaned;
+	GtkWidget *vbox, *vpaned, *log;
 	gtk_init(&argc, &argv);
 	sr_init();
 	sr_session_new();
@@ -171,7 +171,10 @@ int main(int argc, char **argv)
 
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar_init(window), FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), vpaned, TRUE, TRUE, 0);
-	gtk_paned_add2(GTK_PANED(vpaned), log_init());
+	log = log_init();
+	gtk_widget_set_no_show_all(log, TRUE);
+	g_object_set_data(G_OBJECT(window), "logview", log);
+	gtk_paned_add2(GTK_PANED(vpaned), log);
 	gtk_paned_pack1(GTK_PANED(vpaned), sigview_init(), TRUE, FALSE);
 
 	gtk_container_add(GTK_CONTAINER(window), vbox);
