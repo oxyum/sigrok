@@ -197,14 +197,48 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 				const GdkRectangle *cell_area,
 				GtkCellRendererState flags)
 {
+	guint16 *tmp16;
+	guint32 *tmp32;
+	int i;
 	GtkCellRendererSignal *cel = GTK_CELL_RENDERER_SIGNAL(cell);
 	GtkCellRendererSignalPrivate *priv= cel->priv;
+	guint nsamples = priv->data->len / g_array_get_element_size(priv->data);
 
 	cairo_t *cr = gdk_cairo_create(GDK_DRAWABLE(window));
-	cairo_new_path(cr);
+	cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
 	gdk_cairo_set_source_color(cr, &priv->foreground);
-	cairo_move_to(cr, cell_area->x, cell_area->y);
-	cairo_line_to(cr, cell_area->x + cell_area->width,
-			cell_area->y + cell_area->height);
+	/*cairo_set_line_width(cr, 1);*/
+	cairo_new_path(cr);
+
+	switch(g_array_get_element_size(priv->data)) {
+	case 1:
+		for(i = 1; i < nsamples; i++) {
+			cairo_line_to(cr, cell_area->x + i*5,
+					cell_area->y + ((priv->data->data[i-1] & (1 << priv->probe))?0:cell_area->height));
+			cairo_line_to(cr, cell_area->x + i*5,
+					cell_area->y + ((priv->data->data[i] & (1 << priv->probe))?0:cell_area->height));
+		}
+		break;
+	case 2:
+		tmp16 = (guint16*)priv->data->data;
+		for(i = 1; i < nsamples; i++) {
+			cairo_line_to(cr, cell_area->x + i*5,
+					cell_area->y + ((tmp16[i-1] & (1 << priv->probe))?0:cell_area->height));
+			cairo_line_to(cr, cell_area->x + i*5,
+					cell_area->y + ((tmp16[i] & (1 << priv->probe))?0:cell_area->height));
+		}
+		break;
+	case 4:
+		tmp32 = (guint32*)priv->data->data;
+		for(i = 1; i < nsamples; i++) {
+			cairo_line_to(cr, cell_area->x + i*5,
+					cell_area->y + ((tmp32[i-1] & (1 << priv->probe))?0:cell_area->height));
+			cairo_line_to(cr, cell_area->x + i*5,
+					cell_area->y + ((tmp32[i] & (1 << priv->probe))?0:cell_area->height));
+		}
+		break;
+	default:
+		g_critical("Sample size not 8, 16 or 32 bits!");
+	}
 	cairo_stroke(cr);
 }

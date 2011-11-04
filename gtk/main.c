@@ -22,6 +22,8 @@
 
 #include <gtk/gtk.h>
 
+#include "gtkcellrenderersignal.h"
+
 GtkWidget *log_init(void);
 GtkWidget *toolbar_init(GtkWindow *parent);
 
@@ -105,37 +107,13 @@ void format_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
 		GtkTreeModel *siglist, GtkTreeIter *iter, gpointer h)
 {
 	GArray *data = g_object_get_data(G_OBJECT(siglist), "sampledata");
-	guint nsamples = data->len / g_array_get_element_size(data);
-	char str[nsamples + 1];
-	guint i;
 	int probe;
 	char *colour;
-	uint16_t *tmp16;
-	uint32_t *tmp32;
 
 	gtk_tree_model_get(siglist, iter, 1, &colour, 2, &probe, -1);
 
-	str[nsamples] = 0;
-	switch(g_array_get_element_size(data)) {
-	case 1:
-		for(i = 0; i < nsamples; i++)
-			str[i] = data->data[i] & (1 << probe) ? '1' : '0';
-		break;
-	case 2:
-		tmp16 = (uint16_t*)data->data;
-		for(i = 0; i < nsamples; i++)
-			str[i] = tmp16[i] & (1 << probe) ? '1' : '0';
-		break;
-	case 4:
-		tmp32 = (uint32_t*)data->data;
-		for(i = 0; i < nsamples; i++)
-			str[i] = tmp32[i] & (1 << probe) ? '1' : '0';
-		break;
-	default:
-		g_critical("Sample size not 8, 16 or 32 bits!");
-	}
-	
-	g_object_set(G_OBJECT(cell), "foreground", colour, "text", str, NULL);
+	g_object_set(G_OBJECT(cell), "data", data, "probe", probe,
+				"foreground", colours[probe & 7], NULL);
 }
 
 
@@ -157,7 +135,8 @@ GtkWidget *sigview_init(void)
 					"text", 0, "foreground", 1, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
 
-	cel = gtk_cell_renderer_text_new();
+	//cel = gtk_cell_renderer_text_new();
+	cel = gtk_cell_renderer_signal_new();
 	col = gtk_tree_view_column_new();
 	gtk_tree_view_column_pack_start(col, cel, TRUE);
 	gtk_tree_view_column_set_cell_data_func(col, cel, format_func,
