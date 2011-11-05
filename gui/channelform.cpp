@@ -30,6 +30,19 @@ extern uint8_t *sample_buffer;
 #define WHEEL_DELTA 120
 #endif
 
+static QColor channelColors[] = {
+	QColor(0x00, 0x00, 0x00), /* Black */
+	QColor(0x96, 0x4B, 0x00), /* Brown */
+	QColor(0xFF, 0x00, 0x00), /* Red */
+	QColor(0xFF, 0xA5, 0x00), /* Orange */
+	QColor(0xFF, 0xFF, 0x00), /* Yellow */
+	QColor(0x9A, 0xCD, 0x32), /* Green */
+	QColor(0x64, 0x95, 0xED), /* Blue */
+	QColor(0xEE, 0x82, 0xEE), /* Violet */
+	QColor(0xA0, 0xA0, 0xA0), /* Gray */
+	QColor(0xFF, 0xFF, 0xFF), /* White */
+};
+
 /* TODO: Should move elsewhere. */
 static int getbit(uint8_t *buf, int numbyte, int chan)
 {
@@ -56,17 +69,6 @@ ChannelForm::ChannelForm(QWidget *parent) :
 	zoomFactor = 32.0;
 	scrollBarValue = 0;
 	painterPath = new QPainterPath();
-
-	/* Set random colors for the channel names (for now). */
-	/* TODO: Channel graph color vs. label color? */
-	channelColor = QColor(2 + qrand() * 16);
-
-	/* Set title and color of the channel name QLineEdit. */
-	QLineEdit *l = m_ui->channelLineEdit;
-	l->setText(QString(tr("Channel %1")).arg(0 /* i */)); // FIXME
-	QPalette p = QPalette(QApplication::palette());
-	p.setColor(QPalette::Base, channelColor);
-	l->setPalette(p);
 }
 
 ChannelForm::~ChannelForm()
@@ -157,9 +159,17 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 	if (sample_buffer == NULL)
 		return;
 
-	QPen pen(getChannelColor(), 1, Qt::SolidLine, Qt::SquareCap,
+	QPen penChannel(getChannelColor(), 1, Qt::SolidLine, Qt::SquareCap,
+					Qt::BevelJoin);
+	p.setPen(penChannel);
+	p.fillRect(0, 0, this->width(), 5, getChannelColor());
+	p.fillRect(0, 5, 5, this->height(), getChannelColor());
+	p.translate(0, 5);
+
+	
+	QPen penGraph(QColor(0, 0, 0), 1, Qt::SolidLine, Qt::SquareCap,
 		 Qt::BevelJoin);
-	p.setPen(pen);
+	p.setPen(penGraph);
 
 	// p.fillRect(0, 0, this->width(), this->height(), QColor(Qt::gray));
 	p.setRenderHint(QPainter::Antialiasing, false);
@@ -201,6 +211,12 @@ void ChannelForm::wheelEvent(QWheelEvent *event)
 void ChannelForm::setChannelColor(QColor color)
 {
 	channelColor = color;
+
+	/* Set color of the channel name QLineEdit. */
+	QLineEdit *l = m_ui->channelLineEdit;
+	QPalette p = QPalette(QApplication::palette());
+	p.setColor(QPalette::Base, channelColor);
+	l->setPalette(p);
 }
 
 QColor ChannelForm::getChannelColor(void)
@@ -210,6 +226,12 @@ QColor ChannelForm::getChannelColor(void)
 
 void ChannelForm::setChannelNumber(int c)
 {
+	if (channelNumber < 0)
+	{
+		/* Set a default color for this channel. */
+		/* FIXME: Channel color should be dependent on the selected LA. */
+		setChannelColor(channelColors[c % (sizeof(channelColors)/sizeof(channelColors[0]))]);
+	}
 	channelNumber = c;
 	
 	/* Set title of the channel name QLineEdit. */
