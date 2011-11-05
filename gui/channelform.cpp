@@ -100,7 +100,7 @@ void ChannelForm::generatePainterPath(void)
 
 	if (sample_buffer == NULL)
 		return;
-	
+
 	scaleFactor = getScaleFactor();
 
 	delete painterPath;
@@ -120,12 +120,10 @@ void ChannelForm::generatePainterPath(void)
 	// qDebug() << "generatePainterPath() for ch" << getChannelNumber()
 	// 	 << "(" << ss << " - " << se << ")";
 
-	
 	for (uint64_t i = ss; i < se; i += scaleFactor) {
-		/* process the samples shown in this step */
-		for(uint64_t j = 0; (j<scaleFactor) && (i+j < se); j++)
-		{
-			newval = getbit(sample_buffer, i+j, ch);
+		/* Process the samples shown in this step. */
+		for(uint64_t j = 0; (j<scaleFactor) && (i+j < se); j++) {
+			newval = getbit(sample_buffer, i + j, ch);
 			x_change_visible = current_x > old_x;
 			if (oldval != newval && x_change_visible) {
 				painterPath->lineTo(current_x, current_y);
@@ -135,7 +133,6 @@ void ChannelForm::generatePainterPath(void)
 				oldval = newval;
 			}
 			current_x += (double)stepSize / (double)scaleFactor;
-			
 		}
 	}
 	current_x += stepSize;
@@ -149,17 +146,14 @@ void ChannelForm::resizeEvent(QResizeEvent *event)
 {
 	/* Avoid compiler warnings. */
 	event = event;
-	
+
 	stepSize = width() / 100;
+
 	if (stepSize <= 1)
-	{
 		stepSize = width() / 50;
-	}
-	
+
 	if (stepSize <= 1)
-	{
 		stepSize = width() / 20;
-	}
 
 	/* Quick hack to force a redraw upon resize. */
 	generatePainterPath();
@@ -180,13 +174,12 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 		return;
 
 	QPen penChannel(getChannelColor(), 1, Qt::SolidLine, Qt::SquareCap,
-					Qt::BevelJoin);
+			Qt::BevelJoin);
 	p.setPen(penChannel);
 	p.fillRect(0, 0, this->width(), 5, getChannelColor());
 	p.fillRect(0, 5, 5, this->height(), getChannelColor());
 	p.translate(0, 5);
 
-	
 	QPen penGraph(QColor(0, 0, 0), 1, Qt::SolidLine, Qt::SquareCap,
 		 Qt::BevelJoin);
 	p.setPen(penGraph);
@@ -197,10 +190,8 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 	// p.scale(getZoomFactor(), 1.0);
 	p.drawPath(*painterPath);
 
-	if (stepSize > 0)
-	{
-		if (stepSize > 1)
-		{
+	if (stepSize > 0) {
+		if (stepSize > 1) {
 			/* Draw minor ticks. */
 			tickStart = -getScrollBarValue() % stepSize;
 			for (int i = tickStart; i < width(); i += stepSize)
@@ -253,14 +244,13 @@ QColor ChannelForm::getChannelColor(void)
 
 void ChannelForm::setChannelNumber(int c)
 {
-	if (channelNumber < 0)
-	{
+	if (channelNumber < 0) {
 		/* Set a default color for this channel. */
 		/* FIXME: Channel color should be dependent on the selected LA. */
-		setChannelColor(channelColors[c % (sizeof(channelColors)/sizeof(channelColors[0]))]);
+		setChannelColor(channelColors[c % (sizeof(channelColors) / sizeof(channelColors[0]))]);
 	}
 	channelNumber = c;
-	
+
 	/* Set title of the channel name QLineEdit. */
 	QLineEdit *l = m_ui->channelLineEdit;
 	l->setText(QString(tr("Channel %1")).arg(channelNumber));

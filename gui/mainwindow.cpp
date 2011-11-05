@@ -265,7 +265,7 @@ void MainWindow::on_actionScan_triggered()
 	}
 
 	device = (struct sr_device *)g_slist_nth_data(devices, 0 /* opt_device */);
-	
+
 	setCurrentLA(0 /* TODO */);
 
 	di_num_probes = (char *)device->plugin->get_device_info(
