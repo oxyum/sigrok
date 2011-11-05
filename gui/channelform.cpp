@@ -211,6 +211,10 @@ QColor ChannelForm::getChannelColor(void)
 void ChannelForm::setChannelNumber(int c)
 {
 	channelNumber = c;
+	
+	/* Set title of the channel name QLineEdit. */
+	QLineEdit *l = m_ui->channelLineEdit;
+	l->setText(QString(tr("Channel %1")).arg(channelNumber));
 }
 
 int ChannelForm::getChannelNumber(void)

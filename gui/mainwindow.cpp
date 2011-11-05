@@ -86,6 +86,7 @@ void MainWindow::setupDockWidgets(void)
 
 	for (int i = 0; i < getNumChannels(); ++i) {
 		channelForms[i] = new ChannelForm(this);
+		channelForms[i]->setChannelNumber(i);
 
 		dockWidgets[i] = new QDockWidget(this);
 		dockWidgets[i]->setAllowedAreas(Qt::BottomDockWidgetArea);
@@ -124,10 +125,6 @@ void MainWindow::setupDockWidgets(void)
 			channelForms[i], SLOT(generatePainterPath()));
 
 		// dockWidgets[i]->show();
-
-		/* Set a default channel name. */
-		QLineEdit *l = channelForms[i]->m_ui->channelLineEdit;
-		l->setText(QString(tr("Channel %1")).arg(i));
 
 #if 0
 		/* If the user renames a channel, adapt the dock title. */
@@ -400,7 +397,6 @@ void MainWindow::on_action_Open_triggered()
 	ui->action_Get_samples->setEnabled(false);
 
 	for (int i = 0; i < getNumChannels(); ++i) {
-		channelForms[i]->setChannelNumber(i);
 		channelForms[i]->setNumSamples(file.size());
 
 		QScrollBar *sc = channelForms[i]->m_ui->channelScrollBar;
@@ -415,10 +411,6 @@ void MainWindow::on_action_Open_triggered()
 		connect(sc, SIGNAL(valueChanged(int)),
 			w, SLOT(updateScrollBars(int)));
 
-		/* Set a default channel name. */
-		QLineEdit *l = channelForms[i]->m_ui->channelLineEdit;
-		l->setText(QString(tr("Channel %1")).arg(i));
-		
 		channelForms[i]->update();
 	}
 
@@ -621,7 +613,6 @@ void MainWindow::on_action_Get_samples_triggered()
 	sr_session_destroy();
 
 	for (int i = 0; i < getNumChannels(); ++i) {
-		channelForms[i]->setChannelNumber(i);
 		channelForms[i]->setNumSamples(limit_samples);
 		// channelForms[i]->setSampleStart(0);
 		// channelForms[i]->setSampleEnd(limit_samples);
