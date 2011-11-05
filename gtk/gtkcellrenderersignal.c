@@ -269,16 +269,18 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 	/*cairo_set_line_width(cr, 1);*/
 	cairo_new_path(cr);
 
-	si = floor(priv->offset / priv->scale);
-	o = priv->offset - si * priv->scale;
+	si = priv->offset / priv->scale;
+	o = x - (priv->offset - si * priv->scale);
 
-	cairo_move_to(cr, x - o, y +
+	cairo_move_to(cr, o, y +
 		(sample(priv->data, priv->probe, si++) ? 0 : h));
-	for(i = 1; si < nsamples; i++, si++) {
-		cairo_line_to(cr, x - o + i*priv->scale, y +
+	while((si < nsamples) && (o - priv->scale < x+w)) {
+		cairo_line_to(cr, o, y +
 			(sample(priv->data, priv->probe, si-1) ? 0 : h));
-		cairo_line_to(cr, x - o + i*priv->scale, y +
+		cairo_line_to(cr, o, y +
 			(sample(priv->data, priv->probe, si) ? 0 : h));
+		o += priv->scale;
+		si++;
 	}
 
 	cairo_stroke(cr);

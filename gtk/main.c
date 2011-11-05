@@ -100,7 +100,7 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 	data = g_object_get_data(G_OBJECT(siglist), "sampledata");
 	g_return_if_fail(data != NULL);
 
-	g_array_append_vals(data, logic->data, logic->length);
+	g_array_append_vals(data, filter_out, filter_out_len);
 }
 
 void format_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
@@ -116,21 +116,35 @@ void format_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
 				"foreground", colours[probe & 7], NULL);
 }
 
-static gboolean do_scroll_event(GtkWidget *tv, GdkEventScroll *e,
+static gboolean do_scroll_event(GtkTreeView *tv, GdkEventScroll *e,
 				GObject *cel)
 {
 	gdouble scale;
-	g_object_get(cel, "scale", &scale, NULL);
+	gint offset;
+	gint x, y, cx;
+	GtkTreeViewColumn *col;
+
+	gtk_tree_view_widget_to_tree_coords(tv, e->x, e->y, &x, &y);
+	if(!gtk_tree_view_get_path_at_pos(tv, x, y, NULL, &col, &cx, NULL))
+		return FALSE;
+
+	g_object_get(cel, "scale", &scale, "offset", &offset, NULL);
+	offset += cx;
 	switch(e->direction) {
 	case GDK_SCROLL_UP:
 		scale *= 1.2;
+		offset *= 1.2;
 		break;
 	case GDK_SCROLL_DOWN:
 		scale /= 1.2;
+		offset /= 1.2;
 		break;
 	}
-	g_object_set(cel, "scale", scale, NULL);
-	gtk_widget_queue_draw(tv);
+	offset -= cx;
+	if(offset < 0)
+		offset = 0;
+	g_object_set(cel, "scale", scale, "offset", offset, NULL);
+	gtk_widget_queue_draw(GTK_WIDGET(tv));
 	
 	return TRUE;
 }
@@ -170,6 +184,7 @@ static gboolean do_button_event(GtkWidget *tv, GdkEventButton *e,
 		g_signal_handler_disconnect(tv, h);
 		break;
 	}
+	return TRUE;
 }
 
 GtkWidget *sigview_init(void)
