@@ -1,0 +1,9 @@
+GTK+ Front-end for Sigrok
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This will be merged into the sigrok project soon.
+
+For now, generate the configure script with:
+ $ autoreconf --install
+
+
