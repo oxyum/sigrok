@@ -103,12 +103,12 @@
        </widget>
       </item>
       <item row="4" column="2">
-       <widget class="QLabel" name="labelZoomFactor">
+       <widget class="QLabel" name="labelScaleFactor">
         <property name="enabled">
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Zoom factor:</string>
+         <string>Scale factor:</string>
         </property>
        </widget>
       </item>

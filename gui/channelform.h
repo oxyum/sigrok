@@ -45,13 +45,13 @@ public:
 	uint64_t getNumSamples(void);
 	uint64_t getSampleStart(void);
 	uint64_t getSampleEnd(void);
-	float getZoomFactor(void);
+	float getScaleFactor(void);
 	int getScrollBarValue(void);
 
 public slots:
 	void setSampleStart(uint64_t s);
 	void setSampleEnd(uint64_t s);
-	void setZoomFactor(float z);
+	void setScaleFactor(float z);
 	void generatePainterPath(void);
 	void setScrollBarValue(int value);
 
@@ -60,8 +60,8 @@ signals:
 	void sampleStartChanged(QString);
 	void sampleEndChanged(uint64_t);
 	void sampleEndChanged(QString);
-	void zoomFactorChanged(float);
-	void zoomFactorChanged(QString);
+	void scaleFactorChanged(float);
+	void scaleFactorChanged(QString);
 
 protected:
 	void changeEvent(QEvent *e);
@@ -75,10 +75,11 @@ private:
 	uint64_t sampleStart;
 	uint64_t sampleEnd;
 	uint64_t numSamples;
-	float zoomFactor;
+	float scaleFactor;
 	QPainterPath *painterPath;
 	// static int numTotalChannels;
 	int scrollBarValue;
+	int stepSize;
 };
 
 #endif

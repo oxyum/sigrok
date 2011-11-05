@@ -110,8 +110,8 @@ void MainWindow::setupDockWidgets(void)
 			SIGNAL(sampleEndChanged(QString)),
 			ui->labelSampleEnd, SLOT(setText(QString)));
 		QObject::connect(channelForms[i],
-			SIGNAL(zoomFactorChanged(QString)),
-			ui->labelZoomFactor, SLOT(setText(QString)));
+			SIGNAL(scaleFactorChanged(QString)),
+			ui->labelScaleFactor, SLOT(setText(QString)));
 
 		/* Redraw channels upon changes. */
 		QObject::connect(channelForms[i],
@@ -121,7 +121,7 @@ void MainWindow::setupDockWidgets(void)
 			SIGNAL(sampleEndChanged(QString)),
 			channelForms[i], SLOT(generatePainterPath()));
 		QObject::connect(channelForms[i],
-			SIGNAL(zoomFactorChanged(QString)),
+			SIGNAL(scaleFactorChanged(QString)),
 			channelForms[i], SLOT(generatePainterPath()));
 
 		// dockWidgets[i]->show();
@@ -390,8 +390,8 @@ void MainWindow::on_action_Open_triggered()
 	ui->labelSampleEnd->setText(tr("End sample: "));
 	ui->labelSampleEnd->setEnabled(true);
 
-	ui->labelZoomFactor->setText(tr("Zoom factor: "));
-	ui->labelZoomFactor->setEnabled(true);
+	ui->labelScaleFactor->setText(tr("Scale factor: "));
+	ui->labelScaleFactor->setEnabled(true);
 
 	ui->action_Save_as->setEnabled(true);
 	ui->action_Get_samples->setEnabled(false);
@@ -629,9 +629,9 @@ void MainWindow::on_action_Get_samples_triggered()
 		connect(sc, SIGNAL(valueChanged(int)),
 		        w, SLOT(updateScrollBars(int)));
 
-		/* If any of the zoom factors change, update all of them.. */
-		connect(channelForms[i], SIGNAL(zoomFactorChanged(float)),
-		        w, SLOT(updateZoomFactors(float)));
+		/* If any of the scale factors change, update all of them.. */
+		connect(channelForms[i], SIGNAL(scaleFactorChanged(float)),
+		        w, SLOT(updateScaleFactors(float)));
 
 		channelForms[i]->generatePainterPath();
 		// channelForms[i]->update();
@@ -640,7 +640,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	/* Enable the relevant labels/buttons. */
 	ui->labelSampleStart->setEnabled(true);
 	ui->labelSampleEnd->setEnabled(true);
-	ui->labelZoomFactor->setEnabled(true);
+	ui->labelScaleFactor->setEnabled(true);
 	ui->action_Save_as->setEnabled(true);
 
 	// sr_hw_get_samples_shutdown(&ctx, 1000);
@@ -694,8 +694,8 @@ void MainWindow::on_action_New_triggered()
 	ui->labelSampleEnd->setText(tr("End sample: "));
 	ui->labelSampleEnd->setEnabled(false);
 
-	ui->labelZoomFactor->setText(tr("Zoom factor: "));
-	ui->labelZoomFactor->setEnabled(false);
+	ui->labelScaleFactor->setText(tr("Scale factor: "));
+	ui->labelScaleFactor->setEnabled(false);
 
 	ui->action_Save_as->setEnabled(false);
 	ui->action_Get_samples->setEnabled(false);
@@ -739,7 +739,7 @@ void MainWindow::updateScrollBars(int value)
 	lock = 0;
 }
 
-void MainWindow::updateZoomFactors(float value)
+void MainWindow::updateScaleFactors(float value)
 {
 	static int lock = 0;
 
@@ -749,9 +749,9 @@ void MainWindow::updateZoomFactors(float value)
 
 	lock = 1;
 	for (int i = 0; i < getNumChannels(); ++i) {
-		// qDebug("updating zoomFactor %d", i);
-		channelForms[i]->setZoomFactor(value);
-		// qDebug("updating zoomFactor %d (DONE)", i);
+		// qDebug("updating scaleFactor %d", i);
+		channelForms[i]->setScaleFactor(value);
+		// qDebug("updating scaleFactor %d (DONE)", i);
 	}
 	lock = 0;
 }

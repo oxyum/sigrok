@@ -66,7 +66,7 @@ ChannelForm::ChannelForm(QWidget *parent) :
 	numSamples = 0;
 	sampleStart = 0;
 	sampleEnd = 0;
-	zoomFactor = 32.0;
+	scaleFactor = 2.0;
 	scrollBarValue = 0;
 	painterPath = new QPainterPath();
 }
@@ -91,7 +91,8 @@ void ChannelForm::changeEvent(QEvent *e)
 
 void ChannelForm::generatePainterPath(void)
 {
-	double old_x, current_x, step;
+	int scaleFactor;
+	double old_x, current_x;
 	int current_y, oldval, newval, x_change_visible;
 	int low = m_ui->renderAreaWidget->height() - 2, high = 20;
 	int ch = getChannelNumber();
@@ -99,37 +100,45 @@ void ChannelForm::generatePainterPath(void)
 
 	if (sample_buffer == NULL)
 		return;
+	
+	scaleFactor = getScaleFactor();
 
 	delete painterPath;
 	painterPath = new QPainterPath();
 
-	ss = getNumSamples() * ((double)getScrollBarValue() / (double)100);
-	se = ss + getNumSamples() / getZoomFactor();
-	step = (double)width() / (double)(se - ss);
+	old_x = current_x = (-getScrollBarValue() % stepSize);
+
+	ss = (getScrollBarValue() + current_x) * scaleFactor / stepSize;
+	se = ss + (getScaleFactor() * width()) * stepSize;
 	if (se > getNumSamples()) /* Do this _after_ calculating 'step'! */
 		se = getNumSamples();
 
-	old_x = current_x = 0;
-	oldval = getbit(sample_buffer, 0, ch);
+	oldval = getbit(sample_buffer, ss, ch);
 	current_y = (oldval) ? high : low;
 	painterPath->moveTo(current_x, current_y);
 
 	// qDebug() << "generatePainterPath() for ch" << getChannelNumber()
 	// 	 << "(" << ss << " - " << se << ")";
 
-	for (uint64_t i = ss + 1; i < se; ++i) {
-		current_x += step;
-		newval = getbit(sample_buffer, i, ch);
-		x_change_visible = (uint64_t)current_x > (uint64_t)old_x;
-		if (oldval != newval && x_change_visible) {
-			painterPath->lineTo(current_x, current_y);
-			current_y = (newval) ? high : low;
-			painterPath->lineTo(current_x, current_y);
-			old_x = current_x;
-			oldval = newval;
+	
+	for (uint64_t i = ss; i < se; i += scaleFactor) {
+		/* process the samples shown in this step */
+		for(uint64_t j = 0; (j<scaleFactor) && (i+j < se); j++)
+		{
+			newval = getbit(sample_buffer, i+j, ch);
+			x_change_visible = current_x > old_x;
+			if (oldval != newval && x_change_visible) {
+				painterPath->lineTo(current_x, current_y);
+				current_y = (newval) ? high : low;
+				painterPath->lineTo(current_x, current_y);
+				old_x = current_x;
+				oldval = newval;
+			}
+			current_x += (double)stepSize / (double)scaleFactor;
+			
 		}
 	}
-	current_x += step;
+	current_x += stepSize;
 	painterPath->lineTo(current_x, current_y);
 
 	/* Force a redraw. */
@@ -140,6 +149,17 @@ void ChannelForm::resizeEvent(QResizeEvent *event)
 {
 	/* Avoid compiler warnings. */
 	event = event;
+	
+	stepSize = width() / 100;
+	if (stepSize <= 1)
+	{
+		stepSize = width() / 50;
+	}
+	
+	if (stepSize <= 1)
+	{
+		stepSize = width() / 20;
+	}
 
 	/* Quick hack to force a redraw upon resize. */
 	generatePainterPath();
@@ -147,7 +167,7 @@ void ChannelForm::resizeEvent(QResizeEvent *event)
 
 void ChannelForm::paintEvent(QPaintEvent *event)
 {
-	int tickSize;
+	int tickStart;
 	// qDebug() << "Paint event on ch" << getChannelNumber();
 
 	// QPainter p(m_ui->renderAreaWidget);
@@ -177,35 +197,42 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 	// p.scale(getZoomFactor(), 1.0);
 	p.drawPath(*painterPath);
 
-	tickSize = width() / 100;
-	/* Draw minor ticks. */
-	for (int i = 0; i < width(); i += tickSize)
-		p.drawLine(i, 12, i, 15);
+	if (stepSize > 0)
+	{
+		if (stepSize > 1)
+		{
+			/* Draw minor ticks. */
+			tickStart = -getScrollBarValue() % stepSize;
+			for (int i = tickStart; i < width(); i += stepSize)
+				p.drawLine(i, 12, i, 15);
+		}
 
-	/* Draw major ticks every 10 minor tick. */
-	for (int i = tickSize * 10; i < width(); i += tickSize * 10) {
-		p.drawText(i, 10, QString::number(i));
-		p.drawLine(i, 11, i, 17);
+		/* Draw major ticks every 10 minor tick. */
+		tickStart = -getScrollBarValue() % (stepSize*10);
+		for (int i = tickStart; i < width(); i += stepSize * 10) {
+			p.drawText(i, 10, QString::number((i+getScrollBarValue())*getScaleFactor()));
+			p.drawLine(i, 11, i, 17);
+		}
 	}
 }
 
 void ChannelForm::wheelEvent(QWheelEvent *event)
 {
-	float zoomFactorNew;
+	float scaleFactorNew;
 
 	if ((event->delta() / WHEEL_DELTA) == 1)
-		zoomFactorNew = getZoomFactor() * 2;
+		scaleFactorNew = getScaleFactor() * 2;
 	else if ((event->delta() / WHEEL_DELTA) == -1)
-		zoomFactorNew = getZoomFactor() / 2;
+		scaleFactorNew = getScaleFactor() / 2;
 	else
-		zoomFactorNew = getZoomFactor();
+		scaleFactorNew = getScaleFactor();
 
-	if (zoomFactorNew < 1)
-		zoomFactorNew = 1;
+	if (scaleFactorNew < 1)
+		scaleFactorNew = 1;
 
-	setZoomFactor(zoomFactorNew);
+	setScaleFactor(scaleFactorNew);
 
-	/* TODO: Config option to scroll (instead of zoom) via the wheel. */
+	/* TODO: Config option to scroll (instead of scale) via the wheel. */
 }
 
 void ChannelForm::setChannelColor(QColor color)
@@ -280,17 +307,17 @@ uint64_t ChannelForm::getSampleEnd(void)
 	return sampleEnd;
 }
 
-void ChannelForm::setZoomFactor(float z)
+void ChannelForm::setScaleFactor(float z)
 {
-	zoomFactor = z;
+	scaleFactor = z;
 
-	emit(zoomFactorChanged(zoomFactor));
-	emit(zoomFactorChanged(QString::number(zoomFactor)));
+	emit(scaleFactorChanged(scaleFactor));
+	emit(scaleFactorChanged(QString::number(scaleFactor)));
 }
 
-float ChannelForm::getZoomFactor(void)
+float ChannelForm::getScaleFactor(void)
 {
-	return zoomFactor;
+	return scaleFactor;
 }
 
 int ChannelForm::getScrollBarValue(void)
