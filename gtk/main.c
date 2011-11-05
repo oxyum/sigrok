@@ -116,6 +116,24 @@ void format_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
 				"foreground", colours[probe & 7], NULL);
 }
 
+static gboolean do_scroll_event(GtkWidget *tv, GdkEventScroll *e,
+				GObject *cel)
+{
+	gdouble scale;
+	g_object_get(cel, "scale", &scale, NULL);
+	switch(e->direction) {
+	case GDK_SCROLL_UP:
+		scale *= 1.2;
+		break;
+	case GDK_SCROLL_DOWN:
+		scale /= 1.2;
+		break;
+	}
+	g_object_set(cel, "scale", scale, NULL);
+	gtk_widget_queue_draw(tv);
+	
+	return TRUE;
+}
 
 GtkWidget *sigview_init(void)
 {
@@ -135,8 +153,9 @@ GtkWidget *sigview_init(void)
 					"text", 0, "foreground", 1, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
 
-	//cel = gtk_cell_renderer_text_new();
 	cel = gtk_cell_renderer_signal_new();
+	g_object_set(G_OBJECT(cel), "ypad", 1, NULL);
+	g_signal_connect(tv, "scroll-event", G_CALLBACK(do_scroll_event), cel);
 	col = gtk_tree_view_column_new();
 	gtk_tree_view_column_pack_start(col, cel, TRUE);
 	gtk_tree_view_column_set_cell_data_func(col, cel, format_func,

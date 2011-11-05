@@ -27,6 +27,7 @@ enum
 	PROP_DATA,
 	PROP_PROBE,
 	PROP_FOREGROUND,
+	PROP_SCALE,
 };
 
 struct _GtkCellRendererSignalPrivate
@@ -34,6 +35,7 @@ struct _GtkCellRendererSignalPrivate
 	GArray *data;
 	guint32 probe;
 	GdkColor foreground;
+	gdouble scale;
 };
 
 static void gtk_cell_renderer_signal_finalize(GObject *object);
@@ -96,6 +98,14 @@ gtk_cell_renderer_signal_class_init (GtkCellRendererSignalClass *klass)
 						NULL,
 						G_PARAM_WRITABLE));
 
+	g_object_class_install_property (object_class,
+				PROP_SCALE,
+				g_param_spec_double("scale",
+						"Scale",
+						"Pixels per sample",
+						0, 100, 1,
+						G_PARAM_READWRITE));
+
 	g_type_class_add_private (object_class,
 			sizeof (GtkCellRendererSignalPrivate));
 }
@@ -111,6 +121,7 @@ static void gtk_cell_renderer_signal_init(GtkCellRendererSignal *cel)
 
 	priv->data = NULL;
 	priv->probe = -1;
+	priv->scale = 1;
 }
 
 GtkCellRenderer *gtk_cell_renderer_signal_new(void)
@@ -140,7 +151,10 @@ gtk_cell_renderer_signal_get_property(GObject *object,
 		g_value_set_pointer(value, priv->data);
 		break;
 	case PROP_PROBE:
-		g_value_set_int (value, priv->probe);
+		g_value_set_int(value, priv->probe);
+		break;
+	case PROP_SCALE:
+		g_value_set_double(value, priv->scale);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
@@ -165,6 +179,9 @@ gtk_cell_renderer_signal_set_property(GObject *object,
 		break;
 	case PROP_FOREGROUND:
 		gdk_color_parse(g_value_get_string(value), &priv->foreground);
+		break;
+	case PROP_SCALE:
+		priv->scale = g_value_get_double(value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
@@ -234,10 +251,12 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 	/*cairo_set_line_width(cr, 1);*/
 	cairo_new_path(cr);
 
+	cairo_move_to(cr, x, y +
+		(sample(priv->data, priv->probe, 0) ? 0 : h));
 	for(i = 1; i < nsamples; i++) {
-		cairo_line_to(cr, x + i*5, y +
+		cairo_line_to(cr, x + i*priv->scale, y +
 			(sample(priv->data, priv->probe, i-1) ? 0 : h));
-		cairo_line_to(cr, x + i*5, y +
+		cairo_line_to(cr, x + i*priv->scale, y +
 			(sample(priv->data, priv->probe, i) ? 0 : h));
 	}
 
