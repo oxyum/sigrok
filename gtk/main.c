@@ -127,6 +127,8 @@ static gboolean do_scroll_event(GtkTreeView *tv, GdkEventScroll *e,
 	gtk_tree_view_widget_to_tree_coords(tv, e->x, e->y, &x, &y);
 	if(!gtk_tree_view_get_path_at_pos(tv, x, y, NULL, &col, &cx, NULL))
 		return FALSE;
+	if(col != g_object_get_data(G_OBJECT(tv), "signalcol"))
+		return FALSE;
 
 	g_object_get(cel, "scale", &scale, "offset", &offset, NULL);
 	offset += cx;
@@ -165,23 +167,34 @@ static gboolean do_motion_event(GtkWidget *tv, GdkEventMotion *e,
 	gtk_widget_queue_draw(tv);
 }
 
-static gboolean do_button_event(GtkWidget *tv, GdkEventButton *e,
+static gboolean do_button_event(GtkTreeView *tv, GdkEventButton *e,
 				GObject *cel)
 {
 	int h;
+	gint x, y;
+	GtkTreeViewColumn *col;
 
 	if(e->button != 3)
 		return FALSE;
 
+	gtk_tree_view_widget_to_tree_coords(tv, e->x, e->y, &x, &y);
+
 	switch(e->type) {
 	case GDK_BUTTON_PRESS:
+		if(!gtk_tree_view_get_path_at_pos(tv, x, y, NULL, &col, NULL, NULL))
+			return FALSE;
+		if(col != g_object_get_data(G_OBJECT(tv), "signalcol"))
+			return FALSE;
 		h = g_signal_connect(tv, "motion-notify-event", G_CALLBACK(do_motion_event), cel);
 		g_object_set_data(G_OBJECT(tv), "motion-handler", GINT_TO_POINTER(h));
 		g_object_set_data(G_OBJECT(tv), "motion-x", GINT_TO_POINTER((gint)e->x));
 		break;
 	case GDK_BUTTON_RELEASE:
 		h = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv), "motion-handler"));
-		g_signal_handler_disconnect(tv, h);
+		if(!h)
+			return;
+		g_signal_handler_disconnect(GTK_WIDGET(tv), h);
+		g_object_set_data(G_OBJECT(tv), "motion-handler", NULL);
 		break;
 	}
 	return TRUE;
@@ -211,6 +224,7 @@ GtkWidget *sigview_init(void)
 	g_signal_connect(tv, "button-press-event", G_CALLBACK(do_button_event), cel);
 	g_signal_connect(tv, "button-release-event", G_CALLBACK(do_button_event), cel);
 	col = gtk_tree_view_column_new();
+	g_object_set_data(G_OBJECT(tv), "signalcol", col);
 	gtk_tree_view_column_pack_start(col, cel, TRUE);
 	gtk_tree_view_column_set_cell_data_func(col, cel, format_func,
 					NULL, NULL);
