@@ -28,6 +28,7 @@ enum
 	PROP_PROBE,
 	PROP_FOREGROUND,
 	PROP_SCALE,
+	PROP_OFFSET,
 };
 
 struct _GtkCellRendererSignalPrivate
@@ -36,6 +37,7 @@ struct _GtkCellRendererSignalPrivate
 	guint32 probe;
 	GdkColor foreground;
 	gdouble scale;
+	gint offset;
 };
 
 static void gtk_cell_renderer_signal_finalize(GObject *object);
@@ -106,6 +108,14 @@ gtk_cell_renderer_signal_class_init (GtkCellRendererSignalClass *klass)
 						0, 100, 1,
 						G_PARAM_READWRITE));
 
+	g_object_class_install_property (object_class,
+				PROP_OFFSET,
+				g_param_spec_int("offset",
+						"Offset",
+						"Offset...",
+						0, G_MAXINT, 0,
+						G_PARAM_READWRITE));
+
 	g_type_class_add_private (object_class,
 			sizeof (GtkCellRendererSignalPrivate));
 }
@@ -122,6 +132,7 @@ static void gtk_cell_renderer_signal_init(GtkCellRendererSignal *cel)
 	priv->data = NULL;
 	priv->probe = -1;
 	priv->scale = 1;
+	priv->offset = 0;
 }
 
 GtkCellRenderer *gtk_cell_renderer_signal_new(void)
@@ -156,6 +167,9 @@ gtk_cell_renderer_signal_get_property(GObject *object,
 	case PROP_SCALE:
 		g_value_set_double(value, priv->scale);
 		break;
+	case PROP_OFFSET:
+		g_value_set_int(value, priv->offset);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
 	}
@@ -182,6 +196,9 @@ gtk_cell_renderer_signal_set_property(GObject *object,
 		break;
 	case PROP_SCALE:
 		priv->scale = g_value_get_double(value);
+		break;
+	case PROP_OFFSET:
+		priv->offset = g_value_get_int(value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
@@ -237,7 +254,8 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 	guint nsamples = priv->data->len / g_array_get_element_size(priv->data);
 	gint xpad, ypad;
 	int x, y, w, h;
-	gint i;
+	gint i, si;
+	gdouble o;
 
 	gtk_cell_renderer_get_padding (cell, &xpad, &ypad);
 	x = cell_area->x + xpad;
@@ -251,13 +269,16 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 	/*cairo_set_line_width(cr, 1);*/
 	cairo_new_path(cr);
 
-	cairo_move_to(cr, x, y +
-		(sample(priv->data, priv->probe, 0) ? 0 : h));
-	for(i = 1; i < nsamples; i++) {
-		cairo_line_to(cr, x + i*priv->scale, y +
-			(sample(priv->data, priv->probe, i-1) ? 0 : h));
-		cairo_line_to(cr, x + i*priv->scale, y +
-			(sample(priv->data, priv->probe, i) ? 0 : h));
+	si = floor(priv->offset / priv->scale);
+	o = priv->offset - si * priv->scale;
+
+	cairo_move_to(cr, x - o, y +
+		(sample(priv->data, priv->probe, si++) ? 0 : h));
+	for(i = 1; si < nsamples; i++, si++) {
+		cairo_line_to(cr, x - o + i*priv->scale, y +
+			(sample(priv->data, priv->probe, si-1) ? 0 : h));
+		cairo_line_to(cr, x - o + i*priv->scale, y +
+			(sample(priv->data, priv->probe, si) ? 0 : h));
 	}
 
 	cairo_stroke(cr);
