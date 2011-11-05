@@ -247,7 +247,7 @@ void ChannelForm::setChannelNumber(int c)
 	if (channelNumber < 0) {
 		/* Set a default color for this channel. */
 		/* FIXME: Channel color should be dependent on the selected LA. */
-		setChannelColor(channelColors[c % (sizeof(channelColors) / sizeof(channelColors[0]))]);
+		setChannelColor(channelColors[c % (ARRAY_SIZE(channelColors))]);
 	}
 	channelNumber = c;
 

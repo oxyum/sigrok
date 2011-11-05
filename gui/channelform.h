@@ -27,6 +27,8 @@
 #include <QWheelEvent>
 #include <stdint.h>
 
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
 namespace Ui {
 	class ChannelForm;
 }
