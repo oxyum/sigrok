@@ -198,10 +198,10 @@ static gboolean sample(GArray *data, gint probe, guint i)
 	case 1:
 		return data->data[i] & (1 << probe);
 	case 2:
-		tmp16 = (guint16*)&data->data;
+		tmp16 = (guint16*)data->data;
 		return tmp16[i] & (1 << probe);
 	case 4:
-		tmp32 = (guint32*)&data->data;
+		tmp32 = (guint32*)data->data;
 		return tmp32[i] & (1 << probe);
 	}
 	return FALSE;
@@ -215,10 +215,18 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 				const GdkRectangle *cell_area,
 				GtkCellRendererState flags)
 {
-	int i;
 	GtkCellRendererSignal *cel = GTK_CELL_RENDERER_SIGNAL(cell);
 	GtkCellRendererSignalPrivate *priv= cel->priv;
 	guint nsamples = priv->data->len / g_array_get_element_size(priv->data);
+	gint xpad, ypad;
+	int x, y, w, h;
+	gint i;
+
+	gtk_cell_renderer_get_padding (cell, &xpad, &ypad);
+	x = cell_area->x + xpad;
+	y = cell_area->y + ypad;
+	w = cell_area->width - xpad * 2;
+	h = cell_area->height - ypad * 2;
 
 	cairo_t *cr = gdk_cairo_create(GDK_DRAWABLE(window));
 	cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
@@ -226,12 +234,11 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 	/*cairo_set_line_width(cr, 1);*/
 	cairo_new_path(cr);
 
-	
 	for(i = 1; i < nsamples; i++) {
-		cairo_line_to(cr, cell_area->x + i*5, cell_area->y +
-			(sample(priv->data, priv->probe, i-1)?0:cell_area->height));
-		cairo_line_to(cr, cell_area->x + i*5, cell_area->y +
-			(sample(priv->data, priv->probe, i)?0:cell_area->height));
+		cairo_line_to(cr, x + i*5, y +
+			(sample(priv->data, priv->probe, i-1) ? 0 : h));
+		cairo_line_to(cr, x + i*5, y +
+			(sample(priv->data, priv->probe, i) ? 0 : h));
 	}
 
 	cairo_stroke(cr);
