@@ -158,6 +158,13 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 	gdouble scale;
 	gint ofs;
 
+	/* This is so that sigview_zoom() may be called with pointer
+	 * to the GtkTreeView or containing GtkScrolledWindow, as is the
+	 * case when called from outside this module.
+	 */
+	if (GTK_IS_SCROLLED_WINDOW(sigview))
+		sigview = gtk_bin_get_child(GTK_BIN(sigview));
+
 	cel = g_object_get_data(G_OBJECT(sigview), "signalcel");
 	g_object_get(cel, "scale", &scale, "offset", &ofs, NULL);
 

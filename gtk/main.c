@@ -105,7 +105,7 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 int main(int argc, char **argv)
 {
 	GtkWindow *window;
-	GtkWidget *vbox, *vpaned, *log;
+	GtkWidget *vbox, *vpaned, *log, *sigview;
 	gtk_init(&argc, &argv);
 	sr_init();
 	sr_session_new();
@@ -126,7 +126,9 @@ int main(int argc, char **argv)
 	gtk_widget_set_no_show_all(log, TRUE);
 	g_object_set_data(G_OBJECT(window), "logview", log);
 	gtk_paned_add2(GTK_PANED(vpaned), log);
-	gtk_paned_pack1(GTK_PANED(vpaned), sigview_init(), TRUE, FALSE);
+	sigview = sigview_init();
+	g_object_set_data(G_OBJECT(window), "sigview", sigview);
+	gtk_paned_pack1(GTK_PANED(vpaned), sigview, TRUE, FALSE);
 
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(GTK_WIDGET(window));

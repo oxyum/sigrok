@@ -22,6 +22,8 @@
 
 #include <gtk/gtk.h>
 
+#include "sigview.h"
+
 static void dev_selected(GtkComboBox *dev, GObject *parent)
 {
 	GtkTreeModel *devlist = gtk_combo_box_get_model(dev);
@@ -331,6 +333,18 @@ void toggle_log(GtkToggleToolButton *button, GObject *parent)
 	gtk_widget_set_visible(log, gtk_toggle_tool_button_get_active(button));
 }
 
+void zoom_in(GtkToolButton *button, GObject *parent)
+{
+	GtkWidget *sigview = g_object_get_data(parent, "sigview");
+	sigview_zoom(sigview, 1.5, 0);
+}
+
+void zoom_out(GtkToolButton *button, GObject *parent)
+{
+	GtkWidget *sigview = g_object_get_data(parent, "sigview");
+	sigview_zoom(sigview, 1/1.5, 0);
+}
+
 GtkWidget *toolbar_init(GtkWindow *parent)
 {
 	GtkToolbar *toolbar = GTK_TOOLBAR(gtk_toolbar_new());
@@ -398,6 +412,22 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 	gtk_toolbar_insert(toolbar, toolitem, -1);
 	g_signal_connect(toolitem, "clicked",
 				G_CALLBACK(capture_run), parent);
+
+	gtk_toolbar_insert(toolbar, gtk_separator_tool_item_new(), -1);
+
+	/* Zoom-in button */
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_ZOOM_IN);
+	gtk_toolbar_insert(toolbar, toolitem, -1);
+	g_signal_connect(toolitem, "clicked",
+				G_CALLBACK(zoom_in), parent);
+
+	/* Zoom-out button */
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_ZOOM_OUT);
+	gtk_toolbar_insert(toolbar, toolitem, -1);
+	g_signal_connect(toolitem, "clicked",
+				G_CALLBACK(zoom_out), parent);
+
+	gtk_toolbar_insert(toolbar, gtk_separator_tool_item_new(), -1);
 
 	/* View Log toggle button */
 	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_JUSTIFY_LEFT);
