@@ -21,9 +21,10 @@
 #include <gtk/gtk.h>
 
 #include "gtkcellrenderersignal.h"
+#include "sigview.h"
 
 /* FIXME: No globals */
-extern GtkListStore *siglist;
+GtkListStore *siglist;
 
 static void format_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
 		GtkTreeModel *siglist, GtkTreeIter *iter, gpointer h)
@@ -52,23 +53,14 @@ static gboolean do_scroll_event(GtkTreeView *tv, GdkEventScroll *e,
 	if(col != g_object_get_data(G_OBJECT(tv), "signalcol"))
 		return FALSE;
 
-	g_object_get(cel, "scale", &scale, "offset", &offset, NULL);
-	offset += cx;
 	switch(e->direction) {
 	case GDK_SCROLL_UP:
-		scale *= 1.2;
-		offset *= 1.2;
+		sigview_zoom(GTK_WIDGET(tv), 1.2, cx);
 		break;
 	case GDK_SCROLL_DOWN:
-		scale /= 1.2;
-		offset /= 1.2;
+		sigview_zoom(GTK_WIDGET(tv), 1/1.2, cx);
 		break;
 	}
-	offset -= cx;
-	if(offset < 0)
-		offset = 0;
-	g_object_set(cel, "scale", scale, "offset", offset, NULL);
-	gtk_widget_queue_draw(GTK_WIDGET(tv));
 	
 	return TRUE;
 }
@@ -147,6 +139,7 @@ GtkWidget *sigview_init(void)
 	g_signal_connect(tv, "button-release-event", G_CALLBACK(do_button_event), cel);
 	col = gtk_tree_view_column_new();
 	g_object_set_data(G_OBJECT(tv), "signalcol", col);
+	g_object_set_data(G_OBJECT(tv), "signalcel", cel);
 	gtk_tree_view_column_pack_start(col, cel, TRUE);
 	gtk_tree_view_column_set_cell_data_func(col, cel, format_func,
 					NULL, NULL);
@@ -158,4 +151,28 @@ GtkWidget *sigview_init(void)
 
 	return sw;
 }
+
+void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
+{
+	GtkCellRendererSignal *cel;
+	gdouble scale;
+	gint ofs;
+
+	cel = g_object_get_data(G_OBJECT(sigview), "signalcel");
+	g_object_get(cel, "scale", &scale, "offset", &ofs, NULL);
+
+	ofs += offset;
+		
+	scale *= zoom;
+	ofs *= zoom;
+
+	ofs -= offset;
+
+	if(ofs < 0)
+		ofs = 0;
+
+	g_object_set(cel, "scale", scale, "offset", ofs, NULL);
+	gtk_widget_queue_draw(GTK_WIDGET(sigview));
+}
+
 

@@ -26,7 +26,6 @@
 GtkWidget *log_init(void);
 GtkWidget *toolbar_init(GtkWindow *parent);
 
-GtkListStore *siglist;
 static const char *colours[8] = {
 	"black", "brown", "red", "orange",
 	"gold", "darkgreen", "blue", "magenta",

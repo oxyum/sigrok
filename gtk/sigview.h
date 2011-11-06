@@ -25,6 +25,7 @@
 extern GtkListStore *siglist;
 
 GtkWidget *sigview_init(void);
+void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset);
 
 #endif
 
