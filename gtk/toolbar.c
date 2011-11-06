@@ -234,24 +234,58 @@ static void dev_set_probes(GtkWindow *parent)
 	gtk_widget_destroy(dialog);
 }
 
-static void dev_list_refresh(GtkListStore *devlist)
+#define GET_DEVICE_INSTANCE(device) \
+	(device)->plugin->get_device_info((device)->plugin_index, \
+			SR_DI_INSTANCE);
+
+static void dev_list_refresh(GtkComboBox *dev)
 {
+	GtkListStore *devlist = GTK_LIST_STORE(gtk_combo_box_get_model(dev));
+	GtkTreeIter iter;
+	struct sr_device *device;
+	struct sr_device_instance *sdi;
+	gchar *sdevname = NULL;
 	GSList *devices, *l;
+
+	/* Make a copy of the selected device's short name for comparison.
+	 * We wish to select the same device after the refresh if possible.
+	 */
+	if(gtk_combo_box_get_active_iter(dev, &iter)) {
+		gtk_tree_model_get(GTK_TREE_MODEL(devlist), &iter, 1, &device, -1);
+		/* FIXME: Use something other than device->plugin->name */
+		sdevname = g_strdup(device->plugin->name);
+	}
 
 	gtk_list_store_clear(devlist);
 
+	/* Scan for new devices and update our list */
+	/* TODO: Fix this in libsigrok first. */
+	/*sr_device_scan();*/
 	devices = sr_device_list();
 	for (l = devices; l; l = l->next) {
-		struct sr_device *device = l->data;
-		struct sr_device_instance *sdi =
-			device->plugin->get_device_info(device->plugin_index,
-							SR_DI_INSTANCE);
-		GtkTreeIter iter;
+		device = l->data;
+		sdi = GET_DEVICE_INSTANCE(device);
 		gtk_list_store_append(devlist, &iter);
 		gtk_list_store_set(devlist, &iter,
 				0, sdi->model ? sdi->model : sdi->vendor,
 				1, device,
 				-1);
+		if (sdevname && g_str_equal(sdevname, device->plugin->name))
+			gtk_combo_box_set_active_iter(dev, &iter);
+	}
+	if(sdevname)
+		g_free(sdevname);
+
+	/* Select a default if nothing selected */
+	if(!gtk_combo_box_get_active_iter(dev, &iter)) {
+		if(!gtk_tree_model_get_iter_first(GTK_TREE_MODEL(devlist), &iter))
+			return;
+		/* Skip demo if there's another available */
+		GtkTreeIter first = iter;
+		if(gtk_tree_model_iter_next(GTK_TREE_MODEL(devlist), &iter))
+			gtk_combo_box_set_active_iter(dev, &iter);
+		else
+			gtk_combo_box_set_active_iter(dev, &first);
 	}
 }
 
@@ -359,18 +393,18 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 	/* Populate device list */
 	GtkListStore *devlist = gtk_list_store_new(2,
 			G_TYPE_STRING, G_TYPE_POINTER);
-	dev_list_refresh(devlist);
 	GtkCellRenderer *cel = gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(dev), cel, TRUE);
 	gtk_cell_layout_add_attribute(GTK_CELL_LAYOUT(dev), cel, "text", 0);
 	gtk_combo_box_set_model(GTK_COMBO_BOX(dev), GTK_TREE_MODEL(devlist));
 	g_signal_connect(dev, "changed", G_CALLBACK(dev_selected), parent);
+	dev_list_refresh(GTK_COMBO_BOX(dev));
 
 	/* Device Refresh button */
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
 	gtk_toolbar_insert(toolbar, toolitem, -1);
 	g_signal_connect_swapped(toolitem, "clicked",
-				G_CALLBACK(dev_list_refresh), devlist);
+				G_CALLBACK(dev_list_refresh), dev);
 	
 	/* Device Properties button */
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PROPERTIES);
