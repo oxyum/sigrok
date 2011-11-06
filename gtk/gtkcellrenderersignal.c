@@ -228,7 +228,8 @@ static gboolean sample(GArray *data, gint probe, guint i)
 	guint16 *tmp16;
 	guint32 *tmp32;
 
-	g_return_val_if_fail(i < data->len, FALSE);
+	g_return_val_if_fail(i < (data->len / g_array_get_element_size(data)),
+				FALSE);
 
 	switch(g_array_get_element_size(data)) {
 	case 1:
@@ -253,7 +254,7 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 {
 	GtkCellRendererSignal *cel = GTK_CELL_RENDERER_SIGNAL(cell);
 	GtkCellRendererSignalPrivate *priv= cel->priv;
-	guint nsamples = priv->data->len;
+	guint nsamples = priv->data->len / g_array_get_element_size(priv->data);
 	gint xpad, ypad;
 	int x, y, w, h;
 	gint i, si;
