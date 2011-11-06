@@ -7,29 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>63</height>
+    <height>71</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="1">
-    <widget class="QScrollBar" name="channelScrollBar">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximum">
-      <number>0</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="1">
     <widget class="QWidget" name="renderAreaWidget" native="true">
      <property name="sizePolicy">

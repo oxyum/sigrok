@@ -134,8 +134,24 @@ void MainWindow::setupDockWidgets(void)
 	}
 
 	/* For now, display only one scrollbar which scrolls all channels. */
-	for (int i = 0; i < getNumChannels() - 1; ++i)
-		channelForms[i]->m_ui->channelScrollBar->setVisible(false);
+	QDockWidget* scrollWidget = new QDockWidget(this);
+	scrollWidget->setAllowedAreas(Qt::BottomDockWidgetArea);
+	QScrollBar* scrollBar = new QScrollBar(this);
+	scrollBar->setOrientation(Qt::Horizontal);
+	
+	QDockWidget::DockWidgetFeatures f;
+	if (configChannelTitleBarLayout == DOCK_VERTICAL)
+		f |= QDockWidget::DockWidgetVerticalTitleBar;
+	scrollWidget->setFeatures(f);
+	scrollWidget->setWidget(scrollBar);
+	addDockWidget(Qt::BottomDockWidgetArea, scrollWidget,
+			      Qt::Vertical);
+	
+	for (int i = 0; i < getNumChannels(); ++i) {
+		/* The scrollbar scrolls all channels. */
+		connect(scrollBar, SIGNAL(valueChanged(int)),
+				channelForms[i], SLOT(setScrollBarValue(int)));
+	}
 }
 
 void MainWindow::setCurrentLA(int la)
@@ -399,26 +415,8 @@ void MainWindow::on_action_Open_triggered()
 	for (int i = 0; i < getNumChannels(); ++i) {
 		channelForms[i]->setNumSamples(file.size());
 
-		QScrollBar *sc = channelForms[i]->m_ui->channelScrollBar;
-		sc->setMinimum(0);
-		sc->setMaximum(99);
-
-		/* The i-th scrollbar scrolls channel i. */
-		connect(sc, SIGNAL(valueChanged(int)),
-			channelForms[i], SLOT(setScrollBarValue(int)));
-
-		/* If any of the scrollbars change, update all of them. */
-		connect(sc, SIGNAL(valueChanged(int)),
-			w, SLOT(updateScrollBars(int)));
-
 		channelForms[i]->update();
 	}
-
-	/* For now, display only one scrollbar which scrolls all channels. */
-	for (int i = 0; i < getNumChannels() - 1; ++i)
-		channelForms[i]->m_ui->channelScrollBar->setVisible(false);
-
-	/* FIXME */
 }
 
 void MainWindow::on_action_Save_as_triggered()
@@ -617,18 +615,6 @@ void MainWindow::on_action_Get_samples_triggered()
 		// channelForms[i]->setSampleStart(0);
 		// channelForms[i]->setSampleEnd(limit_samples);
 
-		QScrollBar *sc = channelForms[i]->m_ui->channelScrollBar;
-		sc->setMinimum(0);
-		sc->setMaximum(99);
-
-		/* The i-th scrollbar scrolls channel i. */
-		connect(sc, SIGNAL(valueChanged(int)),
-			channelForms[i], SLOT(setScrollBarValue(int)));
-
-		/* If any of the scrollbars change, update all of them. */
-		connect(sc, SIGNAL(valueChanged(int)),
-		        w, SLOT(updateScrollBars(int)));
-
 		/* If any of the scale factors change, update all of them.. */
 		connect(channelForms[i], SIGNAL(scaleFactorChanged(float)),
 		        w, SLOT(updateScaleFactors(float)));
@@ -722,22 +708,6 @@ void MainWindow::configChannelTitleBarLayoutChanged(int index)
 		dockWidgets[i]->setFeatures(f);
 }
 
-void MainWindow::updateScrollBars(int value)
-{
-	static int lock = 0;
-
-	/* TODO: There must be a better way to do this. */
-	if (lock == 1)
-		return;
-
-	lock = 1;
-	for (int i = 0; i < getNumChannels(); ++i) {
-		// qDebug("updating scrollbar %d", i);
-		channelForms[i]->m_ui->channelScrollBar->setValue(value);
-		// qDebug("updating scrollbar %d (DONE)", i);
-	}
-	lock = 0;
-}
 
 void MainWindow::updateScaleFactors(float value)
 {
