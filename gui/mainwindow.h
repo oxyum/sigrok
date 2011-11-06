@@ -58,6 +58,7 @@ public:
 	/* FIXME */
 	QDockWidget *dockWidgets[NUMCHANNELS];
 	ChannelForm *channelForms[NUMCHANNELS];
+	QScrollBar *horizontalScrollBar;
 
 	void setupDockWidgets(void);
 
@@ -69,6 +70,7 @@ private:
 	uint64_t numSamples;
 	int configChannelTitleBarLayout;
 
+	void updateScrollBar(void);
 public slots:
 	void configChannelTitleBarLayoutChanged(int index);
 

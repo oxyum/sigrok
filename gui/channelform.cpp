@@ -201,7 +201,7 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 		/* Draw major ticks every 10 minor tick. */
 		tickStart = -getScrollBarValue() % (stepSize*10);
 		for (int i = tickStart; i < width(); i += stepSize * 10) {
-			p.drawText(i, 10, QString::number((i+getScrollBarValue())*getScaleFactor()));
+			p.drawText(i, 10, QString::number((i + getScrollBarValue()) / stepSize * getScaleFactor()));
 			p.drawLine(i, 11, i, 17);
 		}
 	}
@@ -269,6 +269,16 @@ void ChannelForm::setNumSamples(uint64_t s)
 uint64_t ChannelForm::getNumSamples(void)
 {
 	return numSamples;
+}
+
+uint64_t ChannelForm::getNumSamplesVisible(void)
+{
+	return (width() / stepSize) * scaleFactor;
+}
+
+int ChannelForm::getStepSize(void)
+{
+	return stepSize;
 }
 
 void ChannelForm::setSampleStart(uint64_t s)

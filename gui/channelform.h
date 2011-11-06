@@ -45,9 +45,11 @@ public:
 	int getChannelNumber(void);
 	void setNumSamples(uint64_t s);
 	uint64_t getNumSamples(void);
+	uint64_t getNumSamplesVisible(void);
 	uint64_t getSampleStart(void);
 	uint64_t getSampleEnd(void);
 	float getScaleFactor(void);
+	int getStepSize(void);
 	int getScrollBarValue(void);
 
 public slots:

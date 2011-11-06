@@ -136,20 +136,20 @@ void MainWindow::setupDockWidgets(void)
 	/* For now, display only one scrollbar which scrolls all channels. */
 	QDockWidget* scrollWidget = new QDockWidget(this);
 	scrollWidget->setAllowedAreas(Qt::BottomDockWidgetArea);
-	QScrollBar* scrollBar = new QScrollBar(this);
-	scrollBar->setOrientation(Qt::Horizontal);
+	horizontalScrollBar = new QScrollBar(this);
+	horizontalScrollBar->setOrientation(Qt::Horizontal);
 	
 	QDockWidget::DockWidgetFeatures f;
 	if (configChannelTitleBarLayout == DOCK_VERTICAL)
 		f |= QDockWidget::DockWidgetVerticalTitleBar;
 	scrollWidget->setFeatures(f);
-	scrollWidget->setWidget(scrollBar);
+	scrollWidget->setWidget(horizontalScrollBar);
 	addDockWidget(Qt::BottomDockWidgetArea, scrollWidget,
 			      Qt::Vertical);
 	
 	for (int i = 0; i < getNumChannels(); ++i) {
 		/* The scrollbar scrolls all channels. */
-		connect(scrollBar, SIGNAL(valueChanged(int)),
+		connect(horizontalScrollBar, SIGNAL(valueChanged(int)),
 				channelForms[i], SLOT(setScrollBarValue(int)));
 	}
 }
@@ -623,6 +623,8 @@ void MainWindow::on_action_Get_samples_triggered()
 		// channelForms[i]->update();
 	}
 
+	setNumSamples(limit_samples);
+	
 	/* Enable the relevant labels/buttons. */
 	ui->labelSampleStart->setEnabled(true);
 	ui->labelSampleEnd->setEnabled(true);
@@ -645,6 +647,26 @@ uint64_t MainWindow::getSampleRate(void)
 void MainWindow::setNumSamples(uint64_t s)
 {
 	numSamples = s;
+	updateScrollBar();
+}
+
+void MainWindow::updateScrollBar(void)
+{
+	int stepSize = channelForms[0]->getStepSize();
+	float scaleFactor = channelForms[0]->getScaleFactor();
+
+	uint64_t viewport = channelForms[0]->getNumSamplesVisible() * stepSize / scaleFactor;
+	uint64_t length = numSamples * stepSize / scaleFactor;
+
+	horizontalScrollBar->setMinimum(0);
+	horizontalScrollBar->setPageStep(viewport);
+	if (viewport < length)
+	{
+		horizontalScrollBar->setMaximum(length - viewport / 2);
+	} else {
+		horizontalScrollBar->setMaximum(0);
+	}
+
 }
 
 uint64_t MainWindow::getNumSamples(void)
@@ -723,6 +745,7 @@ void MainWindow::updateScaleFactors(float value)
 		channelForms[i]->setScaleFactor(value);
 		// qDebug("updating scaleFactor %d (DONE)", i);
 	}
+	updateScrollBar();
 	lock = 0;
 }
 
