@@ -267,6 +267,14 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 	h = cell_area->height - ypad * 2;
 
 	cairo_t *cr = gdk_cairo_create(GDK_DRAWABLE(window));
+
+	/* Set clipping region to background rectangle.
+	 * This prevents us drawing over other cells.
+	 */
+	cairo_new_path(cr);
+	gdk_cairo_rectangle(cr, background_area);
+	cairo_clip(cr);
+
 	cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
 	gdk_cairo_set_source_color(cr, &priv->foreground);
 	/*cairo_set_line_width(cr, 1);*/
@@ -279,6 +287,7 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 
 	cairo_move_to(cr, o, y +
 		(sample(priv->data, priv->probe, si++) ? 0 : h));
+	o += priv->scale;
 	while((si < nsamples) && (o - priv->scale < x+w)) {
 		cairo_line_to(cr, o, y +
 			(sample(priv->data, priv->probe, si-1) ? 0 : h));
