@@ -101,8 +101,9 @@ static void dev_set_options(GtkWindow *parent)
 				TRUE, TRUE, 0);
 
 	/* Populate list store with config options */
-	GtkListStore *props = gtk_list_store_new(4, G_TYPE_INT, G_TYPE_INT,
-					G_TYPE_STRING, G_TYPE_STRING);
+	GtkListStore *props = gtk_list_store_new(5, G_TYPE_INT, G_TYPE_INT,
+					G_TYPE_STRING, G_TYPE_STRING,
+					G_TYPE_STRING);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(tv), GTK_TREE_MODEL(props));
 	int *capabilities = device->plugin->get_capabilities();
 	int cap;
@@ -113,8 +114,12 @@ static void dev_set_options(GtkWindow *parent)
 			continue;
 		gtk_list_store_append(props, &iter);
 		gtk_list_store_set(props, &iter, 0, capabilities[cap],
-					1, hwo->type, 2, hwo->shortname, -1);
+					1, hwo->type, 2, hwo->shortname,
+					4, hwo->description, -1);
 	}
+
+	/* Popup tooltop containing description if mouse hovers */
+	gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(tv), 4);
 
 	/* Save device with list so that property can be set by edited
 	 * handler. */
@@ -132,6 +137,7 @@ static void dev_set_options(GtkWindow *parent)
 	col = gtk_tree_view_column_new_with_attributes("Value",
 				cel, "text", 3, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
+
 
 	gtk_widget_show_all(dialog);
 	gtk_dialog_run(GTK_DIALOG(dialog));
