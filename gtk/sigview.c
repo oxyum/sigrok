@@ -184,12 +184,16 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 	if (GTK_IS_SCROLLED_WINDOW(sigview))
 		sigview = gtk_bin_get_child(GTK_BIN(sigview));
 
+	g_return_if_fail(GTK_IS_TREE_VIEW(sigview));
+
 	col = g_object_get_data(G_OBJECT(sigview), "signalcol");
 	width = gtk_tree_view_column_get_width(col);
 
 	data = g_object_get_data(
 		G_OBJECT(gtk_tree_view_get_model(GTK_TREE_VIEW(sigview))),
 		"sampledata");
+	if(!data)
+		return;
 	nsamples = (data->len / g_array_get_element_size(data)) - 1;
 
 	cel = g_object_get_data(G_OBJECT(sigview), "signalcel");

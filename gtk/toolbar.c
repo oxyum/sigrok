@@ -81,7 +81,7 @@ static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 		gtk_list_store_set(props, &iter, 3, text, -1);
 }
 
-static void dev_set_options(GtkWindow *parent)
+static void dev_set_options(GtkAction *action, GtkWindow *parent)
 {
 	struct sr_device *device = g_object_get_data(G_OBJECT(parent), "device");
 	if(!device)
@@ -178,7 +178,7 @@ static void probe_named(GtkCellRendererText *cel, gchar *path, gchar *text,
 	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, 2, text, -1);
 }
 
-static void dev_set_probes(GtkWindow *parent)
+static void dev_set_probes(GtkAction *action, GtkWindow *parent)
 {
 	struct sr_device *device = g_object_get_data(G_OBJECT(parent), "device");
 	if(!device)
@@ -244,8 +244,10 @@ static void dev_set_probes(GtkWindow *parent)
 	(device)->plugin->get_device_info((device)->plugin_index, \
 			SR_DI_INSTANCE);
 
-static void dev_list_refresh(GtkComboBox *dev)
+static void dev_list_refresh(GtkAction *action, gpointer data)
 {
+	GtkComboBox *dev = g_object_get_data(data, "devcombo");
+	g_return_if_fail(dev != NULL);
 	GtkListStore *devlist = GTK_LIST_STORE(gtk_combo_box_get_model(dev));
 	GtkTreeIter iter;
 	struct sr_device *device;
@@ -295,11 +297,11 @@ static void dev_list_refresh(GtkComboBox *dev)
 	}
 }
 
-static void capture_run(GObject *toolitem, GObject *parent)
+static void capture_run(GtkAction *action, GObject *parent)
 {
 	struct sr_device *device = g_object_get_data(G_OBJECT(parent), "device");
-	GtkEntry *timesamples = g_object_get_data(toolitem, "timesamples");
-	GtkComboBox *timeunit = g_object_get_data(toolitem, "timeunit");
+	GtkEntry *timesamples = g_object_get_data(parent, "timesamples");
+	GtkComboBox *timeunit = g_object_get_data(parent, "timeunit");
 	gint i = gtk_combo_box_get_active(timeunit);
 	guint64 time_msec = 0;
 	guint64 limit_samples = 0;
@@ -373,28 +375,89 @@ void toggle_log(GtkToggleToolButton *button, GObject *parent)
 	gtk_widget_set_visible(log, gtk_toggle_tool_button_get_active(button));
 }
 
-void zoom_in(GtkToolButton *button, GObject *parent)
+void zoom_in(GtkAction *action, GObject *parent)
 {
 	GtkWidget *sigview = g_object_get_data(parent, "sigview");
 	sigview_zoom(sigview, 1.5, 0);
 }
 
-void zoom_out(GtkToolButton *button, GObject *parent)
+void zoom_out(GtkAction *action, GObject *parent)
 {
 	GtkWidget *sigview = g_object_get_data(parent, "sigview");
 	sigview_zoom(sigview, 1/1.5, 0);
 }
 
+static const GtkActionEntry action_items[] = {
+	/* name, stock-id, label, tooltip, accel, callback */
+	{"DevMenu", NULL, "_Device", NULL, NULL, NULL},
+	{"DevRescan", GTK_STOCK_REFRESH, "_Rescan", "<control>R",
+		"Rescan for LA devices", G_CALLBACK(dev_list_refresh)},
+	{"DevProperties", GTK_STOCK_PROPERTIES, "_Properties", "<control>P",
+		"Configure LA", G_CALLBACK(dev_set_options)},
+	{"DevProbes", GTK_STOCK_COLOR_PICKER, "_Probes", "<control>O",
+		"Configure Probes", G_CALLBACK(dev_set_probes)},
+	{"DevAcquire", GTK_STOCK_EXECUTE, "_Acquire", "<control>A",
+		"Acquire Samples", G_CALLBACK(capture_run)},
+	{"Exit", GTK_STOCK_QUIT, "E_xit", "<control>Q",
+		"Exit the program", G_CALLBACK(gtk_main_quit) },
+
+	{"ViewMenu", NULL, "_View", NULL, NULL, NULL},
+	{"ViewZoomIn", GTK_STOCK_ZOOM_IN, "Zoom _In", "<control>z", NULL,
+		G_CALLBACK(zoom_in)},
+	{"ViewZoomOut", GTK_STOCK_ZOOM_OUT, "Zoom _Out", "<control><shift>Z", NULL,
+		G_CALLBACK(zoom_out)},
+
+	{"HelpMenu", NULL, "_Help", NULL, NULL, NULL},
+	{"About", GTK_STOCK_ABOUT, "_About", NULL, NULL,
+		NULL}
+};
+
+static const char ui_xml[] =
+"<ui>"
+"  <toolbar>"
+"    <placeholder name='DevSelect'/>"
+"    <toolitem action='DevRescan'/>"
+"    <toolitem action='DevProperties'/>"
+"    <toolitem action='DevProbes'/>"
+"    <separator/>"
+"    <placeholder name='DevSampleCount' />"
+"    <toolitem action='DevAcquire'/>"
+"    <separator/>"
+"    <toolitem action='ViewZoomIn'/>"
+"    <toolitem action='ViewZoomOut'/>"
+"    <separator/>"
+"    <toolitem action='ViewLog'/>"
+"    <separator/>"
+"  </toolbar>"
+"</ui>";
+
 GtkWidget *toolbar_init(GtkWindow *parent)
 {
-	GtkToolbar *toolbar = GTK_TOOLBAR(gtk_toolbar_new());
+	GtkToolbar *toolbar;
+	GtkActionGroup *ag = gtk_action_group_new(NULL);
+	gtk_action_group_add_actions(ag, action_items,
+					G_N_ELEMENTS(action_items), parent);
+
+	GtkUIManager *ui = gtk_ui_manager_new();
+	gtk_ui_manager_insert_action_group(ui, ag, 0);
+	GtkAccelGroup *accel = gtk_ui_manager_get_accel_group(ui);
+	gtk_window_add_accel_group(parent, accel);
+
+	GError *error = NULL;
+        if (!gtk_ui_manager_add_ui_from_string (ui, ui_xml, -1, &error)) {
+                g_message ("building menus failed: %s", error->message);
+                g_error_free (error);
+                exit (-1);
+        }
+
+	toolbar = GTK_TOOLBAR(gtk_ui_manager_get_widget(ui, "/toolbar"));
 
 	/* Device selection GtkComboBox */
 	GtkToolItem *toolitem = gtk_tool_item_new();
 	GtkWidget *dev = gtk_combo_box_new();
 
 	gtk_container_add(GTK_CONTAINER(toolitem), dev);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
+	gtk_toolbar_insert(toolbar, toolitem, 0);
 
 	/* Populate device list */
 	GtkListStore *devlist = gtk_list_store_new(2,
@@ -404,27 +467,9 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 	gtk_cell_layout_add_attribute(GTK_CELL_LAYOUT(dev), cel, "text", 0);
 	gtk_combo_box_set_model(GTK_COMBO_BOX(dev), GTK_TREE_MODEL(devlist));
 	g_signal_connect(dev, "changed", G_CALLBACK(dev_selected), parent);
-	dev_list_refresh(GTK_COMBO_BOX(dev));
 
-	/* Device Refresh button */
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
-	g_signal_connect_swapped(toolitem, "clicked",
-				G_CALLBACK(dev_list_refresh), dev);
-	
-	/* Device Properties button */
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PROPERTIES);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
-	g_signal_connect_swapped(toolitem, "clicked",
-				G_CALLBACK(dev_set_options), parent);
-	
-	/* Probe Configuration button */
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_COLOR_PICKER);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
-	g_signal_connect_swapped(toolitem, "clicked",
-				G_CALLBACK(dev_set_probes), parent);
-
-	gtk_toolbar_insert(toolbar, gtk_separator_tool_item_new(), -1);
+	g_object_set_data(G_OBJECT(parent), "devcombo", dev);
+	dev_list_refresh(NULL, parent);
 
 	/* Time/Samples entry */
 	toolitem = gtk_tool_item_new();
@@ -433,7 +478,7 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 	gtk_entry_set_alignment(GTK_ENTRY(timesamples), 1.0);
 	gtk_widget_set_size_request(timesamples, 100, -1);
 	gtk_container_add(GTK_CONTAINER(toolitem), timesamples);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
+	gtk_toolbar_insert(toolbar, toolitem, 7);
 
 	/* Time unit combo box */
 	toolitem = gtk_tool_item_new();
@@ -443,31 +488,10 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 	gtk_combo_box_append_text(GTK_COMBO_BOX(timeunit), "s");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(timeunit), 0);
 	gtk_container_add(GTK_CONTAINER(toolitem), timeunit);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
+	gtk_toolbar_insert(toolbar, toolitem, 8);
 
-	/* Run Capture button */
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_EXECUTE);
-	g_object_set_data(G_OBJECT(toolitem), "timesamples", timesamples);
-	g_object_set_data(G_OBJECT(toolitem), "timeunit", timeunit);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
-	g_signal_connect(toolitem, "clicked",
-				G_CALLBACK(capture_run), parent);
-
-	gtk_toolbar_insert(toolbar, gtk_separator_tool_item_new(), -1);
-
-	/* Zoom-in button */
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_ZOOM_IN);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
-	g_signal_connect(toolitem, "clicked",
-				G_CALLBACK(zoom_in), parent);
-
-	/* Zoom-out button */
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_ZOOM_OUT);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
-	g_signal_connect(toolitem, "clicked",
-				G_CALLBACK(zoom_out), parent);
-
-	gtk_toolbar_insert(toolbar, gtk_separator_tool_item_new(), -1);
+	g_object_set_data(G_OBJECT(parent), "timesamples", timesamples);
+	g_object_set_data(G_OBJECT(parent), "timeunit", timeunit);
 
 	/* View Log toggle button */
 	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_JUSTIFY_LEFT);
