@@ -26,6 +26,8 @@
 GtkWidget *log_init(void);
 GtkWidget *toolbar_init(GtkWindow *parent);
 
+GtkWidget *sigview;
+
 static const char *colours[8] = {
 	"black", "brown", "red", "orange",
 	"gold", "darkgreen", "blue", "magenta",
@@ -70,6 +72,7 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 
 		break;
 	case SR_DF_END:
+		sigview_zoom(sigview, 1, 0);
 		g_message("cli: Received SR_DF_END");
 		sr_session_halt();
 		break;
@@ -105,7 +108,7 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 int main(int argc, char **argv)
 {
 	GtkWindow *window;
-	GtkWidget *vbox, *vpaned, *log, *sigview;
+	GtkWidget *vbox, *vpaned, *log;
 	gtk_init(&argc, &argv);
 	sr_init();
 	sr_session_new();

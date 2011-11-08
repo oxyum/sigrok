@@ -68,15 +68,30 @@ static gboolean do_scroll_event(GtkTreeView *tv, GdkEventScroll *e,
 static gboolean do_motion_event(GtkWidget *tv, GdkEventMotion *e,
 				GObject *cel)
 {
+	GObject *siglist;
 	gint x, dx;
 	gint offset;
+	GArray *data;
+	guint nsamples;
+	GtkTreeViewColumn *col;
+	gint width;
+	gdouble scale;
 
 	x = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv), "motion-x"));
 	g_object_set_data(G_OBJECT(tv), "motion-x", GINT_TO_POINTER((gint)e->x));
-	g_object_get(cel, "offset", &offset, NULL);
+
+	siglist = G_OBJECT(gtk_tree_view_get_model(GTK_TREE_VIEW(tv)));
+	data = g_object_get_data(siglist, "sampledata");
+	nsamples = (data->len / g_array_get_element_size(data)) - 1;
+	col = g_object_get_data(G_OBJECT(tv), "signalcol");
+	width = gtk_tree_view_column_get_width(col);
+
+	g_object_get(cel, "offset", &offset, "scale", &scale, NULL);
 	offset += x - e->x;
 	if(offset < 0)
 		offset = 0;
+	if(offset > nsamples * scale - width)
+		offset = nsamples * scale - width;
 	g_object_set(cel, "offset", offset, NULL);
 	gtk_widget_queue_draw(tv);
 }
@@ -154,9 +169,13 @@ GtkWidget *sigview_init(void)
 
 void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 {
+	GtkTreeViewColumn *col;
 	GtkCellRendererSignal *cel;
+	GArray *data;
 	gdouble scale;
 	gint ofs;
+	gint width;
+	guint nsamples;
 
 	/* This is so that sigview_zoom() may be called with pointer
 	 * to the GtkTreeView or containing GtkScrolledWindow, as is the
@@ -164,6 +183,14 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 	 */
 	if (GTK_IS_SCROLLED_WINDOW(sigview))
 		sigview = gtk_bin_get_child(GTK_BIN(sigview));
+
+	col = g_object_get_data(G_OBJECT(sigview), "signalcol");
+	width = gtk_tree_view_column_get_width(col);
+
+	data = g_object_get_data(
+		G_OBJECT(gtk_tree_view_get_model(GTK_TREE_VIEW(sigview))),
+		"sampledata");
+	nsamples = (data->len / g_array_get_element_size(data)) - 1;
 
 	cel = g_object_get_data(G_OBJECT(sigview), "signalcel");
 	g_object_get(cel, "scale", &scale, "offset", &ofs, NULL);
@@ -177,6 +204,12 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 
 	if(ofs < 0)
 		ofs = 0;
+
+	if(scale < (double)width/nsamples)
+		scale = (double)width/nsamples;
+
+	if(ofs > nsamples * scale - width)
+		ofs = nsamples * scale - width;
 
 	g_object_set(cel, "scale", scale, "offset", ofs, NULL);
 	gtk_widget_queue_draw(GTK_WIDGET(sigview));
