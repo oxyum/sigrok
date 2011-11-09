@@ -369,10 +369,10 @@ static void capture_run(GtkAction *action, GObject *parent)
 	sr_session_run();
 }
 
-void toggle_log(GtkToggleToolButton *button, GObject *parent)
+void toggle_log(GtkToggleAction *action, GObject *parent)
 {
 	GtkWidget *log = g_object_get_data(parent, "logview");
-	gtk_widget_set_visible(log, gtk_toggle_tool_button_get_active(button));
+	gtk_widget_set_visible(log, gtk_toggle_action_get_active(action));
 }
 
 void zoom_in(GtkAction *action, GObject *parent)
@@ -412,9 +412,15 @@ static const GtkActionEntry action_items[] = {
 
 	{"HelpMenu", NULL, "_Help", NULL, NULL, NULL},
 	{"HelpWiki", GTK_STOCK_ABOUT, "Sigrok _Wiki", NULL, NULL,
-		help_wiki},
+		G_CALLBACK(help_wiki)},
 	{"HelpAbout", GTK_STOCK_ABOUT, "_About", NULL, NULL,
-		help_about},
+		G_CALLBACK(help_about)},
+};
+
+static const GtkToggleActionEntry toggle_items[] = {
+	/* name, stock-id, label, accel, tooltip, callback, isactive */
+	{"ViewLog", GTK_STOCK_JUSTIFY_LEFT, "_Log", NULL, NULL,
+		G_CALLBACK(toggle_log), FALSE},
 };
 
 static const char ui_xml[] =
@@ -432,6 +438,8 @@ static const char ui_xml[] =
 "    <menu action='ViewMenu'>"
 "      <menuitem action='ViewZoomIn'/>"
 "      <menuitem action='ViewZoomOut'/>"
+"      <separator/>"
+"      <menuitem action='ViewLog'/>"
 "    </menu>"
 "    <menu action='HelpMenu'>"
 "      <menuitem action='HelpWiki'/>"
@@ -450,8 +458,6 @@ static const char ui_xml[] =
 "    <toolitem action='ViewZoomIn'/>"
 "    <toolitem action='ViewZoomOut'/>"
 "    <separator/>"
-"    <toolitem action='ViewLog'/>"
-"    <separator/>"
 "  </toolbar>"
 "</ui>";
 
@@ -462,6 +468,8 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 	GtkActionGroup *ag = gtk_action_group_new("Actions");
 	gtk_action_group_add_actions(ag, action_items,
 					G_N_ELEMENTS(action_items), parent);
+	gtk_action_group_add_toggle_actions(ag, toggle_items,
+					G_N_ELEMENTS(toggle_items), parent);
 
 	GtkUIManager *ui = gtk_ui_manager_new();
 	gtk_ui_manager_insert_action_group(ui, ag, 0);
@@ -520,12 +528,6 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 
 	g_object_set_data(G_OBJECT(parent), "timesamples", timesamples);
 	g_object_set_data(G_OBJECT(parent), "timeunit", timeunit);
-
-	/* View Log toggle button */
-	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_JUSTIFY_LEFT);
-	gtk_toolbar_insert(toolbar, toolitem, -1);
-	g_signal_connect(toolitem, "toggled",
-				G_CALLBACK(toggle_log), parent);
 
 	return GTK_WIDGET(vbox);
 }

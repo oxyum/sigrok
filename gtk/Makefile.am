@@ -8,5 +8,5 @@ endif
 bin_PROGRAMS = sigrok-gtk
 
 sigrok_gtk_SOURCES = main.c log.c toolbar.c gtkcellrenderersignal.c \
-		sigview.c sigview.h gtkcellrenderersignal.h
+		sigview.c help.c sigview.h gtkcellrenderersignal.h
 
