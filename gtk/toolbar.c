@@ -387,6 +387,9 @@ void zoom_out(GtkAction *action, GObject *parent)
 	sigview_zoom(sigview, 1/1.5, 0);
 }
 
+void help_wiki(void);
+void help_about(GtkAction *action, GtkWindow *parent);
+
 static const GtkActionEntry action_items[] = {
 	/* name, stock-id, label, accel, tooltip, callback */
 	{"DevMenu", NULL, "_Device", NULL, NULL, NULL},
@@ -408,8 +411,10 @@ static const GtkActionEntry action_items[] = {
 		G_CALLBACK(zoom_out)},
 
 	{"HelpMenu", NULL, "_Help", NULL, NULL, NULL},
-	{"About", GTK_STOCK_ABOUT, "_About", NULL, NULL,
-		NULL}
+	{"HelpWiki", GTK_STOCK_ABOUT, "Sigrok _Wiki", NULL, NULL,
+		help_wiki},
+	{"HelpAbout", GTK_STOCK_ABOUT, "_About", NULL, NULL,
+		help_about},
 };
 
 static const char ui_xml[] =
@@ -429,7 +434,8 @@ static const char ui_xml[] =
 "      <menuitem action='ViewZoomOut'/>"
 "    </menu>"
 "    <menu action='HelpMenu'>"
-"      <menuitem action='About'/>"
+"      <menuitem action='HelpWiki'/>"
+"      <menuitem action='HelpAbout'/>"
 "    </menu>"
 "  </menubar>"
 "  <toolbar>"
