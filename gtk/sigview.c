@@ -141,6 +141,7 @@ GtkWidget *sigview_init(void)
 	tv = gtk_tree_view_new();
 	gtk_container_add(GTK_CONTAINER(sw), tv);
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tv), FALSE);
+	g_object_set(G_OBJECT(tv), "reorderable", TRUE, NULL);
 
 	col = gtk_tree_view_column_new_with_attributes(NULL,
 					gtk_cell_renderer_text_new(),
