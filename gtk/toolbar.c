@@ -388,7 +388,7 @@ void zoom_out(GtkAction *action, GObject *parent)
 }
 
 static const GtkActionEntry action_items[] = {
-	/* name, stock-id, label, tooltip, accel, callback */
+	/* name, stock-id, label, accel, tooltip, callback */
 	{"DevMenu", NULL, "_Device", NULL, NULL, NULL},
 	{"DevRescan", GTK_STOCK_REFRESH, "_Rescan", "<control>R",
 		"Rescan for LA devices", G_CALLBACK(dev_list_refresh)},
@@ -414,6 +414,24 @@ static const GtkActionEntry action_items[] = {
 
 static const char ui_xml[] =
 "<ui>"
+"  <menubar>"
+"    <menu action='DevMenu'>"
+"      <menuitem action='DevRescan'/>"
+"      <menuitem action='DevProperties'/>"
+"      <menuitem action='DevProbes'/>"
+"      <separator/>"
+"      <menuitem action='DevAcquire'/>"
+"      <separator/>"
+"      <menuitem action='Exit'/>"
+"    </menu>"
+"    <menu action='ViewMenu'>"
+"      <menuitem action='ViewZoomIn'/>"
+"      <menuitem action='ViewZoomOut'/>"
+"    </menu>"
+"    <menu action='HelpMenu'>"
+"      <menuitem action='About'/>"
+"    </menu>"
+"  </menubar>"
 "  <toolbar>"
 "    <placeholder name='DevSelect'/>"
 "    <toolitem action='DevRescan'/>"
@@ -433,8 +451,9 @@ static const char ui_xml[] =
 
 GtkWidget *toolbar_init(GtkWindow *parent)
 {
+	GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
 	GtkToolbar *toolbar;
-	GtkActionGroup *ag = gtk_action_group_new(NULL);
+	GtkActionGroup *ag = gtk_action_group_new("Actions");
 	gtk_action_group_add_actions(ag, action_items,
 					G_N_ELEMENTS(action_items), parent);
 
@@ -450,7 +469,10 @@ GtkWidget *toolbar_init(GtkWindow *parent)
                 exit (-1);
         }
 
+	GtkWidget *menubar = gtk_ui_manager_get_widget(ui, "/menubar");
+	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(menubar), FALSE, TRUE, 0);
 	toolbar = GTK_TOOLBAR(gtk_ui_manager_get_widget(ui, "/toolbar"));
+	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(toolbar), FALSE, TRUE, 0);
 
 	/* Device selection GtkComboBox */
 	GtkToolItem *toolitem = gtk_tool_item_new();
@@ -499,6 +521,6 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 	g_signal_connect(toolitem, "toggled",
 				G_CALLBACK(toggle_log), parent);
 
-	return GTK_WIDGET(toolbar);
+	return GTK_WIDGET(vbox);
 }
 
