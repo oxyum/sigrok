@@ -91,10 +91,10 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 		break;
 	}
 
-	if(!logic)
+	if (!logic)
 		return;
 
-	if(sr_filter_probes(sample_size, unitsize, probelist,
+	if (sr_filter_probes(sample_size, unitsize, probelist,
 				   logic->data, logic->length,
 				   &filter_out, &filter_out_len) != SR_OK)
 		return;

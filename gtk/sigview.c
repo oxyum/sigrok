@@ -48,12 +48,12 @@ static gboolean do_scroll_event(GtkTreeView *tv, GdkEventScroll *e,
 	GtkTreeViewColumn *col;
 
 	gtk_tree_view_widget_to_tree_coords(tv, e->x, e->y, &x, &y);
-	if(!gtk_tree_view_get_path_at_pos(tv, x, y, NULL, &col, &cx, NULL))
+	if (!gtk_tree_view_get_path_at_pos(tv, x, y, NULL, &col, &cx, NULL))
 		return FALSE;
-	if(col != g_object_get_data(G_OBJECT(tv), "signalcol"))
+	if (col != g_object_get_data(G_OBJECT(tv), "signalcol"))
 		return FALSE;
 
-	switch(e->direction) {
+	switch (e->direction) {
 	case GDK_SCROLL_UP:
 		sigview_zoom(GTK_WIDGET(tv), 1.2, cx);
 		break;
@@ -88,9 +88,9 @@ static gboolean do_motion_event(GtkWidget *tv, GdkEventMotion *e,
 
 	g_object_get(cel, "offset", &offset, "scale", &scale, NULL);
 	offset += x - e->x;
-	if(offset < 0)
+	if (offset < 0)
 		offset = 0;
-	if(offset > nsamples * scale - width)
+	if (offset > nsamples * scale - width)
 		offset = nsamples * scale - width;
 	g_object_set(cel, "offset", offset, NULL);
 	gtk_widget_queue_draw(tv);
@@ -103,16 +103,16 @@ static gboolean do_button_event(GtkTreeView *tv, GdkEventButton *e,
 	gint x, y;
 	GtkTreeViewColumn *col;
 
-	if(e->button != 3)
+	if (e->button != 3)
 		return FALSE;
 
 	gtk_tree_view_widget_to_tree_coords(tv, e->x, e->y, &x, &y);
 
-	switch(e->type) {
+	switch (e->type) {
 	case GDK_BUTTON_PRESS:
-		if(!gtk_tree_view_get_path_at_pos(tv, x, y, NULL, &col, NULL, NULL))
+		if (!gtk_tree_view_get_path_at_pos(tv, x, y, NULL, &col, NULL, NULL))
 			return FALSE;
-		if(col != g_object_get_data(G_OBJECT(tv), "signalcol"))
+		if (col != g_object_get_data(G_OBJECT(tv), "signalcol"))
 			return FALSE;
 		h = g_signal_connect(tv, "motion-notify-event", G_CALLBACK(do_motion_event), cel);
 		g_object_set_data(G_OBJECT(tv), "motion-handler", GINT_TO_POINTER(h));
@@ -120,7 +120,7 @@ static gboolean do_button_event(GtkTreeView *tv, GdkEventButton *e,
 		break;
 	case GDK_BUTTON_RELEASE:
 		h = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv), "motion-handler"));
-		if(!h)
+		if (!h)
 			return;
 		g_signal_handler_disconnect(GTK_WIDGET(tv), h);
 		g_object_set_data(G_OBJECT(tv), "motion-handler", NULL);
@@ -193,7 +193,7 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 	data = g_object_get_data(
 		G_OBJECT(gtk_tree_view_get_model(GTK_TREE_VIEW(sigview))),
 		"sampledata");
-	if(!data)
+	if (!data)
 		return;
 	nsamples = (data->len / g_array_get_element_size(data)) - 1;
 
@@ -207,13 +207,13 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 
 	ofs -= offset;
 
-	if(ofs < 0)
+	if (ofs < 0)
 		ofs = 0;
 
-	if(scale < (double)width/nsamples)
+	if (scale < (double)width/nsamples)
 		scale = (double)width/nsamples;
 
-	if(ofs > nsamples * scale - width)
+	if (ofs > nsamples * scale - width)
 		ofs = nsamples * scale - width;
 
 	g_object_set(cel, "scale", scale, "offset", ofs, NULL);

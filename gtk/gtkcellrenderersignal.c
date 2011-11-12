@@ -215,11 +215,11 @@ gtk_cell_renderer_signal_get_size(GtkCellRenderer *cell,
 				gint *height)
 {
 	/* FIXME: What about cell_area? */
-	if(width) *width = 0;
-	if(height) *height = 30;
+	if (width) *width = 0;
+	if (height) *height = 30;
 
-	if(x_offset) *x_offset = 0;
-	if(y_offset) *y_offset = 0;
+	if (x_offset) *x_offset = 0;
+	if (y_offset) *y_offset = 0;
 }
 
 
@@ -231,7 +231,7 @@ static gboolean sample(GArray *data, gint probe, guint i)
 	g_return_val_if_fail(i < (data->len / g_array_get_element_size(data)),
 				FALSE);
 
-	switch(g_array_get_element_size(data)) {
+	switch (g_array_get_element_size(data)) {
 	case 1:
 		return data->data[i] & (1 << probe);
 	case 2:
@@ -281,7 +281,7 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 	cairo_new_path(cr);
 
 	si = priv->offset / priv->scale;
-	if(si >= nsamples)
+	if (si >= nsamples)
 		return;
 	o = x - (priv->offset - si * priv->scale);
 

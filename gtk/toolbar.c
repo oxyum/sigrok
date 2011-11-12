@@ -32,7 +32,7 @@ static void dev_selected(GtkComboBox *dev, GObject *parent)
 	GtkCheckMenuItem *menuitem;
 	struct sr_device *device;
 
-	if(!gtk_combo_box_get_active_iter(dev, &iter)) {
+	if (!gtk_combo_box_get_active_iter(dev, &iter)) {
 		g_object_set_data(parent, "device", NULL);
 		return;
 	}
@@ -81,14 +81,14 @@ static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 		break;
 	}
 
-	if(!ret)
+	if (!ret)
 		gtk_list_store_set(props, &iter, 3, text, -1);
 }
 
 static void dev_set_options(GtkAction *action, GtkWindow *parent)
 {
 	struct sr_device *device = g_object_get_data(G_OBJECT(parent), "device");
-	if(!device)
+	if (!device)
 		return;
 
 	GtkWidget *dialog = gtk_dialog_new_with_buttons("Device Properties",
@@ -185,7 +185,7 @@ static void probe_named(GtkCellRendererText *cel, gchar *path, gchar *text,
 static void dev_set_probes(GtkAction *action, GtkWindow *parent)
 {
 	struct sr_device *device = g_object_get_data(G_OBJECT(parent), "device");
-	if(!device)
+	if (!device)
 		return;
 
 	GtkWidget *dialog = gtk_dialog_new_with_buttons("Configure Probes",
@@ -284,7 +284,7 @@ static void dev_list_refresh(GtkAction *action, gpointer data)
 	/* Make a copy of the selected device's short name for comparison.
 	 * We wish to select the same device after the refresh if possible.
 	 */
-	if(gtk_combo_box_get_active_iter(dev, &iter)) {
+	if (gtk_combo_box_get_active_iter(dev, &iter)) {
 		gtk_tree_model_get(GTK_TREE_MODEL(devlist), &iter, 1, &device, -1);
 		/* FIXME: Use something other than device->plugin->name */
 		sdevname = g_strdup(device->plugin->name);
@@ -309,7 +309,7 @@ static void dev_list_refresh(GtkAction *action, gpointer data)
 		gchar *name = sdi->model ? sdi->model : sdi->vendor;
 
 		menuitem = gtk_radio_menu_item_new_with_label(radiolist, name);
-		if(!radiolist)
+		if (!radiolist)
 			radiolist = gtk_radio_menu_item_get_group(
 					GTK_RADIO_MENU_ITEM(menuitem));
 		g_signal_connect(menuitem, "toggled",
@@ -326,16 +326,16 @@ static void dev_list_refresh(GtkAction *action, gpointer data)
 		if (sdevname && g_str_equal(sdevname, device->plugin->name))
 			gtk_combo_box_set_active_iter(dev, &iter);
 	}
-	if(sdevname)
+	if (sdevname)
 		g_free(sdevname);
 
 	/* Select a default if nothing selected */
-	if(!gtk_combo_box_get_active_iter(dev, &iter)) {
-		if(!gtk_tree_model_get_iter_first(GTK_TREE_MODEL(devlist), &iter))
+	if (!gtk_combo_box_get_active_iter(dev, &iter)) {
+		if (!gtk_tree_model_get_iter_first(GTK_TREE_MODEL(devlist), &iter))
 			return;
 		/* Skip demo if there's another available */
 		GtkTreeIter first = iter;
-		if(gtk_tree_model_iter_next(GTK_TREE_MODEL(devlist), &iter))
+		if (gtk_tree_model_iter_next(GTK_TREE_MODEL(devlist), &iter))
 			gtk_combo_box_set_active_iter(dev, &iter);
 		else
 			gtk_combo_box_set_active_iter(dev, &first);
@@ -351,7 +351,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 	guint64 time_msec = 0;
 	guint64 limit_samples = 0;
 	
-	switch(i) {
+	switch (i) {
 	case 0: /* Samples */
 		limit_samples = sr_parse_sizestring(
 					gtk_entry_get_text(timesamples));
@@ -365,7 +365,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 		break;
 	}
 
-	if(time_msec) {
+	if (time_msec) {
 		int *capabilities = device->plugin->get_capabilities();
 		if (sr_find_hwcap(capabilities, SR_HWCAP_LIMIT_MSEC)) {
 			if (device->plugin->set_configuration(device->plugin_index,
@@ -398,7 +398,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 			}
 		}
 	}
-	if(limit_samples) {
+	if (limit_samples) {
 		if (device->plugin->set_configuration(device->plugin_index,
 					SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
 			g_critical("Failed to configure sample limit.");
