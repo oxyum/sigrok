@@ -251,13 +251,13 @@ static void capture_run(GtkAction *action, GObject *parent)
 		int *capabilities = device->plugin->get_capabilities();
 		if (sr_find_hwcap(capabilities, SR_HWCAP_LIMIT_MSEC)) {
 			if (device->plugin->set_configuration(device->plugin_index,
-							  SR_HWCAP_LIMIT_MSEC, &time_msec) != SR_OK) {
+							SR_HWCAP_LIMIT_MSEC,
+							&time_msec) != SR_OK) {
 				g_critical("Failed to configure time limit.");
 				sr_session_destroy();
 				return;
 			}
-		}
-		else {
+		} else {
 			/* time limit set, but device doesn't support this...
 			 * convert to samples based on the samplerate.
 			 */
@@ -265,7 +265,8 @@ static void capture_run(GtkAction *action, GObject *parent)
 			if (sr_device_has_hwcap(device, SR_HWCAP_SAMPLERATE)) {
 				guint64 tmp_u64;
 				tmp_u64 = *((uint64_t *) device->plugin->get_device_info(
-						device->plugin_index, SR_DI_CUR_SAMPLERATE));
+							device->plugin_index,
+							SR_DI_CUR_SAMPLERATE));
 				limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
 			}
 			if (limit_samples == 0) {
@@ -274,7 +275,8 @@ static void capture_run(GtkAction *action, GObject *parent)
 			}
 
 			if (device->plugin->set_configuration(device->plugin_index,
-						  SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
+						SR_HWCAP_LIMIT_SAMPLES,
+						&limit_samples) != SR_OK) {
 				g_critical("Failed to configure time-based sample limit.");
 				return;
 			}
@@ -282,7 +284,8 @@ static void capture_run(GtkAction *action, GObject *parent)
 	}
 	if (limit_samples) {
 		if (device->plugin->set_configuration(device->plugin_index,
-					SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
+						SR_HWCAP_LIMIT_SAMPLES,
+						&limit_samples) != SR_OK) {
 			g_critical("Failed to configure sample limit.");
 			return;
 		}
@@ -318,6 +321,14 @@ void zoom_out(GtkAction *action, GObject *parent)
 	sigview_zoom(sigview, 1/1.5, 0);
 }
 
+void zoom_fit(GtkAction *action, GObject *parent)
+{
+	(void)action;
+
+	GtkWidget *sigview = g_object_get_data(parent, "sigview");
+	sigview_zoom(sigview, 0, 0);
+}
+
 static const GtkActionEntry action_items[] = {
 	/* name, stock-id, label, accel, tooltip, callback */
 	{"DevMenu", NULL, "_Device", NULL, NULL, NULL},
@@ -336,8 +347,10 @@ static const GtkActionEntry action_items[] = {
 	{"ViewMenu", NULL, "_View", NULL, NULL, NULL},
 	{"ViewZoomIn", GTK_STOCK_ZOOM_IN, "Zoom _In", "<control>z", NULL,
 		G_CALLBACK(zoom_in)},
-	{"ViewZoomOut", GTK_STOCK_ZOOM_OUT, "Zoom _Out", "<control><shift>Z", NULL,
-		G_CALLBACK(zoom_out)},
+	{"ViewZoomOut", GTK_STOCK_ZOOM_OUT, "Zoom _Out", "<control><shift>Z",
+		NULL, G_CALLBACK(zoom_out)},
+	{"ViewZoomFit", GTK_STOCK_ZOOM_FIT, NULL, NULL,
+		NULL, G_CALLBACK(zoom_fit)},
 
 	{"HelpMenu", NULL, "_Help", NULL, NULL, NULL},
 	{"HelpWiki", GTK_STOCK_ABOUT, "Sigrok _Wiki", NULL, NULL,
@@ -370,6 +383,7 @@ static const char ui_xml[] =
 "    <menu action='ViewMenu'>"
 "      <menuitem action='ViewZoomIn'/>"
 "      <menuitem action='ViewZoomOut'/>"
+"      <menuitem action='ViewZoomFit'/>"
 "      <separator/>"
 "      <menuitem action='ViewLog'/>"
 "    </menu>"
@@ -389,6 +403,7 @@ static const char ui_xml[] =
 "    <separator/>"
 "    <toolitem action='ViewZoomIn'/>"
 "    <toolitem action='ViewZoomOut'/>"
+"    <toolitem action='ViewZoomFit'/>"
 "    <separator/>"
 "  </toolbar>"
 "</ui>";
