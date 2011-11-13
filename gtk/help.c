@@ -27,6 +27,7 @@ void help_wiki(void)
 
 void help_about(GtkAction *action, GtkWindow *parent)
 {
+	(void)action;
 
 	gtk_show_about_dialog(parent,
 		"program_name", "Sigrok-GTK",

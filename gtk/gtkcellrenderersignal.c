@@ -49,7 +49,7 @@ static void gtk_cell_renderer_signal_set_property(GObject *object,
 				GParamSpec *pspec);
 static void gtk_cell_renderer_signal_get_size(GtkCellRenderer *cell,
 				GtkWidget *widget,
-				const GdkRectangle *cell_area,
+				GdkRectangle *cell_area,
 				gint *x_offset,
 				gint *y_offset,
 				gint *width,
@@ -57,8 +57,9 @@ static void gtk_cell_renderer_signal_get_size(GtkCellRenderer *cell,
 static void gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 				GdkWindow *window,
 				GtkWidget *widget,
-				const GdkRectangle *background_area,
-				const GdkRectangle *cell_area,
+				GdkRectangle *background_area,
+				GdkRectangle *cell_area,
+				GdkRectangle *expose_area,
 				GtkCellRendererState flags);
 
 
@@ -144,7 +145,8 @@ static void gtk_cell_renderer_signal_finalize(GObject *object)
 {
 	GtkCellRendererSignal *cel = GTK_CELL_RENDERER_SIGNAL(object);
 	GtkCellRendererSignalPrivate *priv = cel->priv;
-
+	/* Keep this around, because it'll be useful in future */
+	(void)priv;
 	G_OBJECT_CLASS(gtk_cell_renderer_signal_parent_class)->finalize(object);
 }
 
@@ -208,12 +210,16 @@ gtk_cell_renderer_signal_set_property(GObject *object,
 static void
 gtk_cell_renderer_signal_get_size(GtkCellRenderer *cell,
 				GtkWidget *widget,
-				const GdkRectangle *cell_area,
+				GdkRectangle *cell_area,
 				gint *x_offset,
 				gint *y_offset,
 				gint *width,
 				gint *height)
 {
+	(void)cell;
+	(void)widget;
+	(void)cell_area;
+
 	/* FIXME: What about cell_area? */
 	if (width) *width = 0;
 	if (height) *height = 30;
@@ -248,8 +254,9 @@ static void
 gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 				GdkWindow *window,
 				GtkWidget *widget,
-				const GdkRectangle *background_area,
-				const GdkRectangle *cell_area,
+				GdkRectangle *background_area,
+				GdkRectangle *cell_area,
+				GdkRectangle *expose_area,
 				GtkCellRendererState flags)
 {
 	GtkCellRendererSignal *cel = GTK_CELL_RENDERER_SIGNAL(cell);
@@ -257,8 +264,12 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 	guint nsamples = priv->data->len / g_array_get_element_size(priv->data);
 	gint xpad, ypad;
 	int x, y, w, h;
-	gint i, si;
+	guint si;
 	gdouble o;
+
+	(void)widget;
+	(void)expose_area;
+	(void)flags;
 
 	gtk_cell_renderer_get_padding (cell, &xpad, &ypad);
 	x = cell_area->x + xpad;

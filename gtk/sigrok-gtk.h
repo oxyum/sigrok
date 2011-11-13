@@ -17,15 +17,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SIGVIEW_H
-#define __SIGVIEW_H
+#ifndef __SIGROK_GTK_H
+#define __SIGROK_GTK_H
 
 #include <gtk/gtk.h>
 
+/* sigview.c */
 extern GtkListStore *siglist;
 
 GtkWidget *sigview_init(void);
 void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset);
+
+/* help.c */
+void help_wiki(void);
+void help_about(GtkAction *action, GtkWindow *parent);
+
+/* devselect.c */
+GtkWidget *dev_select_combo_box_new(GtkWindow *parent);
+void dev_select_rescan(GtkAction *action, GtkWindow *parent);
+
+/* log.c */
+GtkWidget *log_init(void);
+GtkWidget *toolbar_init(GtkWindow *parent);
 
 #endif
 

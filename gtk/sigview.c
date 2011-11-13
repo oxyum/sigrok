@@ -21,17 +21,20 @@
 #include <gtk/gtk.h>
 
 #include "gtkcellrenderersignal.h"
-#include "sigview.h"
+#include "sigrok-gtk.h"
 
 /* FIXME: No globals */
 GtkListStore *siglist;
 
 static void format_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
-		GtkTreeModel *siglist, GtkTreeIter *iter, gpointer h)
+		GtkTreeModel *siglist, GtkTreeIter *iter, gpointer user_data)
 {
 	GArray *data = g_object_get_data(G_OBJECT(siglist), "sampledata");
 	int probe;
 	char *colour;
+
+	(void)tree_column;
+	(void)user_data;
 
 	gtk_tree_model_get(siglist, iter, 1, &colour, 2, &probe, -1);
 
@@ -39,11 +42,8 @@ static void format_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
 				"foreground", colour, NULL);
 }
 
-static gboolean do_scroll_event(GtkTreeView *tv, GdkEventScroll *e,
-				GObject *cel)
+static gboolean do_scroll_event(GtkTreeView *tv, GdkEventScroll *e)
 {
-	gdouble scale;
-	gint offset;
 	gint x, y, cx;
 	GtkTreeViewColumn *col;
 
@@ -60,6 +60,9 @@ static gboolean do_scroll_event(GtkTreeView *tv, GdkEventScroll *e,
 	case GDK_SCROLL_DOWN:
 		sigview_zoom(GTK_WIDGET(tv), 1/1.2, cx);
 		break;
+	default:
+		/* Surpress warning about unswitch enum values */
+		break;
 	}
 	
 	return TRUE;
@@ -69,7 +72,7 @@ static gboolean do_motion_event(GtkWidget *tv, GdkEventMotion *e,
 				GObject *cel)
 {
 	GObject *siglist;
-	gint x, dx;
+	gint x;
 	gint offset;
 	GArray *data;
 	guint nsamples;
@@ -94,6 +97,8 @@ static gboolean do_motion_event(GtkWidget *tv, GdkEventMotion *e,
 		offset = nsamples * scale - width;
 	g_object_set(cel, "offset", offset, NULL);
 	gtk_widget_queue_draw(tv);
+
+	return TRUE;
 }
 
 static gboolean do_button_event(GtkTreeView *tv, GdkEventButton *e,
@@ -121,9 +126,12 @@ static gboolean do_button_event(GtkTreeView *tv, GdkEventButton *e,
 	case GDK_BUTTON_RELEASE:
 		h = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv), "motion-handler"));
 		if (!h)
-			return;
+			return TRUE;
 		g_signal_handler_disconnect(GTK_WIDGET(tv), h);
 		g_object_set_data(G_OBJECT(tv), "motion-handler", NULL);
+		break;
+	default:
+		/* Surpress warning about unswitch enum values */
 		break;
 	}
 	return TRUE;

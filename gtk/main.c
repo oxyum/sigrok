@@ -18,13 +18,8 @@
  */
 
 #include <sigrok.h>
-
 #include <gtk/gtk.h>
-
-#include "sigview.h"
-
-GtkWidget *log_init(void);
-GtkWidget *toolbar_init(GtkWindow *parent);
+#include "sigrok-gtk.h"
 
 GtkWidget *sigview;
 
