@@ -412,8 +412,9 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 		/* TODO: Error handling. */
 		dec = srd_get_decoder_by_id(current_decoder);
 		
-		ret = srd_run_decoder(dec, packet->payload,
-				logic->length, &dec_out, &dec_out_size);
+		dec_out_size = 0;
+		ret = srd_run_decoder(dec, filter_out,
+				filter_out_len, &dec_out, &dec_out_size);
 
 		if (ret != SRD_OK) {
 			fprintf(stderr, "Decoder runtime error (%d)\n", ret);
