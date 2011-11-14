@@ -137,6 +137,11 @@ static gboolean do_button_event(GtkTreeView *tv, GdkEventButton *e,
 	return TRUE;
 }
 
+static void col_resized(GtkWidget *col)
+{
+	sigview_zoom(col, 1, 0);
+}
+
 GtkWidget *sigview_init(void)
 {
 	GtkWidget *sw, *tv;
@@ -168,6 +173,8 @@ GtkWidget *sigview_init(void)
 	gtk_tree_view_column_set_cell_data_func(col, cel, format_func,
 					NULL, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
+	g_signal_connect_swapped(col, "notify::width",
+					G_CALLBACK(col_resized), tv);
 
 	siglist = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING,
 					G_TYPE_INT);
