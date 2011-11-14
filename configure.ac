@@ -152,7 +152,8 @@ AM_PATH_GLIB_2_0([2.22.0],
 	CFLAGS="$CFLAGS $GLIB_CFLAGS"; LIBS="$LIBS $GLIB_LIBS")
 
 # libgthread-2.0 is always needed (e.g. for the demo hardware driver).
-AC_CHECK_LIB(gthread-2.0, g_thread_init)
+PKG_CHECK_MODULES([gthread], [gthread-2.0 >= 2.22.0],
+	[CFLAGS="$CFLAGS $gthread_CFLAGS"; LIBS="$LIBS $gthread_LIBS"])
 
 # libusb is only needed for some hardware drivers.
 if test "x$LA_SALEAE_LOGIC" != xno \
