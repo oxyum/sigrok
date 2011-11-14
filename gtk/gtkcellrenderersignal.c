@@ -300,9 +300,9 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 		(sample(priv->data, priv->probe, si++) ? 0 : h));
 	o += priv->scale;
 	while ((si < nsamples) && (o - priv->scale < x+w)) {
-		cairo_line_to(cr, o, y +
+		cairo_line_to(cr, o - priv->scale/8, y +
 			(sample(priv->data, priv->probe, si-1) ? 0 : h));
-		cairo_line_to(cr, o, y +
+		cairo_line_to(cr, o + priv->scale/8, y +
 			(sample(priv->data, priv->probe, si) ? 0 : h));
 		o += priv->scale;
 		si++;
