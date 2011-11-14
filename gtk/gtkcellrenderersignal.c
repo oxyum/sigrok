@@ -309,4 +309,5 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 	}
 
 	cairo_stroke(cr);
+	cairo_destroy(cr);
 }
