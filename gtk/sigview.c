@@ -79,9 +79,11 @@ static gboolean do_motion_event(GtkWidget *tv, GdkEventMotion *e,
 	GtkTreeViewColumn *col;
 	gint width;
 	gdouble scale;
+	GtkAdjustment *adj;
 
 	x = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv), "motion-x"));
 	g_object_set_data(G_OBJECT(tv), "motion-x", GINT_TO_POINTER((gint)e->x));
+	adj = g_object_get_data(G_OBJECT(tv), "hadj");
 
 	siglist = G_OBJECT(gtk_tree_view_get_model(GTK_TREE_VIEW(tv)));
 	data = g_object_get_data(siglist, "sampledata");
@@ -95,8 +97,8 @@ static gboolean do_motion_event(GtkWidget *tv, GdkEventMotion *e,
 		offset = 0;
 	if (offset > nsamples * scale - width)
 		offset = nsamples * scale - width;
-	g_object_set(cel, "offset", offset, NULL);
-	gtk_widget_queue_draw(tv);
+
+	gtk_adjustment_set_value(adj, offset);
 
 	return TRUE;
 }
@@ -142,6 +144,13 @@ static void col_resized(GtkWidget *col)
 	sigview_zoom(col, 1, 0);
 }
 
+static void pan_changed(GtkAdjustment *adj, GtkWidget *sigview)
+{
+	GObject *cel = g_object_get_data(G_OBJECT(sigview), "signalcel");
+	g_object_set(cel, "offset", (gint)gtk_adjustment_get_value(adj), NULL);
+	gtk_widget_queue_draw(sigview);
+}
+
 GtkWidget *sigview_init(void)
 {
 	GtkWidget *sw, *tv;
@@ -150,7 +159,7 @@ GtkWidget *sigview_init(void)
 
 	sw = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
-				GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+				GTK_POLICY_ALWAYS, GTK_POLICY_AUTOMATIC);
 	tv = gtk_tree_view_new();
 	gtk_container_add(GTK_CONTAINER(sw), tv);
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tv), FALSE);
@@ -180,6 +189,12 @@ GtkWidget *sigview_init(void)
 					G_TYPE_INT);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(tv), GTK_TREE_MODEL(siglist));
 
+	GtkObject *pan = gtk_adjustment_new(0, 0, 0, 1, 1, 1);
+	g_object_set_data(G_OBJECT(tv), "hadj", pan);
+	gtk_range_set_adjustment(GTK_RANGE(GTK_SCROLLED_WINDOW(sw)->hscrollbar),
+				GTK_ADJUSTMENT(pan));
+	g_signal_connect(pan, "value-changed", G_CALLBACK(pan_changed), tv);
+	
 	return sw;
 }
 
@@ -187,6 +202,7 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 {
 	GtkTreeViewColumn *col;
 	GtkCellRendererSignal *cel;
+	GtkAdjustment *adj;
 	GArray *data;
 	gdouble scale;
 	gint ofs;
@@ -203,6 +219,7 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 	g_return_if_fail(GTK_IS_TREE_VIEW(sigview));
 
 	col = g_object_get_data(G_OBJECT(sigview), "signalcol");
+	adj = g_object_get_data(G_OBJECT(sigview), "hadj");
 	width = gtk_tree_view_column_get_width(col);
 
 	data = g_object_get_data(
@@ -230,6 +247,9 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 
 	if (ofs > nsamples * scale - width)
 		ofs = nsamples * scale - width;
+
+	gtk_adjustment_configure(adj, ofs, 0, nsamples * scale, 1, 1,
+		width);
 
 	g_object_set(cel, "scale", scale, "offset", ofs, NULL);
 	gtk_widget_queue_draw(GTK_WIDGET(sigview));
