@@ -334,7 +334,6 @@ AC_CONFIG_FILES([Makefile
 		 libsigrokdecode/libsigrokdecode.pc
 		 libsigrokdecode/decoders/Makefile
 		 cli/Makefile
-		 gui/sigrok-gui.pro
 		 gtk/Makefile
 		])
 
