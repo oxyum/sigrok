@@ -130,6 +130,9 @@ Section "sigrok (required)" Section1
 	# sigrok-gui
 	File "..\..\gui\release\sigrok-gui.exe"
 
+	# sigrok-gtk
+	File "..\..\gtk\sigrok-gtk.exe"
+
 	# MinGW libs
 	File "c:\MinGW\bin\intl.dll"
 	File "c:\MinGW\bin\libiconv-2.dll"
@@ -160,6 +163,12 @@ Section "sigrok (required)" Section1
 	# Create a shortcut for the Qt GUI application.
 	CreateShortCut "$SMPROGRAMS\@PACKAGE_NAME@\sigrok Qt GUI.lnk" \
 		"$INSTDIR\sigrok-gui.exe" "" "$INSTDIR\sigrok-gui.exe" \
+		0 SW_SHOWNORMAL \
+		"" "Open-source, portable logic analyzer software"
+
+	# Create a shortcut for the GTK+ GUI application.
+	CreateShortCut "$SMPROGRAMS\@PACKAGE_NAME@\sigrok GTK+ GUI.lnk" \
+		"$INSTDIR\sigrok-gtk.exe" "" "$INSTDIR\sigrok-gtk.exe" \
 		0 SW_SHOWNORMAL \
 		"" "Open-source, portable logic analyzer software"
 
@@ -203,6 +212,7 @@ Section "Uninstall"
 	Delete "$INSTDIR\libsigrokdecode.la"
 	Delete "$INSTDIR\sigrok-cli.exe"
 	Delete "$INSTDIR\sigrok-gui.exe"
+	Delete "$INSTDIR\sigrok-gtk.exe"
 	Delete "$INSTDIR\intl.dll"
 	Delete "$INSTDIR\libiconv-2.dll"
 	Delete "$INSTDIR\libstdc++-6.dll"
@@ -220,6 +230,7 @@ Section "Uninstall"
 
 	# Delete the links from the start menu.
 	Delete "$SMPROGRAMS\@PACKAGE_NAME@\sigrok Qt GUI.lnk"
+	Delete "$SMPROGRAMS\@PACKAGE_NAME@\sigrok GTK+ GUI.lnk"
 	Delete "$SMPROGRAMS\@PACKAGE_NAME@\Uninstall.lnk"
 
 	# Delete the sub-directory in the start menu.
