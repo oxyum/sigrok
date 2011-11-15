@@ -147,13 +147,20 @@ fi
 
 # Checks for libraries.
 
+# This variable collects the pkg-config names of all detected libs.
+# It is then used to construct the "Requires.private:" field in the
+# libsigrok.pc file.
+LIBSIGROK_PKGLIBS=""
+
 # libglib-2.0 is always needed.
 AM_PATH_GLIB_2_0([2.22.0],
-	CFLAGS="$CFLAGS $GLIB_CFLAGS"; LIBS="$LIBS $GLIB_LIBS")
+	[CFLAGS="$CFLAGS $GLIB_CFLAGS"; LIBS="$LIBS $GLIB_LIBS";
+	LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS glib-2.0"])
 
 # libgthread-2.0 is always needed (e.g. for the demo hardware driver).
 PKG_CHECK_MODULES([gthread], [gthread-2.0 >= 2.22.0],
-	[CFLAGS="$CFLAGS $gthread_CFLAGS"; LIBS="$LIBS $gthread_LIBS"])
+	[CFLAGS="$CFLAGS $gthread_CFLAGS"; LIBS="$LIBS $gthread_LIBS";
+	LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS gthread-2.0"])
 
 # libusb is only needed for some hardware drivers.
 if test "x$LA_SALEAE_LOGIC" != xno \
@@ -169,7 +176,8 @@ if test "x$LA_SALEAE_LOGIC" != xno \
 	*)
 		PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.5],
 			[CFLAGS="$CFLAGS $libusb_CFLAGS";
-			LIBS="$LIBS $libusb_LIBS"])
+			LIBS="$LIBS $libusb_LIBS";
+			LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS libusb-1.0"])
 		AC_CHECK_LIB(usb-1.0, libusb_init)
 		;;
 	esac
@@ -177,8 +185,8 @@ fi
 
 # libzip is always needed.
 PKG_CHECK_MODULES([libzip], [libzip >= 0.8],
-	[CFLAGS="$CFLAGS $libzip_CFLAGS";
-	LIBS="$LIBS $libzip_LIBS"])
+	[CFLAGS="$CFLAGS $libzip_CFLAGS"; LIBS="$LIBS $libzip_LIBS";
+	LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS libzip"])
 
 # zlib is only needed for some hardware drivers.
 if test "x$LA_ASIX_SIGMA" != xno; then
@@ -188,7 +196,10 @@ if test "x$LA_ASIX_SIGMA" != xno; then
 		LIBS="$LIBS -L/usr/local/lib -lz"
 		;;
 	*)
-		# TODO: Nothing to do?
+		PKG_CHECK_MODULES([zlib], [zlib >= 1.2.3.4],
+			[CFLAGS="$CFLAGS $zlib_CFLAGS";
+			LIBS="$LIBS $zlib_LIBS";
+			LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS zlib"])
 		;;
 	esac
 fi
@@ -204,7 +215,8 @@ if test "x$LA_ASIX_SIGMA" != xno \
 	*)
 		PKG_CHECK_MODULES([libftdi], [libftdi >= 0.16],
 			[CFLAGS="$CFLAGS $libftdi_CFLAGS";
-			LIBS="$LIBS $libftdi_LIBS"])
+			LIBS="$LIBS $libftdi_LIBS";
+			LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS libftdi"])
 		;;
 	esac
 fi
@@ -212,15 +224,15 @@ fi
 # libudev is only needed for some hardware drivers.
 if test "x$LA_LINK_MSO19" != xno; then
 	PKG_CHECK_MODULES([libudev], [libudev >= 151],
-		[CFLAGS="$CFLAGS $libudev_CFLAGS";
-		LIBS="$LIBS $libudev_LIBS"])
+		[CFLAGS="$CFLAGS $libudev_CFLAGS"; LIBS="$LIBS $libudev_LIBS";
+		LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS libudev"])
 fi
 
 # ALSA is only needed for some hardware drivers.
 if test "x$LA_ALSA" != xno; then
 	PKG_CHECK_MODULES([alsa], [alsa >= 1.0],
-		[CFLAGS="$CFLAGS $alsa_CFLAGS";
-		LIBS="$LIBS $alsa_LIBS"])
+		[CFLAGS="$CFLAGS $alsa_CFLAGS"; LIBS="$LIBS $alsa_LIBS";
+		LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS alsa"])
 fi
 
 # Python support.
@@ -246,6 +258,8 @@ case "$build" in
 esac
 AC_SUBST(CPPFLAGS_PYTHON)
 AC_SUBST(LDFLAGS_PYTHON)
+
+AC_SUBST(LIBSIGROK_PKGLIBS)
 
 # Checks for header files.
 # These are already checked: inttypes.h stdint.h stdlib.h string.h unistd.h.
