@@ -44,7 +44,13 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
+
+# Initialize libtool.
 LT_INIT
+
+# Initialize pkg-config.
+# We require at least 0.22, as "Requires.private" behaviour changed there.
+PKG_PROG_PKG_CONFIG([0.22])
 
 # Library version for libsigrok.
 # Carefully read the libtool docs before updating these numbers!
