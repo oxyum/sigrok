@@ -31,7 +31,7 @@ void help_about(GtkAction *action, GtkWindow *parent)
 
 	gtk_show_about_dialog(parent,
 		"program_name", "Sigrok-GTK",
-		"version", SIGROK_VERSION,
+		"version", "0.1",
 		"comments", "Portable, cross-platform, "
 			"Free/Libre/Open-Source logic analyzer software.\n\nGTK+ Front-end",
 		"license",
