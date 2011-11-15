@@ -162,6 +162,10 @@ PKG_CHECK_MODULES([gthread], [gthread-2.0 >= 2.22.0],
 	[CFLAGS="$CFLAGS $gthread_CFLAGS"; LIBS="$LIBS $gthread_LIBS";
 	LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS gthread-2.0"])
 
+# GTK+ Needed for the GTK front-end
+PKG_CHECK_MODULES([gtk], [gtk+-2.0 >= 2.22.0],
+	[CFLAGS="$CFLAGS $gtk_CFLAGS"; LIBS="$LIBS $gtk_LIBS"])
+
 # libusb is only needed for some hardware drivers.
 if test "x$LA_SALEAE_LOGIC" != xno \
    -o "x$LA_ASIX_SIGMA" != xno \
@@ -331,6 +335,7 @@ AC_CONFIG_FILES([Makefile
 		 libsigrokdecode/decoders/Makefile
 		 cli/Makefile
 		 gui/sigrok-gui.pro
+		 gtk/Makefile
 		])
 
 AC_OUTPUT
