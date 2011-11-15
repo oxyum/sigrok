@@ -142,10 +142,8 @@ Section "sigrok (required)" Section1
 	File "c:\MinGW\msys\1.0\local\bin\libzip-1.dll"
 
 	# Qt libs
-	File "c:\Qt\2010.05\qt\bin\libgcc_s_dw2-1.dll"
-	File "c:\Qt\2010.05\qt\bin\mingwm10.dll"
-	File "c:\Qt\2010.05\qt\bin\QtCore4.dll"
-	File "c:\Qt\2010.05\qt\bin\QtGui4.dll"
+	File "c:\QtSDK\Desktop\Qt\4.7.3\mingw\bin\QtCore4.dll"
+	File "c:\QtSDK\Desktop\Qt\4.7.3\mingw\bin\QtGui4.dll"
 
 	# Install the file(s) specified below into the specified directory.
 	SetOutPath "$INSTDIR\decoders"
@@ -212,8 +210,6 @@ Section "Uninstall"
 	Delete "$INSTDIR\libgthread-2.0-0.dll"
 	Delete "$INSTDIR\libusb-1.0.dll"
 	Delete "$INSTDIR\libzip-1.dll"
-	Delete "$INSTDIR\libgcc_s_dw2-1.dll"
-	Delete "$INSTDIR\mingwm10.dll"
 	Delete "$INSTDIR\QtCore4.dll"
 	Delete "$INSTDIR\QtGui4.dll"
 	Delete "$INSTDIR\decoders\*.py"
