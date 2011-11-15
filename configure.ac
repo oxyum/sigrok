@@ -266,6 +266,7 @@ AC_SUBST(LIBSIGROK_PKGLIBS)
 AC_CHECK_HEADERS([fcntl.h sys/time.h termios.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_C_INLINE
 AC_TYPE_INT8_T
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
@@ -274,9 +275,10 @@ AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
+AC_TYPE_SIZE_T
 
 # Checks for library functions.
-AC_CHECK_FUNCS([gettimeofday memset strchr strerror strncasecmp strtol strtoul strtoull])
+AC_CHECK_FUNCS([gettimeofday memset strchr strcspn strdup strerror strncasecmp strstr strtol strtoul strtoull])
 
 AC_SUBST(FIRMWARE_DIR, "$datadir/sigrok/firmware")
 AC_SUBST(DECODERS_DIR, "$datadir/sigrok/decoders")
