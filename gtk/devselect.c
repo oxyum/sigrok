@@ -115,6 +115,7 @@ void dev_select_rescan(GtkAction *action, GtkWindow *parent)
 		gchar *name = sdi->model ? sdi->model : sdi->vendor;
 
 		menuitem = gtk_radio_menu_item_new_with_label(radiolist, name);
+		gtk_widget_show(GTK_WIDGET(menuitem));
 		if (!radiolist)
 			radiolist = gtk_radio_menu_item_get_group(
 					GTK_RADIO_MENU_ITEM(menuitem));
