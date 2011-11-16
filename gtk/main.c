@@ -19,6 +19,11 @@
 
 #include <sigrok.h>
 #include <gtk/gtk.h>
+
+#include <errno.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+
 #include "sigrok-gtk.h"
 
 GtkWidget *sigview;
@@ -100,6 +105,17 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	g_array_append_vals(data, filter_out, filter_out_len);
 }
 
+void load_input_file(const gchar *file)
+{
+	if (sr_session_load(file) == SR_OK) {
+		/* sigrok session file */
+		sr_session_datafeed_callback_add(datafeed_in);
+		sr_session_start();
+		sr_session_run();
+		sr_session_stop();
+	}
+}
+
 int main(int argc, char **argv)
 {
 	GtkWindow *window;
@@ -131,7 +147,7 @@ int main(int argc, char **argv)
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(GTK_WIDGET(window));
 
-	sr_set_loglevel(5);
+	sr_set_loglevel(1);
 
 	gtk_main();
 

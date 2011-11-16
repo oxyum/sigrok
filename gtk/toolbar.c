@@ -299,6 +299,30 @@ static void capture_run(GtkAction *action, GObject *parent)
 	sr_session_run();
 }
 
+static void dev_file_open(GtkAction *action, GtkWindow *parent)
+{
+	(void)action;
+	const gchar *filename;
+
+	GtkWidget *dialog = gtk_file_chooser_dialog_new("Open", parent,
+				GTK_FILE_CHOOSER_ACTION_OPEN,
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+
+	if (gtk_dialog_run(GTK_DIALOG(dialog)) != GTK_RESPONSE_ACCEPT) {
+		/* Dialog was cancelled or closed */
+		gtk_object_destroy(GTK_OBJECT(dialog));
+		return;
+	}
+
+	gtk_widget_hide(dialog);
+
+	filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+	load_input_file(filename);
+
+	gtk_object_destroy(GTK_OBJECT(dialog));
+}
+
 void toggle_log(GtkToggleAction *action, GObject *parent)
 {
 	GtkWidget *log = g_object_get_data(parent, "logview");
@@ -332,6 +356,8 @@ void zoom_fit(GtkAction *action, GObject *parent)
 static const GtkActionEntry action_items[] = {
 	/* name, stock-id, label, accel, tooltip, callback */
 	{"DevMenu", NULL, "_Device", NULL, NULL, NULL},
+	{"DevOpen", GTK_STOCK_OPEN, "_Open", "<control>O",
+		"Open Session File", G_CALLBACK(dev_file_open)},
 	{"DevSelectMenu", NULL, "Select Device", NULL, NULL, NULL},
 	{"DevRescan", GTK_STOCK_REFRESH, "_Rescan", "<control>R",
 		"Rescan for LA devices", G_CALLBACK(dev_select_rescan)},
@@ -369,6 +395,8 @@ static const char ui_xml[] =
 "<ui>"
 "  <menubar>"
 "    <menu action='DevMenu'>"
+"      <menuitem action='DevOpen'/>"
+"      <separator/>"
 "      <menu action='DevSelectMenu'>"
 "        <separator/>"
 "        <menuitem action='DevRescan'/>"
