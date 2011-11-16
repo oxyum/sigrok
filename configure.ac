@@ -200,18 +200,9 @@ PKG_CHECK_MODULES([libzip], [libzip >= 0.8],
 
 # zlib is only needed for some hardware drivers.
 if test "x$LA_ASIX_SIGMA" != xno; then
-	case "$build" in
-	*mingw*)
-		CFLAGS="$CFLAGS -I/usr/local/include"
-		LIBS="$LIBS -L/usr/local/lib -lz"
-		;;
-	*)
-		PKG_CHECK_MODULES([zlib], [zlib >= 1.2.3.4],
-			[CFLAGS="$CFLAGS $zlib_CFLAGS";
-			LIBS="$LIBS $zlib_LIBS";
-			LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS zlib"])
-		;;
-	esac
+	PKG_CHECK_MODULES([zlib], [zlib >= 1.2.3.4],
+		[CFLAGS="$CFLAGS $zlib_CFLAGS"; LIBS="$LIBS $zlib_LIBS";
+		LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS zlib"])
 fi
 
 # libftdi is only needed for some hardware drivers.
