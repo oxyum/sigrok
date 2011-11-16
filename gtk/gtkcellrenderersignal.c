@@ -296,17 +296,25 @@ gtk_cell_renderer_signal_render(GtkCellRenderer *cell,
 		return;
 	o = x - (priv->offset - si * priv->scale);
 
+	guint32 oldsample = sample(priv->data, priv->probe, si++);
 	cairo_move_to(cr, o, y +
-		(sample(priv->data, priv->probe, si++) ? 0 : h));
+		(oldsample ? 0 : h));
 	o += priv->scale;
+	
 	while ((si < nsamples) && (o - priv->scale < x+w)) {
-		cairo_line_to(cr, o - priv->scale/8, y +
-			(sample(priv->data, priv->probe, si-1) ? 0 : h));
-		cairo_line_to(cr, o + priv->scale/8, y +
-			(sample(priv->data, priv->probe, si) ? 0 : h));
+		guint32 cursample = sample(priv->data, priv->probe, si);
+		if (cursample != oldsample) {
+			cairo_line_to(cr, o - priv->scale/8, y +
+				(oldsample ? 0 : h));
+			cairo_line_to(cr, o + priv->scale/8, y +
+				(cursample ? 0 : h));
+			oldsample = cursample;
+		}
 		o += priv->scale;
 		si++;
 	}
+	cairo_line_to(cr, o - priv->scale/8, y +
+		(oldsample ? 0 : h));
 
 	cairo_stroke(cr);
 	cairo_destroy(cr);
