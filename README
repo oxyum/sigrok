@@ -46,13 +46,17 @@ In order to get the sigrok source code and build it, run:
  $ ./configure
  $ make
 
-For building the GUI:
+For building the Qt GUI:
 
  $ cd gui
  $ qmake
  $ make
 
-NOTE: The GUI is not yet usable, it's work-in-progress!
+For building the GTK+ GUI:
+
+ TODO: Currently built automatically as part of the sigrok build.
+
+NOTE: The GUIs are not yet usable, they're both work-in-progress!
 
 For installing sigrok:
 

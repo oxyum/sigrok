@@ -58,12 +58,16 @@ Build sigrok and install it into a temporary folder:
 
  $ ./configure --prefix=$PWD/contrib/nsis/dist && make && make install
 
-Build the GUI in gui/ (optional if you comment out some lines in sigrok.nsi).
+Build the Qt GUI:
 
  $ cd gui
  $ qmake
  $ make
  $ cd ..
+
+Build the GTK+ GUI:
+
+ TODO: Currently built automatically as part of the sigrok build (will change).
 
 Download the Windows Python 2.6.6 installer into contrib/nsis/dist:
 
