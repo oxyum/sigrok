@@ -208,18 +208,10 @@ fi
 # libftdi is only needed for some hardware drivers.
 if test "x$LA_ASIX_SIGMA" != xno \
      -o "x$LA_CHRONOVU_LA8" != xno; then
-	case "$build" in
-	*mingw*)
-		CFLAGS="$CFLAGS -I/usr/local/include"
-		LIBS="$LIBS -L/usr/local/lib -lftdi"
-		;;
-	*)
-		PKG_CHECK_MODULES([libftdi], [libftdi >= 0.16],
-			[CFLAGS="$CFLAGS $libftdi_CFLAGS";
-			LIBS="$LIBS $libftdi_LIBS";
-			LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS libftdi"])
-		;;
-	esac
+	PKG_CHECK_MODULES([libftdi], [libftdi >= 0.16],
+		[CFLAGS="$CFLAGS $libftdi_CFLAGS";
+		LIBS="$LIBS $libftdi_LIBS";
+		LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS libftdi"])
 fi
 
 # libudev is only needed for some hardware drivers.
