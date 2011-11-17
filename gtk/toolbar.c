@@ -291,6 +291,13 @@ static void capture_run(GtkAction *action, GObject *parent)
 		}
 	}
 
+	if (device->plugin->set_configuration(device->plugin_index,
+		  SR_HWCAP_PROBECONFIG, (char *)device->probes) != SR_OK) {
+		printf("Failed to configure probes.\n");
+		sr_session_destroy();
+		return;
+	}
+
 	if (sr_session_start() != SR_OK) {
 		g_critical("Failed to start session.");
 		return;
