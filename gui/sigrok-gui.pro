@@ -53,11 +53,13 @@ CONFIG       += release warn_on
 
 RESOURCES    += sigrok-gui.qrc
 
+# TODO: Only use --static on Windows/MinGW ?()
 QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrokdecode)
-LIBS           += $$system(pkg-config --libs   libsigrokdecode)
+LIBS           += $$system(pkg-config --libs --static libsigrokdecode)
 
+# TODO: Only use --static on Windows/MinGW ?()
 QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrok)
-LIBS           += $$system(pkg-config --libs   libsigrok)
+LIBS           += $$system(pkg-config --libs --static libsigrok)
 
 # Python
 win32 {
