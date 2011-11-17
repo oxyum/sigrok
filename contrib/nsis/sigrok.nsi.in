@@ -120,9 +120,7 @@ Section "sigrok (required)" Section1
 
 	# sigrok libs
 	File "dist\lib\libsigrok.a"
-	File "dist\lib\libsigrok.la"
 	File "dist\lib\libsigrokdecode.a"
-	File "dist\lib\libsigrokdecode.la"
 
 	# sigrok-cli
 	File "dist\bin\sigrok-cli.exe"
@@ -131,9 +129,10 @@ Section "sigrok (required)" Section1
 	File "..\..\gui\release\sigrok-gui.exe"
 
 	# sigrok-gtk
-	File "..\..\gtk\sigrok-gtk.exe"
+	File "..\..\gtk\.libs\sigrok-gtk.exe"
 
 	# MinGW libs
+	File "c:\MinGW\bin\libgcc_s_dw2-1.dll"
 	File "c:\MinGW\bin\intl.dll"
 	File "c:\MinGW\bin\libiconv-2.dll"
 	File "c:\MinGW\bin\libstdc++-6.dll"
@@ -142,11 +141,29 @@ Section "sigrok (required)" Section1
 	File "c:\MinGW\msys\1.0\local\bin\libglib-2.0-0.dll"
 	File "c:\MinGW\msys\1.0\local\bin\libgthread-2.0-0.dll"
 	File "c:\MinGW\msys\1.0\local\bin\libusb-1.0.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libzip-1.dll"
+	File "c:\MinGW\msys\1.0\local\bin\zlib1.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libzip-2.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libftdi.dll"
 
 	# Qt libs
-	File "c:\QtSDK\Desktop\Qt\4.7.3\mingw\bin\QtCore4.dll"
-	File "c:\QtSDK\Desktop\Qt\4.7.3\mingw\bin\QtGui4.dll"
+	File "c:\QtSDK\Desktop\Qt\4.7.4\mingw\bin\QtCore4.dll"
+	File "c:\QtSDK\Desktop\Qt\4.7.4\mingw\bin\QtGui4.dll"
+
+	# GTK+ libs
+	File "c:\MinGW\msys\1.0\local\bin\freetype6.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libatk-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libcairo-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libfontconfig-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libgdk_pixbuf-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libgdk-win32-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libgio-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libgobject-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libgtk-win32-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libpango-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libpangocairo-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libpangoft2-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libpangowin32-*.dll"
+	File "c:\MinGW\msys\1.0\local\bin\libpng*.dll"
 
 	# Install the file(s) specified below into the specified directory.
 	SetOutPath "$INSTDIR\decoders"
@@ -207,22 +224,38 @@ Section "Uninstall"
 	# Delete the application, the application data, and related libs.
 	Delete "$INSTDIR\COPYING"
 	Delete "$INSTDIR\libsigrok.a"
-	Delete "$INSTDIR\libsigrok.la"
 	Delete "$INSTDIR\libsigrokdecode.a"
-	Delete "$INSTDIR\libsigrokdecode.la"
 	Delete "$INSTDIR\sigrok-cli.exe"
 	Delete "$INSTDIR\sigrok-gui.exe"
 	Delete "$INSTDIR\sigrok-gtk.exe"
+	Delete "$INSTDIR\libgcc_s_dw2-1.dll"
 	Delete "$INSTDIR\intl.dll"
 	Delete "$INSTDIR\libiconv-2.dll"
 	Delete "$INSTDIR\libstdc++-6.dll"
 	Delete "$INSTDIR\libglib-2.0-0.dll"
 	Delete "$INSTDIR\libgthread-2.0-0.dll"
 	Delete "$INSTDIR\libusb-1.0.dll"
-	Delete "$INSTDIR\libzip-1.dll"
+	Delete "$INSTDIR\zlib1.dll"
+	Delete "$INSTDIR\libzip-2.dll"
+	Delete "$INSTDIR\libftdi.dll"
 	Delete "$INSTDIR\QtCore4.dll"
 	Delete "$INSTDIR\QtGui4.dll"
+	Delete "$INSTDIR\freetype6.dll"
+	Delete "$INSTDIR\libatk-*.dll"
+	Delete "$INSTDIR\libcairo-*.dll"
+	Delete "$INSTDIR\libfontconfig-*.dll"
+	Delete "$INSTDIR\libgdk_pixbuf-*.dll"
+	Delete "$INSTDIR\libgdk-win32-*.dll"
+	Delete "$INSTDIR\libgio-*.dll"
+	Delete "$INSTDIR\libgobject-*.dll"
+	Delete "$INSTDIR\libgtk-win32-*.dll"
+	Delete "$INSTDIR\libpango-*.dll"
+	Delete "$INSTDIR\libpangocairo-*.dll"
+	Delete "$INSTDIR\libpangoft2-*.dll"
+	Delete "$INSTDIR\libpangowin32-*.dll"
+	Delete "$INSTDIR\libpng*.dll"
 	Delete "$INSTDIR\decoders\*.py"
+	Delete "$INSTDIR\decoders\*.pyc"
 
 	# Delete the install directory and its sub-directories.
 	RMDir "$INSTDIR\decoders"
