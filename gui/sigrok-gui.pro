@@ -53,28 +53,11 @@ CONFIG       += release warn_on
 
 RESOURCES    += sigrok-gui.qrc
 
-# Note: The order of the libs is VERY important, at least on MinGW!
-
 QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrokdecode)
 LIBS           += $$system(pkg-config --libs   libsigrokdecode)
 
 QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrok)
 LIBS           += $$system(pkg-config --libs   libsigrok)
-
-QMAKE_CXXFLAGS += $$system(pkg-config --cflags libzip)
-LIBS           += $$system(pkg-config --libs   libzip)
-
-# FreeBSD comes with an "integrated" libusb-1.0-style USB API.
-!contains(UNAME, FreeBSD) {
-QMAKE_CXXFLAGS += $$system(pkg-config --cflags libusb-1.0)
-LIBS           += $$system(pkg-config --libs   libusb-1.0)
-}
-
-QMAKE_CXXFLAGS += $$system(pkg-config --cflags glib-2.0)
-LIBS           += $$system(pkg-config --libs   glib-2.0)
-
-QMAKE_CXXFLAGS += $$system(pkg-config --cflags gthread-2.0)
-LIBS           += $$system(pkg-config --libs   gthread-2.0)
 
 # Python
 win32 {
