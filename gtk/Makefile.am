@@ -31,3 +31,13 @@ sigrok_gtk_LDADD = $(LIBOBJS) \
 		   -L$(top_builddir)/libsigrokdecode -lsigrokdecode \
 		   $(LDFLAGS_PYTHON)
 
+EXTRA_DIST = icons/sigrok-logo-notext.ico
+
+if WINDOWS
+sigrok_gtk_SOURCES += sigrok-gtk.rc
+sigrok_gtk_LDFLAGS = -mwindows
+endif
+
+.rc.o:
+	$(WINDRES) -o $@ $^
+

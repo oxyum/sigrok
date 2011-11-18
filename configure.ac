@@ -45,6 +45,10 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 
+# Check for windres, if found assume we're building on Windows.
+AC_CHECK_TOOL([WINDRES], windres, [])
+AM_CONDITIONAL([WINDOWS], test x$WINDRES != x)
+
 # Initialize libtool.
 LT_INIT
 
