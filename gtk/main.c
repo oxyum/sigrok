@@ -121,11 +121,13 @@ int main(int argc, char **argv)
 	GtkWindow *window;
 	GtkWidget *vbox, *vpaned, *log;
 	gtk_init(&argc, &argv);
+	icons_register();
 	sr_init();
 	sr_session_new();
 	sr_session_datafeed_callback_add(datafeed_in);
 
 	window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+	gtk_window_set_icon_name(window, "sigrok-logo");
 	gtk_window_set_title(window, "Sigrok-GTK");
 	gtk_window_set_default_size(window, 600, 400);
 

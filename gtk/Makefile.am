@@ -20,16 +20,22 @@
 bin_PROGRAMS = sigrok-gtk
 
 sigrok_gtk_SOURCES = main.c log.c toolbar.c gtkcellrenderersignal.c \
-		sigview.c help.c devselect.c sigrok-gtk.h gtkcellrenderersignal.h
+		sigview.c help.c devselect.c icons.c \
+		sigrok-gtk.h gtkcellrenderersignal.h
 
 sigrok_gtk_CPPFLAGS = -I$(top_srcdir)/libsigrok \
 		      -I$(top_srcdir)/libsigrokdecode \
-		      $(CPPFLAGS_PYTHON)
+		      $(CPPFLAGS_PYTHON) \
+			-DPKG_DATA_DIR=\"$(pkgdatadir)\"
 
 sigrok_gtk_LDADD = $(LIBOBJS) \
 		   -L$(top_builddir)/libsigrok -lsigrok \
 		   -L$(top_builddir)/libsigrokdecode -lsigrokdecode \
 		   $(LDFLAGS_PYTHON)
+
+iconsdir = $(pkgdatadir)/icons
+
+dist_icons_DATA = icons/sigrok_logo.png
 
 EXTRA_DIST = icons/sigrok-logo-notext.ico
 

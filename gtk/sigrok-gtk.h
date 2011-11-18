@@ -43,5 +43,8 @@ void dev_select_rescan(GtkAction *action, GtkWindow *parent);
 GtkWidget *log_init(void);
 GtkWidget *toolbar_init(GtkWindow *parent);
 
+/* icons.c */
+void icons_register(void);
+
 #endif
 
