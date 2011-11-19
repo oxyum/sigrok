@@ -591,6 +591,7 @@ int set_device_options(struct sr_device *device, GHashTable *args)
 	int ret, i;
 	uint64_t tmp_u64;
 	gboolean found;
+	gboolean tmp_bool;
 
 	g_hash_table_iter_init(&iter, args);
 	while (g_hash_table_iter_next(&iter, &key, &value)) {
@@ -598,7 +599,8 @@ int set_device_options(struct sr_device *device, GHashTable *args)
 		for (i = 0; sr_hwcap_options[i].capability; i++) {
 			if (strcmp(sr_hwcap_options[i].shortname, key))
 				continue;
-			if (value == NULL && sr_hwcap_options[i].type != SR_T_NULL) {
+			if ((value == NULL) && 
+			    (sr_hwcap_options[i].type != SR_T_BOOL)) {
 				printf("Option '%s' needs a value.\n", (char *)key);
 				return SR_ERR;
 			}
@@ -613,9 +615,14 @@ int set_device_options(struct sr_device *device, GHashTable *args)
 				ret = device->plugin-> set_configuration(device-> plugin_index,
 						sr_hwcap_options[i]. capability, value);
 				break;
-			case SR_T_NULL:
+			case SR_T_BOOL:
+				if (!value)
+					tmp_bool = TRUE;
+				else 
+					tmp_bool = sr_parse_boolstring(value);
 				ret = device->plugin-> set_configuration(device-> plugin_index,
-						sr_hwcap_options[i]. capability, NULL);
+						sr_hwcap_options[i]. capability, 
+						GINT_TO_POINTER(tmp_bool));
 				break;
 			default:
 				ret = SR_ERR;
