@@ -29,7 +29,7 @@ sigrok_gtk_CPPFLAGS = -I$(top_srcdir)/libsigrok \
 
 sigrok_gtk_LDADD = $(LIBOBJS) \
 		   -L$(top_builddir)/libsigrok -lsigrok \
-		   -L$(top_builddir)/libsigrokdecode -lsigrokdecode \
+		   -L$(top_builddir)/libsigrokdecode -lsigrokdecode
 
 iconsdir = $(pkgdatadir)/icons
 
