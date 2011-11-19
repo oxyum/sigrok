@@ -1,7 +1,7 @@
 AC_INIT([sigrok-gtk], [0.1], [gareth@blacksphere.co.nz])
 AC_CONFIG_SRCDIR([main.c])
 AC_PREREQ(2.57)
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign std-options])
 
 AC_PROG_CC
 AM_PROG_AS
