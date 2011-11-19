@@ -23,13 +23,9 @@ sigrok_gtk_SOURCES = main.c log.c toolbar.c gtkcellrenderersignal.c \
 		sigview.c help.c devselect.c icons.c \
 		sigrok-gtk.h gtkcellrenderersignal.h
 
-sigrok_gtk_CPPFLAGS = -I$(top_srcdir)/libsigrok \
-		      -I$(top_srcdir)/libsigrokdecode \
-			-DPKG_DATA_DIR=\"$(pkgdatadir)\"
+sigrok_gtk_CPPFLAGS = -DPKG_DATA_DIR=\"$(pkgdatadir)\"
 
-sigrok_gtk_LDADD = $(LIBOBJS) \
-		   -L$(top_builddir)/libsigrok -lsigrok \
-		   -L$(top_builddir)/libsigrokdecode -lsigrokdecode
+sigrok_gtk_LDADD = $(LIBOBJS)
 
 iconsdir = $(pkgdatadir)/icons
 

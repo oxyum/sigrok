@@ -67,7 +67,11 @@ Build the Qt GUI:
 
 Build the GTK+ GUI:
 
- TODO: Currently built automatically as part of the sigrok build (will change).
+ $ cd gtk
+ $ ./autogen.sh
+ $ ./configure
+ $ make
+ $ cd ..
 
 Download the Windows Python 2.6.6 installer into contrib/nsis/dist:
 

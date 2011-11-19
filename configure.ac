@@ -45,10 +45,6 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 
-# Check for windres, if found assume we're building on Windows.
-AC_CHECK_TOOL([WINDRES], windres, [])
-AM_CONDITIONAL([WINDOWS], test x$WINDRES != x)
-
 # Initialize libtool.
 LT_INIT
 
@@ -171,10 +167,6 @@ AM_PATH_GLIB_2_0([2.22.0],
 PKG_CHECK_MODULES([gthread], [gthread-2.0 >= 2.22.0],
 	[CFLAGS="$CFLAGS $gthread_CFLAGS"; LIBS="$LIBS $gthread_LIBS";
 	LIBSIGROK_PKGLIBS="$LIBSIGROK_PKGLIBS gthread-2.0"])
-
-# GTK+ Needed for the GTK front-end
-PKG_CHECK_MODULES([gtk], [gtk+-2.0 >= 2.22.0],
-	[CFLAGS="$CFLAGS $gtk_CFLAGS"; LIBS="$LIBS $gtk_LIBS"])
 
 # libusb is only needed for some hardware drivers.
 if test "x$LA_SALEAE_LOGIC" != xno \
@@ -327,7 +319,6 @@ AC_CONFIG_FILES([Makefile
 		 libsigrokdecode/libsigrokdecode.pc
 		 libsigrokdecode/decoders/Makefile
 		 cli/Makefile
-		 gtk/Makefile
 		])
 
 AC_OUTPUT

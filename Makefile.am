@@ -19,5 +19,5 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = contrib doc libsigrok libsigrokdecode cli gtk
+SUBDIRS = contrib doc libsigrok libsigrokdecode cli
 

@@ -54,7 +54,10 @@ For building the Qt GUI:
 
 For building the GTK+ GUI:
 
- TODO: Currently built automatically as part of the sigrok build.
+ $ cd gtk
+ $ ./autogen.sh
+ $ ./configure
+ $ make
 
 NOTE: The GUIs are not yet usable, they're both work-in-progress!
 
