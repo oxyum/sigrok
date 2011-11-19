@@ -25,13 +25,11 @@ sigrok_gtk_SOURCES = main.c log.c toolbar.c gtkcellrenderersignal.c \
 
 sigrok_gtk_CPPFLAGS = -I$(top_srcdir)/libsigrok \
 		      -I$(top_srcdir)/libsigrokdecode \
-		      $(CPPFLAGS_PYTHON) \
 			-DPKG_DATA_DIR=\"$(pkgdatadir)\"
 
 sigrok_gtk_LDADD = $(LIBOBJS) \
 		   -L$(top_builddir)/libsigrok -lsigrok \
 		   -L$(top_builddir)/libsigrokdecode -lsigrokdecode \
-		   $(LDFLAGS_PYTHON)
 
 iconsdir = $(pkgdatadir)/icons
 

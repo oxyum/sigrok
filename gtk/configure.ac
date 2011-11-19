@@ -19,11 +19,6 @@ PKG_CHECK_MODULES([libsigrok], [libsigrok],
 	[CFLAGS="$CFLAGS $libsigrok_CFLAGS";
 	LIBS="$LIBS $libsigrok_LIBS"])
 
-CPPFLAGS_PYTHON="$(python-config --includes)"
-LDFLAGS_PYTHON="$(python-config --ldflags)"
-AC_SUBST(CPPFLAGS_PYTHON)
-AC_SUBST(LDFLAGS_PYTHON)
-
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
