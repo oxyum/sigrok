@@ -8,6 +8,10 @@ AM_PROG_AS
 AC_STDC_HEADERS
 AC_PROG_INSTALL
 
+# Initialize pkg-config.
+# We require at least 0.22, as "Requires.private" behaviour changed there.
+PKG_PROG_PKG_CONFIG([0.22])
+
 AC_CHECK_TOOL([WINDRES], windres, [])
 AM_CONDITIONAL([WINDOWS], test x$WINDRES != x)
 
