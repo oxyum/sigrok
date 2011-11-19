@@ -53,13 +53,19 @@ CONFIG       += release warn_on
 
 RESOURCES    += sigrok-gui.qrc
 
-# TODO: Only use --static on Windows/MinGW ?()
-QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrokdecode)
-LIBS           += $$system(pkg-config --libs --static libsigrokdecode)
-
-# TODO: Only use --static on Windows/MinGW ?()
-QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrok)
-LIBS           += $$system(pkg-config --libs --static libsigrok)
+# libsigrok and libsigrokdecode
+win32 {
+	# On Windows/MinGW we need to use '--libs --static'.
+	QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrokdecode)
+	LIBS           += $$system(pkg-config --libs --static libsigrokdecode)
+	QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrok)
+	LIBS           += $$system(pkg-config --libs --static libsigrok)
+} else {
+	QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrokdecode)
+	LIBS           += $$system(pkg-config --libs libsigrokdecode)
+	QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrok)
+	LIBS           += $$system(pkg-config --libs libsigrok)
+}
 
 # Python
 win32 {
@@ -69,7 +75,7 @@ win32 {
 	QMAKE_CXXFLAGS += -I'c:/Python26/include'
 } else {
 	# Linux and Mac OS X have 'python-config', let's hope the rest too...
-	LIBS        += $$system(python-config --ldflags)
+	LIBS           += $$system(python-config --ldflags)
 	QMAKE_CXXFLAGS += $$system(python-config --includes)
 }
 
