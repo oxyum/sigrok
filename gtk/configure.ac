@@ -8,6 +8,9 @@ AM_PROG_AS
 AC_STDC_HEADERS
 AC_PROG_INSTALL
 
+# Initialize libtool.
+LT_INIT
+
 # Initialize pkg-config.
 # We require at least 0.22, as "Requires.private" behaviour changed there.
 PKG_PROG_PKG_CONFIG([0.22])
