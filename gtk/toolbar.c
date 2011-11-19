@@ -410,16 +410,21 @@ static void capture_run(GtkAction *action, GObject *parent)
 static void dev_file_open(GtkAction *action, GtkWindow *parent)
 {
 	(void)action;
+	static GtkWidget *dialog;
 	const gchar *filename;
 
-	GtkWidget *dialog = gtk_file_chooser_dialog_new("Open", parent,
+	if(!dialog)
+		dialog = gtk_file_chooser_dialog_new("Open", parent,
 				GTK_FILE_CHOOSER_ACTION_OPEN,
 				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	g_signal_connect(dialog, "delete-event",
+					G_CALLBACK(gtk_widget_hide_on_delete),
+					NULL);
 
 	if (gtk_dialog_run(GTK_DIALOG(dialog)) != GTK_RESPONSE_ACCEPT) {
 		/* Dialog was cancelled or closed */
-		gtk_object_destroy(GTK_OBJECT(dialog));
+		gtk_widget_hide(dialog);
 		return;
 	}
 
@@ -428,7 +433,7 @@ static void dev_file_open(GtkAction *action, GtkWindow *parent)
 	filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 	load_input_file(filename);
 
-	gtk_object_destroy(GTK_OBJECT(dialog));
+	gtk_widget_hide(dialog);
 }
 
 void toggle_log(GtkToggleAction *action, GObject *parent)
