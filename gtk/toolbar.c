@@ -187,6 +187,14 @@ static void dev_set_options(GtkAction *action, GtkWindow *parent)
 	gtk_widget_destroy(dialog);
 }
 
+enum {
+	PROBE_NUMBER,
+	PROBE_ENABLED,
+	PROBE_NAME,
+	PROBE_TRIGGER,
+	MAX_PROBE
+};
+
 static void probe_toggled(GtkCellRenderer *cel, gchar *path,
 			GtkTreeModel *probes)
 {
@@ -199,10 +207,12 @@ static void probe_toggled(GtkCellRenderer *cel, gchar *path,
 	(void)cel;
 
 	gtk_tree_model_get_iter_from_string(probes, &iter, path);
-	gtk_tree_model_get(probes, &iter, 0, &i, 1, &en, -1);
+	gtk_tree_model_get(probes, &iter, PROBE_NUMBER, &i, 
+					PROBE_ENABLED, &en, -1);
 	probe = sr_device_probe_find(device, i);
 	probe->enabled = !en;
-	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, 1, probe->enabled, -1);
+	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, 
+					PROBE_ENABLED, probe->enabled, -1);
 }
 
 static void probe_named(GtkCellRendererText *cel, gchar *path, gchar *text,
@@ -215,9 +225,25 @@ static void probe_named(GtkCellRendererText *cel, gchar *path, gchar *text,
 	(void)cel;
 
 	gtk_tree_model_get_iter_from_string(probes, &iter, path);
-	gtk_tree_model_get(probes, &iter, 0, &i, -1);
+	gtk_tree_model_get(probes, &iter, PROBE_NUMBER, &i, -1);
 	sr_device_probe_name(device, i, text);
-	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, 2, text, -1);
+	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, PROBE_NAME, text, -1);
+}
+
+static void probe_trigger_set(GtkCellRendererText *cel, gchar *path, 
+			gchar *text, GtkTreeModel *probes)
+{
+	struct sr_device *device = g_object_get_data(G_OBJECT(probes), "device");
+	GtkTreeIter iter;
+	gint i;
+
+	(void)cel;
+
+	gtk_tree_model_get_iter_from_string(probes, &iter, path);
+	gtk_tree_model_get(probes, &iter, PROBE_NUMBER, &i, -1);
+	sr_device_trigger_set(device, i, text);
+	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, 
+					PROBE_TRIGGER, text, -1);
 }
 
 static void dev_set_probes(GtkAction *action, GtkWindow *parent)
@@ -242,8 +268,9 @@ static void dev_set_probes(GtkAction *action, GtkWindow *parent)
 				TRUE, TRUE, 0);
 
 	/* Populate list store with probe options */
-	GtkListStore *probes = gtk_list_store_new(3, G_TYPE_INT, G_TYPE_BOOLEAN,
-					G_TYPE_STRING);
+	GtkListStore *probes = gtk_list_store_new(MAX_PROBE, 
+					G_TYPE_INT, G_TYPE_BOOLEAN,
+					G_TYPE_STRING, GTK_TYPE_STRING);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(tv), GTK_TREE_MODEL(probes));
 	GtkTreeIter iter;
 	GSList *p;
@@ -251,8 +278,11 @@ static void dev_set_probes(GtkAction *action, GtkWindow *parent)
 	for (p = device->probes, i = 1; p; p = g_slist_next(p), i++) {
 		struct sr_probe *probe = p->data;
 		gtk_list_store_append(probes, &iter);
-		gtk_list_store_set(probes, &iter, 0, i,
-					1, probe->enabled, 2, probe->name, -1);
+		gtk_list_store_set(probes, &iter, PROBE_NUMBER, i,
+					PROBE_ENABLED, probe->enabled, 
+					PROBE_NAME, probe->name, 
+					PROBE_TRIGGER, probe->trigger, 
+					-1);
 	}
 
 	/* Save device with list so that property can be set by edited
@@ -263,19 +293,28 @@ static void dev_set_probes(GtkAction *action, GtkWindow *parent)
 	GtkTreeViewColumn *col;
 	col = gtk_tree_view_column_new_with_attributes("Probe",
 				gtk_cell_renderer_text_new(),
-				"text", 0, NULL);
+				"text", PROBE_NUMBER, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
 	GtkCellRenderer *cel = gtk_cell_renderer_toggle_new();
 	g_object_set(cel, "activatable", TRUE, NULL);
 	g_signal_connect(cel, "toggled", G_CALLBACK(probe_toggled), probes);
 	col = gtk_tree_view_column_new_with_attributes("En",
-				cel, "active", 1, NULL);
+				cel, "active", PROBE_ENABLED, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
 	cel = gtk_cell_renderer_text_new();
 	g_object_set(cel, "editable", TRUE, NULL);
 	g_signal_connect(cel, "edited", G_CALLBACK(probe_named), probes);
-	col = gtk_tree_view_column_new_with_attributes("Signal Name",
-				cel, "text", 2, "sensitive", 1, NULL);
+	col = gtk_tree_view_column_new_with_attributes("Signal Name", cel, 
+					"text", PROBE_NAME, 
+					"sensitive", PROBE_ENABLED, NULL);
+	gtk_tree_view_column_set_resizable(col, TRUE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
+	cel = gtk_cell_renderer_text_new();
+	g_object_set(cel, "editable", TRUE, NULL);
+	g_signal_connect(cel, "edited", G_CALLBACK(probe_trigger_set), probes);
+	col = gtk_tree_view_column_new_with_attributes("Trigger", cel, 
+					"text", PROBE_TRIGGER, 
+					"sensitive", PROBE_ENABLED, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
 
 	gtk_widget_show_all(dialog);
