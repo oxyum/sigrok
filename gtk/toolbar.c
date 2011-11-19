@@ -24,6 +24,17 @@
 
 #include "sigrok-gtk.h"
 
+enum {
+	DEV_PROP_CAPABILITY,
+	DEV_PROP_TYPE,
+	DEV_PROP_SHORTNAME,
+	DEV_PROP_DESCRIPTION,
+	DEV_PROP_IS_TEXT,
+	DEV_PROP_TEXTVALUE,
+	DEV_PROP_BOOLVALUE,
+	MAX_DEV_PROP
+};
+
 static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 			GtkListStore *props)
 {
@@ -33,11 +44,12 @@ static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 	GtkTreeIter iter;
 	int type, cap;
 	guint64 tmp_u64;
-	int ret;
+	int ret = SR_ERR;
 
 	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(props), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(props), &iter,
-				0, &cap, 1, &type, -1);
+					DEV_PROP_CAPABILITY, &cap, 
+					DEV_PROP_TYPE, &type, -1);
 
 	switch (type) {
 	case SR_T_UINT64:
@@ -49,14 +61,48 @@ static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 		ret = device->plugin-> set_configuration(device->plugin_index,
 				cap, text);
 		break;
-	case SR_T_NULL:
-		ret = device->plugin->set_configuration(device->plugin_index,
-				cap, NULL);
-		break;
+	/* SR_T_BOOL will be handled by prop_toggled */
 	}
 
 	if (!ret)
-		gtk_list_store_set(props, &iter, 3, text, -1);
+		gtk_list_store_set(props, &iter, DEV_PROP_TEXTVALUE, text, -1);
+}
+
+static void prop_toggled(GtkCellRendererToggle *cel, gchar *path,
+			GtkListStore *props)
+{
+	struct sr_device *device = g_object_get_data(G_OBJECT(props), "device");
+	GtkTreeIter iter;
+	int type, cap;
+	int ret;
+	gboolean val;
+	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(props), &iter, path);
+	gtk_tree_model_get(GTK_TREE_MODEL(props), &iter,
+					DEV_PROP_CAPABILITY, &cap, 
+					DEV_PROP_TYPE, &type, -1);
+
+	val = !gtk_cell_renderer_toggle_get_active(cel);
+	ret = device->plugin-> set_configuration(device->plugin_index, cap, 
+					GINT_TO_POINTER(val));
+
+	if (!ret)
+		gtk_list_store_set(props, &iter, DEV_PROP_BOOLVALUE, val, -1);
+}
+
+void dev_prop_bool_data_func(GtkCellLayout *cell_layout,
+				GtkCellRenderer *cell,
+				GtkTreeModel *tree_model,
+				GtkTreeIter *iter,
+				gpointer data)
+{
+	(void)cell_layout;
+	(void)data;
+
+	gboolean istext, val;
+	gtk_tree_model_get(tree_model, iter, 
+				DEV_PROP_IS_TEXT, &istext, 
+				DEV_PROP_BOOLVALUE, &val, -1);
+	g_object_set(G_OBJECT(cell), "visible", !istext, "active", val, NULL);
 }
 
 static void dev_set_options(GtkAction *action, GtkWindow *parent)
@@ -81,9 +127,11 @@ static void dev_set_options(GtkAction *action, GtkWindow *parent)
 				TRUE, TRUE, 0);
 
 	/* Populate list store with config options */
-	GtkListStore *props = gtk_list_store_new(5, G_TYPE_INT, G_TYPE_INT,
+	GtkListStore *props = gtk_list_store_new(MAX_DEV_PROP, 
+					G_TYPE_INT, G_TYPE_INT,
 					G_TYPE_STRING, G_TYPE_STRING,
-					G_TYPE_STRING);
+					G_TYPE_BOOLEAN, G_TYPE_STRING,
+					G_TYPE_BOOLEAN);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(tv), GTK_TREE_MODEL(props));
 	int *capabilities = device->plugin->get_capabilities();
 	int cap;
@@ -93,13 +141,18 @@ static void dev_set_options(GtkAction *action, GtkWindow *parent)
 		if (!(hwo = sr_find_hwcap_option(capabilities[cap])))
 			continue;
 		gtk_list_store_append(props, &iter);
-		gtk_list_store_set(props, &iter, 0, capabilities[cap],
-					1, hwo->type, 2, hwo->shortname,
-					4, hwo->description, -1);
+		gtk_list_store_set(props, &iter, 
+					DEV_PROP_CAPABILITY, capabilities[cap],
+					DEV_PROP_TYPE, hwo->type,
+					DEV_PROP_SHORTNAME, hwo->shortname,
+					DEV_PROP_DESCRIPTION, hwo->description,
+					DEV_PROP_IS_TEXT, hwo->type != SR_T_BOOL,
+					-1);
 	}
 
 	/* Popup tooltop containing description if mouse hovers */
-	gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(tv), 4);
+	gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(tv), 
+					DEV_PROP_DESCRIPTION);
 
 	/* Save device with list so that property can be set by edited
 	 * handler. */
@@ -109,13 +162,22 @@ static void dev_set_options(GtkAction *action, GtkWindow *parent)
 	GtkTreeViewColumn *col;
 	col = gtk_tree_view_column_new_with_attributes("Property",
 				gtk_cell_renderer_text_new(),
-				"text", 2, NULL);
+				"text", DEV_PROP_SHORTNAME, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
+	/* We pack both a text and toggle renderer.  Only one will be visible.
+	 * depending on type.
+	 */
 	GtkCellRenderer *cel = gtk_cell_renderer_text_new();
 	g_object_set(cel, "editable", TRUE, NULL);
 	g_signal_connect(cel, "edited", G_CALLBACK(prop_edited), props);
 	col = gtk_tree_view_column_new_with_attributes("Value",
-				cel, "text", 3, NULL);
+				cel, "text", DEV_PROP_TEXTVALUE, 
+				"visible", DEV_PROP_IS_TEXT, NULL);
+	cel = gtk_cell_renderer_toggle_new();
+	g_signal_connect(cel, "toggled", G_CALLBACK(prop_toggled), props);
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(col), cel, TRUE);
+	gtk_cell_layout_set_cell_data_func(GTK_CELL_LAYOUT(col), cel, 
+				dev_prop_bool_data_func, NULL, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tv), col);
 
 
