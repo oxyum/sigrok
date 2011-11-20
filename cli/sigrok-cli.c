@@ -45,8 +45,8 @@ int default_output_format = FALSE;
 char *output_format_param = NULL;
 char *input_format_param = NULL;
 
-/* Protocol decoder */
-char *current_decoder;
+/* Protocol decoders: List of struct srd_decoder_instance */
+GSList *decoders;
 
 static gboolean opt_version = FALSE;
 static gint opt_loglevel = SR_LOG_WARN; /* Show errors+warnings per default. */
@@ -271,7 +271,6 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 	uint64_t output_len, filter_out_len, dec_out_size;
 	char *output_buf, *filter_out;
 	uint8_t *dec_out;
-	struct srd_decoder *dec;
 
 	/* If the first packet to come in isn't a header, don't even try. */
 	if (packet->type != SR_DF_HEADER && o == NULL)
@@ -408,20 +407,22 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 		 * to this data for now. */
 		goto cleanup;
 
-	if (current_decoder) {
-		/* TODO: Error handling. */
-		dec = srd_get_decoder_by_id(current_decoder);
-		
-		dec_out_size = 0;
-		ret = srd_run_decoder(dec, filter_out,
-				filter_out_len, &dec_out, &dec_out_size);
+	if (decoders) {
+		GSList *d;
+		for (d = decoders; d; d = d->next) {
+			/* TODO: Error handling. */
+			
+			dec_out_size = 0;
+			ret = srd_run_decoder(d->data, (uint8_t*)filter_out,
+					filter_out_len, &dec_out, &dec_out_size);
 
-		if (ret != SRD_OK) {
-			fprintf(stderr, "Decoder runtime error (%d)\n", ret);
-			exit(1);
+			if (ret != SRD_OK) {
+				fprintf(stderr, "Decoder runtime error (%d)\n", ret);
+				exit(1);
+			}
+			if (dec_out_size)
+				printf("Protocol decoder output:\n%s\n", dec_out);
 		}
-		if (dec_out_size)
-			printf("Protocol decoder output:\n%s\n", dec_out);
 	} else {
 		output_len = 0;
 		if (o->format->data && packet->type == o->format->df_type)
@@ -443,17 +444,21 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 /* TODO: Only register here, run in streaming fashion later/elsewhere. */
 static int register_pds(struct sr_device *device, const char *pdstring)
 {
-	char **tokens;
+	char **pdtokens, **pdtok;
 
 	/* Avoid compiler warnings. */
 	device = device;
 
-	tokens = g_strsplit(pdstring, ",", 10 /* FIXME */);
+	pdtokens = g_strsplit(pdstring, ",", -1);
 
-	if (tokens[0] && strlen(tokens[0]) > 0) {
-		current_decoder = tokens[0];
+	for (pdtok = pdtokens; *pdtok; pdtok++) {
+		struct srd_decoder_instance *di;
+		di = srd_instance_new(*pdtok);
 		/* TODO: Handle errors. */
+		decoders = g_slist_append(decoders, di);
 	}
+
+	g_strfreev(pdtokens);
 
 	return 0;
 }
@@ -840,7 +845,7 @@ int main(int argc, char **argv)
 	char *fmtspec;
 
 	/* No decoder at the moment. */
-	current_decoder = NULL;
+	decoders = NULL;
 
 	g_log_set_default_handler(logger, NULL);
 	if (getenv("SIGROK_DEBUG"))
