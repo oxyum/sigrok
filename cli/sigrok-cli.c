@@ -440,6 +440,10 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 }
 
 /* Register the given PDs for this session. */
+/* Accepts a string of the form: "spi:sck=3:sdata=4,spi:sck=3:sdata=5" 
+ * That will instantiate two SPI decoders on the clock but different data
+ * lines.
+ */
 /* TODO: Support both serial PDs and nested PDs. Parallel PDs even? */
 /* TODO: Only register here, run in streaming fashion later/elsewhere. */
 static int register_pds(struct sr_device *device, const char *pdstring)
@@ -453,7 +457,27 @@ static int register_pds(struct sr_device *device, const char *pdstring)
 
 	for (pdtok = pdtokens; *pdtok; pdtok++) {
 		struct srd_decoder_instance *di;
-		di = srd_instance_new(*pdtok);
+
+		/* Configure probes from command line */
+		char **optokens, **optok;
+		optokens = g_strsplit(*pdtok, ":", -1);
+		di = srd_instance_new(optokens[0]);
+		if(!di) {
+			fprintf(stderr, "Failed to instantiate PD: %s\n",
+					optokens[0]);
+			g_strfreev(optokens);
+			g_strfreev(pdtokens);
+			return -1;
+		}
+		for (optok = optokens+1; *optok; optok++) {
+			char probe[strlen(*optok)];
+			int num;
+			if(sscanf(*optok, "%[^=]=%d", probe, &num) == 2)
+				srd_instance_set_probe(di, probe, num);
+				/* TODO: else fail somehow */
+		}
+		g_strfreev(optokens);
+
 		/* TODO: Handle errors. */
 		decoders = g_slist_append(decoders, di);
 	}
