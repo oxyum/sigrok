@@ -430,9 +430,7 @@ static void dev_file_open(GtkAction *action, GtkWindow *parent)
 	gtk_widget_hide(dialog);
 
 	filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-	load_input_file(filename);
-
-	gtk_widget_hide(dialog);
+	load_input_file(parent, filename);
 }
 
 void toggle_log(GtkToggleAction *action, GObject *parent)

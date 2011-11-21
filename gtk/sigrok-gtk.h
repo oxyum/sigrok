@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 
 /* main.c */
-void load_input_file(const gchar *file);
+void load_input_file(GtkWindow *parent, const gchar *file);
 
 /* sigview.c */
 extern GtkListStore *siglist;

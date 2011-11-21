@@ -105,7 +105,7 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	g_array_append_vals(data, filter_out, filter_out_len);
 }
 
-void load_input_file(const gchar *file)
+void load_input_file(GtkWindow *parent, const gchar *file)
 {
 	if (sr_session_load(file) == SR_OK) {
 		/* sigrok session file */
@@ -114,6 +114,14 @@ void load_input_file(const gchar *file)
 		sr_session_run();
 		sr_session_stop();
 	}
+
+	/* Create a new session and programatically emit changed signal from
+	 * the device selection combo box to reselect the device. 
+	 */
+	sr_session_new();
+	sr_session_datafeed_callback_add(datafeed_in);
+	g_signal_emit_by_name(g_object_get_data(G_OBJECT(parent), "devcombo"), 
+			"changed");
 }
 
 int main(int argc, char **argv)
