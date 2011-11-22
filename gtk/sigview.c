@@ -248,8 +248,8 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 	if (ofs > nsamples * scale - width)
 		ofs = nsamples * scale - width;
 
-	gtk_adjustment_configure(adj, ofs, 0, nsamples * scale, 1, 1,
-		width);
+	gtk_adjustment_configure(adj, ofs, 0, nsamples * scale, 
+			width/16, width/2, width);
 
 	g_object_set(cel, "scale", scale, "offset", ofs, NULL);
 	gtk_widget_queue_draw(GTK_WIDGET(sigview));
