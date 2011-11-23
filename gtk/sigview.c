@@ -20,6 +20,7 @@
 #include <sigrok.h>
 #include <gtk/gtk.h>
 
+#include <string.h>
 #include <math.h>
 
 #include "gtkcellrenderersignal.h"
@@ -210,71 +211,33 @@ GtkWidget *sigview_init(void)
 	return sw;
 }
 
-static guint64 sample(GArray *data, guint i)
-{
-	guint16 *tmp16;
-	guint32 *tmp32;
-	guint64 *tmp64;
-
-	g_return_val_if_fail(i < (data->len / g_array_get_element_size(data)),
-				FALSE);
-
-	switch (g_array_get_element_size(data)) {
-	case 1:
-		return data->data[i];
-	case 2:
-		tmp16 = (guint16*)data->data;
-		return tmp16[i];
-	case 4:
-		tmp32 = (guint32*)data->data;
-		return tmp32[i];
-	case 8:
-		tmp64 = (guint64*)data->data;
-		return tmp64[i];
-	}
-	return FALSE;
-}
-
 static GArray *summarize(GArray *in, gdouble *scale)
 {
 	GArray *ret;
 	int skip = 1 / (*scale * 4);
-	guint64 i, j, k;
-	guint64 s;
+	guint64 i, j, k, l;
+	unsigned unitsize = g_array_get_element_size(in);
+	uint8_t s[unitsize];
+	uint8_t smask[unitsize];
 
 	g_return_val_if_fail(skip > 1, NULL);
 
-	ret = g_array_sized_new(FALSE, FALSE, 
-			g_array_get_element_size(in),
-			in->len / skip);
+	ret = g_array_sized_new(FALSE, FALSE, unitsize, in->len / skip);
 	ret->len = in->len / skip;
 	*scale *= skip;
 
-	s = 0;
+	memset(s, 0, unitsize);
 	for (i = 0, k = 0; i < in->len; i += skip, k++) {
-		guint64 smask = -1;
+		memset(smask, 0xFF, unitsize);
 		for (j = i; j < i+skip; j++) {
-			guint64 ns = (sample(in, j) ^ s) & smask;
-			/* ns is now bits we need to toggle */
-			s ^= ns;
-			smask &= ~ns;
-			if (!smask) 
-				break;
+			for (l = 0; l < unitsize; l++) {
+				uint8_t ns = (in->data[j+l] ^ s[l]) & smask[l];
+				/* ns is now bits we need to toggle */
+				s[l] ^= ns;
+				smask[l] &= ~ns;
+			}
 		}
-		switch (g_array_get_element_size(ret)) {
-			case 1:
-				ret->data[k] = s;
-				break;
-			case 2:
-				((uint16_t*)ret->data)[k] = s;
-				break;
-			case 4:
-				((uint32_t*)ret->data)[k] = s;
-				break;
-			case 8:
-				((uint64_t*)ret->data)[k] = s;
-				break;
-		}
+		memcpy(&ret->data[k], s, unitsize);
 	}
 	return ret;
 }
