@@ -20,6 +20,8 @@
 #include <sigrok.h>
 #include <gtk/gtk.h>
 
+#include <math.h>
+
 #include "gtkcellrenderersignal.h"
 #include "sigrok-gtk.h"
 
@@ -29,14 +31,23 @@ GtkListStore *siglist;
 static void format_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
 		GtkTreeModel *siglist, GtkTreeIter *iter, gpointer user_data)
 {
-	GArray *data = g_object_get_data(G_OBJECT(siglist), "sampledata");
 	int probe;
 	char *colour;
+	GArray *data;
 
 	(void)tree_column;
 	(void)user_data;
 
+	/* TODO: In future we will get data here from tree model.
+	 * PD data streams will be kept in the list.  The logic stream
+	 * will be used if data is NULL.
+	 */
 	gtk_tree_model_get(siglist, iter, 1, &colour, 2, &probe, -1);
+
+	/* Try get summary data from the list */
+	data = g_object_get_data(G_OBJECT(siglist), "summarydata");
+	if (!data)
+		data = g_object_get_data(G_OBJECT(siglist), "sampledata");
 
 	g_object_set(G_OBJECT(cell), "data", data, "probe", probe,
 				"foreground", colour, NULL);
@@ -78,7 +89,7 @@ static gboolean do_motion_event(GtkWidget *tv, GdkEventMotion *e,
 	guint nsamples;
 	GtkTreeViewColumn *col;
 	gint width;
-	gdouble scale;
+	gdouble scale, *rscale;
 	GtkAdjustment *adj;
 
 	x = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv), "motion-x"));
@@ -87,6 +98,7 @@ static gboolean do_motion_event(GtkWidget *tv, GdkEventMotion *e,
 
 	siglist = G_OBJECT(gtk_tree_view_get_model(GTK_TREE_VIEW(tv)));
 	data = g_object_get_data(siglist, "sampledata");
+	rscale = g_object_get_data(siglist, "rscale");
 	nsamples = (data->len / g_array_get_element_size(data)) - 1;
 	col = g_object_get_data(G_OBJECT(tv), "signalcol");
 	width = gtk_tree_view_column_get_width(col);
@@ -95,8 +107,8 @@ static gboolean do_motion_event(GtkWidget *tv, GdkEventMotion *e,
 	offset += x - e->x;
 	if (offset < 0)
 		offset = 0;
-	if (offset > nsamples * scale - width)
-		offset = nsamples * scale - width;
+	if (offset > nsamples * *rscale - width)
+		offset = nsamples * *rscale - width;
 
 	gtk_adjustment_set_value(adj, offset);
 
@@ -198,13 +210,87 @@ GtkWidget *sigview_init(void)
 	return sw;
 }
 
+static guint64 sample(GArray *data, guint i)
+{
+	guint16 *tmp16;
+	guint32 *tmp32;
+	guint64 *tmp64;
+
+	g_return_val_if_fail(i < (data->len / g_array_get_element_size(data)),
+				FALSE);
+
+	switch (g_array_get_element_size(data)) {
+	case 1:
+		return data->data[i];
+	case 2:
+		tmp16 = (guint16*)data->data;
+		return tmp16[i];
+	case 4:
+		tmp32 = (guint32*)data->data;
+		return tmp32[i];
+	case 8:
+		tmp64 = (guint64*)data->data;
+		return tmp64[i];
+	}
+	return FALSE;
+}
+
+static GArray *summarize(GArray *in, gdouble *scale)
+{
+	GArray *ret;
+	int skip = 1 / (*scale * 4);
+	guint64 i, j, k;
+	guint64 s;
+
+	g_return_val_if_fail(skip > 1, NULL);
+
+	ret = g_array_sized_new(FALSE, FALSE, 
+			g_array_get_element_size(in),
+			in->len / skip);
+	ret->len = in->len / skip;
+	*scale *= skip;
+
+	s = 0;
+	for (i = 0, k = 0; i < in->len; i += skip, k++) {
+		guint64 smask = -1;
+		for (j = i; j < i+skip; j++) {
+			guint64 ns = (sample(in, j) ^ s) & smask;
+			/* ns is now bits we need to toggle */
+			s ^= ns;
+			smask &= ~ns;
+			if (!smask) 
+				break;
+		}
+		switch (g_array_get_element_size(ret)) {
+			case 1:
+				ret->data[k] = s;
+				break;
+			case 2:
+				((uint16_t*)ret->data)[k] = s;
+				break;
+			case 4:
+				((uint32_t*)ret->data)[k] = s;
+				break;
+			case 8:
+				((uint64_t*)ret->data)[k] = s;
+				break;
+		}
+	}
+	return ret;
+}
+
 void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 {
+	GObject *siglist;
 	GtkTreeViewColumn *col;
 	GtkCellRendererSignal *cel;
 	GtkAdjustment *adj;
+	/* data and scale refer to summary */
 	GArray *data;
 	gdouble scale;
+	/* rdata and rscale refer to complete data */
+	GArray *rdata;
+	gdouble *rscale;
 	gint ofs;
 	gint width;
 	guint nsamples;
@@ -222,12 +308,22 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 	adj = g_object_get_data(G_OBJECT(sigview), "hadj");
 	width = gtk_tree_view_column_get_width(col);
 
-	data = g_object_get_data(
-		G_OBJECT(gtk_tree_view_get_model(GTK_TREE_VIEW(sigview))),
-		"sampledata");
-	if (!data)
+	siglist = G_OBJECT(gtk_tree_view_get_model(GTK_TREE_VIEW(sigview)));
+	rdata = g_object_get_data(siglist, "sampledata");
+	rscale = g_object_get_data(siglist, "rscale");
+	if (!rscale) {
+		rscale = g_malloc(sizeof(rscale));
+		*rscale = 1;
+		g_object_set_data(siglist, "rscale", rscale);
+	}
+	data = g_object_get_data(siglist, "summarydata");
+	if (!rdata)
 		return;
-	nsamples = (data->len / g_array_get_element_size(data)) - 1;
+	if (!data)
+		data = rdata;
+	nsamples = (rdata->len / g_array_get_element_size(rdata)) - 1;
+	if ((fabs(*rscale - (double)width/nsamples) < 1e-12) && (zoom < 1))
+		return;
 
 	cel = g_object_get_data(G_OBJECT(sigview), "signalcel");
 	g_object_get(cel, "scale", &scale, "offset", &ofs, NULL);
@@ -235,6 +331,7 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 	ofs += offset;
 		
 	scale *= zoom;
+	*rscale *= zoom;
 	ofs *= zoom;
 
 	ofs -= offset;
@@ -242,17 +339,34 @@ void sigview_zoom(GtkWidget *sigview, gdouble zoom, gint offset)
 	if (ofs < 0)
 		ofs = 0;
 
-	if (scale < (double)width/nsamples)
-		scale = (double)width/nsamples;
+	if (*rscale < (double)width/nsamples) {
+		*rscale = (double)width/nsamples;
+		scale = *rscale;
+		if (data && (data != rdata))
+			g_array_free(data, TRUE);
+		data = rdata;
+	}
 
-	if (ofs > nsamples * scale - width)
-		ofs = nsamples * scale - width;
+	if (ofs > nsamples * *rscale - width)
+		ofs = nsamples * *rscale - width;
 
-	gtk_adjustment_configure(adj, ofs, 0, nsamples * scale, 
+	gtk_adjustment_configure(adj, ofs, 0, nsamples * *rscale, 
 			width/16, width/2, width);
+
+	if (scale < 0.125) {
+		g_object_set_data(siglist,
+			"summarydata", summarize(data, &scale));
+		if (data && (data != rdata))
+			g_array_free(data, TRUE);
+	} else if ((scale > 1) && (*rscale < 1)) {
+		scale = *rscale;
+		g_object_set_data(siglist,
+			"summarydata", summarize(rdata, &scale));
+		if (data && (data != rdata))
+			g_array_free(data, TRUE);
+	}
 
 	g_object_set(cel, "scale", scale, "offset", ofs, NULL);
 	gtk_widget_queue_draw(GTK_WIDGET(sigview));
 }
-
 
