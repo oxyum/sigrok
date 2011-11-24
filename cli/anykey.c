@@ -40,9 +40,9 @@ struct termios term_orig;
 static int received_anykey(int fd, int revents, void *user_data)
 {
 	/* Avoid compiler warnings. */
-	fd = fd;
-	revents = revents;
-	user_data = user_data;
+	(void)fd;
+	(void)revents;
+	(void)user_data;
 
 	sr_session_stop();
 

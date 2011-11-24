@@ -122,7 +122,7 @@ void ChannelForm::generatePainterPath(void)
 
 	for (uint64_t i = ss; i < se; i += scaleFactor) {
 		/* Process the samples shown in this step. */
-		for(uint64_t j = 0; (j<scaleFactor) && (i+j < se); j++) {
+		for (uint64_t j = 0; (j < scaleFactor) && (i + j < se); j++) {
 			newval = getbit(sample_buffer, i + j, ch);
 			x_change_visible = current_x > old_x;
 			if (oldval != newval && x_change_visible) {
@@ -145,7 +145,7 @@ void ChannelForm::generatePainterPath(void)
 void ChannelForm::resizeEvent(QResizeEvent *event)
 {
 	/* Avoid compiler warnings. */
-	event = event;
+	(void)event;
 
 	stepSize = width() / 100;
 
@@ -168,7 +168,7 @@ void ChannelForm::paintEvent(QPaintEvent *event)
 	QPainter p(this);
 
 	/* Avoid compiler warnings. */
-	event = event;
+	(void)event;
 
 	if (sample_buffer == NULL)
 		return;

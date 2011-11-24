@@ -451,7 +451,7 @@ static int register_pds(struct sr_device *device, const char *pdstring)
 	char **pdtokens, **pdtok;
 
 	/* Avoid compiler warnings. */
-	device = device;
+	(void)device;
 
 	pdtokens = g_strsplit(pdstring, ",", -1);
 
@@ -838,8 +838,8 @@ static void logger(const gchar *log_domain, GLogLevelFlags log_level,
 		   const gchar *message, gpointer user_data)
 {
 	/* Avoid compiler warnings. */
-	log_domain = log_domain;
-	user_data = user_data;
+	(void)log_domain;
+	(void)user_data;
 
 	/*
 	 * All messages, warnings, errors etc. go to stderr (not stdout) in
