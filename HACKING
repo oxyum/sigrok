@@ -14,9 +14,15 @@ As an exception, the GUI application uses the usual Qt / C++ conventions of
 mixed-case variable names, capital letters for class names etc. However,
 please do use an indention of one tab here too, just as with the other code.
 
+The GTK GUI also uses the usual GTK naming conventions and so on, as far
+as it makes sense, but otherwise also follows the kernel coding style.
+This includes using one tab for indentation.
+
 The Python decoders should also follow the usual Python conventions and use
-Python idioms as far as it makes sense, but they should also indent the
-code with extactly one tab.
+Python idioms as far as it makes sense. The coding style should mostly follow
+the Python PEP-8, which includes the convention of 4 spaces for indentation.
+See http://www.python.org/dev/peps/pep-0008/ for details.
+
 
 Random notes
 ------------
@@ -37,6 +43,7 @@ Random notes
  - libsigrok should never print any messages (neither to stdout nor stderr nor
    elsewhere) "manually" via e.g. printf() or g_log() or similar functions.
    Only sr_err()/sr_warn()/sr_info()/sr_dbg() should be used.
+
 
 Release engineering
 -------------------
