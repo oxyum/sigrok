@@ -113,6 +113,8 @@ void dev_select_rescan(GtkAction *action, GtkWindow *parent)
 		device = l->data;
 		sdi = GET_DEVICE_INSTANCE(device);
 		gchar *name = sdi->model ? sdi->model : sdi->vendor;
+		if (!name)
+			name = "(unknown)";
 
 		menuitem = gtk_radio_menu_item_new_with_label(radiolist, name);
 		gtk_widget_show(GTK_WIDGET(menuitem));
