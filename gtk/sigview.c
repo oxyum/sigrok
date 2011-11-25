@@ -227,17 +227,17 @@ static GArray *summarize(GArray *in, gdouble *scale)
 	*scale *= skip;
 
 	memset(s, 0, unitsize);
-	for (i = 0, k = 0; i < in->len; i += skip, k++) {
+	for (i = 0, k = 0; i < (in->len/unitsize); i += skip, k++) {
 		memset(smask, 0xFF, unitsize);
 		for (j = i; j < i+skip; j++) {
 			for (l = 0; l < unitsize; l++) {
-				uint8_t ns = (in->data[j+l] ^ s[l]) & smask[l];
+				uint8_t ns = (in->data[(j*unitsize)+l] ^ s[l]) & smask[l];
 				/* ns is now bits we need to toggle */
 				s[l] ^= ns;
 				smask[l] &= ~ns;
 			}
 		}
-		memcpy(&ret->data[k], s, unitsize);
+		memcpy(&ret->data[k*unitsize], s, unitsize);
 	}
 	return ret;
 }

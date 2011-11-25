@@ -231,10 +231,11 @@ gtk_cell_renderer_signal_get_size(GtkCellRenderer *cell,
 
 static gboolean sample(GArray *data, gint probe, guint i)
 {
-	g_return_val_if_fail(i < (data->len / g_array_get_element_size(data)),
-				FALSE);
+	int unitsize = g_array_get_element_size(data);
+	g_return_val_if_fail(i < (data->len / unitsize), FALSE);
+	g_return_val_if_fail(probe < unitsize * 8, FALSE);
 
-	return data->data[i + probe/8] & (1 << (probe & 7));
+	return data->data[(i*unitsize) + probe/8] & (1 << (probe & 7));
 }
 
 static void
