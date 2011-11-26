@@ -23,6 +23,8 @@
 
 #include <gtk/gtk.h>
 
+#include <stdlib.h>
+
 #include "sigrok-gtk.h"
 
 enum {
@@ -578,9 +580,11 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 
 	/* Device selection GtkComboBox */
 	GtkToolItem *toolitem = gtk_tool_item_new();
+	GtkWidget *align = gtk_alignment_new(0.5, 0.5, 2, 0);
 	GtkWidget *dev = dev_select_combo_box_new(parent);
 
-	gtk_container_add(GTK_CONTAINER(toolitem), dev);
+	gtk_container_add(GTK_CONTAINER(align), dev);
+	gtk_container_add(GTK_CONTAINER(toolitem), align);
 	gtk_toolbar_insert(toolbar, toolitem, 0);
 
 	/* Time/Samples entry */
@@ -594,12 +598,14 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 
 	/* Time unit combo box */
 	toolitem = gtk_tool_item_new();
+	align = gtk_alignment_new(0.5, 0.5, 2, 0);
 	GtkWidget *timeunit = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(timeunit), "samples");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(timeunit), "ms");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(timeunit), "s");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(timeunit), 0);
-	gtk_container_add(GTK_CONTAINER(toolitem), timeunit);
+	gtk_container_add(GTK_CONTAINER(align), timeunit);
+	gtk_container_add(GTK_CONTAINER(toolitem), align);
 	gtk_toolbar_insert(toolbar, toolitem, 8);
 
 	g_object_set_data(G_OBJECT(parent), "timesamples", timesamples);
