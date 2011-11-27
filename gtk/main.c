@@ -102,7 +102,7 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	data = g_object_get_data(G_OBJECT(siglist), "sampledata");
 	g_return_if_fail(data != NULL);
 
-	g_array_append_vals(data, filter_out, filter_out_len);
+	g_array_append_vals(data, filter_out, filter_out_len/unitsize);
 }
 
 void load_input_file(GtkWindow *parent, const gchar *file)
