@@ -323,6 +323,19 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 				outfile = g_fopen(opt_output_file, "wb");
 			}
 		}
+		if (decoders) {
+			GSList *d;
+			for (d = decoders; d; d = d->next) {
+				/* TODO: Error handling. */
+				ret = srd_instance_start(d->data, 
+						device->plugin->name, 
+						unitsize, time(NULL));
+				if (ret != SRD_OK) {
+					fprintf(stderr, "Decoder runtime error (%d)\n", ret);
+					exit(1);
+				}
+			}
+		}
 		break;
 	case SR_DF_END:
 		g_message("cli: Received SR_DF_END");
