@@ -26,7 +26,6 @@ int num_real_devices(void);
 /* parsers.c */
 char **parse_probestring(int max_probes, const char *probestring);
 char **sr_parse_triggerstring(struct sr_device *device, const char *triggerstring);
-uint64_t sr_parse_sizestring(const char *sizestring);
 GHashTable *parse_generic_arg(const char *arg);
 struct sr_device *parse_devicestring(const char *devicestring);
 uint64_t sr_parse_timestring(const char *timestring);

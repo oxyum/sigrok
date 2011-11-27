@@ -650,7 +650,9 @@ int set_device_options(struct sr_device *device, GHashTable *args)
 			found = TRUE;
 			switch (sr_hwcap_options[i].type) {
 			case SR_T_UINT64:
-				tmp_u64 = sr_parse_sizestring(value);
+				ret = sr_parse_sizestring(value, &tmp_u64);
+				if (ret != SR_OK)
+					break;
 				ret = device->plugin-> set_configuration(device-> plugin_index,
 						sr_hwcap_options[i]. capability, &tmp_u64);
 				break;
@@ -809,9 +811,9 @@ static void run_session(void)
 	}
 
 	if (opt_samples) {
-		limit_samples = sr_parse_sizestring(opt_samples);
-		if (device->plugin->set_configuration(device->plugin_index,
-					  SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
+		if ((sr_parse_sizestring(opt_samples, &limit_samples) != SR_OK)
+			|| (device->plugin->set_configuration(device->plugin_index,
+					SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK)) {
 			printf("Failed to configure sample limit.\n");
 			sr_session_destroy();
 			return;
