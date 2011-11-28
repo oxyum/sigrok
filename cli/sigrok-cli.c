@@ -329,7 +329,8 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 				/* TODO: Error handling. */
 				ret = srd_instance_start(d->data, 
 						device->plugin->name, 
-						unitsize, time(NULL));
+						unitsize, time(NULL),
+						header->samplerate);
 				if (ret != SRD_OK) {
 					fprintf(stderr, "Decoder runtime error (%d)\n", ret);
 					exit(1);
