@@ -45,9 +45,6 @@ int default_output_format = FALSE;
 char *output_format_param = NULL;
 char *input_format_param = NULL;
 
-/* Protocol decoders: List of struct srd_decoder_instance */
-GSList *decoders;
-
 static gboolean opt_version = FALSE;
 static gint opt_loglevel = SR_LOG_WARN; /* Show errors+warnings per default. */
 static gboolean opt_list_devices = FALSE;
@@ -268,9 +265,8 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 	struct sr_datafeed_header *header;
 	struct sr_datafeed_logic *logic;
 	int num_enabled_probes, sample_size, ret, i;
-	uint64_t output_len, filter_out_len, dec_out_size;
+	uint64_t output_len, filter_out_len;
 	char *output_buf, *filter_out;
-	uint8_t *dec_out;
 
 	/* If the first packet to come in isn't a header, don't even try. */
 	if (packet->type != SR_DF_HEADER && o == NULL)
@@ -323,20 +319,9 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 				outfile = g_fopen(opt_output_file, "wb");
 			}
 		}
-		if (decoders) {
-			GSList *d;
-			for (d = decoders; d; d = d->next) {
-				/* TODO: Error handling. */
-				ret = srd_instance_start(d->data, 
-						device->plugin->name, 
-						unitsize, time(NULL),
-						header->samplerate);
-				if (ret != SRD_OK) {
-					fprintf(stderr, "Decoder runtime error (%d)\n", ret);
-					exit(1);
-				}
-			}
-		}
+		if (opt_pds)
+			srd_session_start(device->plugin->name, unitsize, 
+					  time(NULL), header->samplerate);
 		break;
 	case SR_DF_END:
 		g_message("cli: Received SR_DF_END");
@@ -421,22 +406,8 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 		 * to this data for now. */
 		goto cleanup;
 
-	if (decoders) {
-		GSList *d;
-		for (d = decoders; d; d = d->next) {
-			/* TODO: Error handling. */
-			
-			dec_out_size = 0;
-			ret = srd_run_decoder(d->data, (uint8_t*)filter_out,
-					filter_out_len, &dec_out, &dec_out_size);
-
-			if (ret != SRD_OK) {
-				fprintf(stderr, "Decoder runtime error (%d)\n", ret);
-				exit(1);
-			}
-			if (dec_out_size)
-				printf("Protocol decoder output:\n%s\n", dec_out);
-		}
+	if (opt_pds) {
+		srd_session_feed((uint8_t*)filter_out, filter_out_len);
 	} else {
 		output_len = 0;
 		if (o->format->data && packet->type == o->format->df_type)
@@ -493,7 +464,6 @@ static int register_pds(struct sr_device *device, const char *pdstring)
 		g_strfreev(optokens);
 
 		/* TODO: Handle errors. */
-		decoders = g_slist_append(decoders, di);
 	}
 
 	g_strfreev(pdtokens);
@@ -883,9 +853,6 @@ int main(int argc, char **argv)
 	gpointer key, value;
 	int i;
 	char *fmtspec;
-
-	/* No decoder at the moment. */
-	decoders = NULL;
 
 	g_log_set_default_handler(logger, NULL);
 	if (getenv("SIGROK_DEBUG"))
