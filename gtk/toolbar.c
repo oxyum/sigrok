@@ -56,7 +56,9 @@ static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 
 	switch (type) {
 	case SR_T_UINT64:
-		tmp_u64 = sr_parse_sizestring(text);
+		if (sr_parse_sizestring(text, &tmp_u64) != SR_OK)
+			return;
+
 		ret = device->plugin->set_configuration(device->plugin_index,
 				cap, &tmp_u64);
 		break;
@@ -339,8 +341,8 @@ static void capture_run(GtkAction *action, GObject *parent)
 	
 	switch (i) {
 	case 0: /* Samples */
-		limit_samples = sr_parse_sizestring(
-					gtk_entry_get_text(timesamples));
+		sr_parse_sizestring(gtk_entry_get_text(timesamples), 
+				&limit_samples);
 		break;
 	case 1: /* Milliseconds */
 		time_msec = strtoull(gtk_entry_get_text(timesamples), NULL, 10);
