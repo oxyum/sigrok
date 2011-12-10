@@ -10,15 +10,15 @@ http://lxr.linux.no/linux/Documentation/CodingStyle for details.
 
 Please use the same style for any code contributions, thanks!
 
-As an exception, the GUI application uses the usual Qt / C++ conventions of
-mixed-case variable names, capital letters for class names etc. However,
+As an exception, the Qt GUI application uses the usual Qt / C++ conventions
+of mixed-case variable names, capital letters for class names etc. However,
 please do use an indention of one tab here too, just as with the other code.
 
-The GTK GUI also uses the usual GTK naming conventions and so on, as far
+The GTK+ GUI also uses the usual GTK+ naming conventions and so on, as far
 as it makes sense, but otherwise also follows the kernel coding style.
 This includes using one tab for indentation.
 
-The Python decoders should also follow the usual Python conventions and use
+The Python decoders should follow the usual Python conventions and use
 Python idioms as far as it makes sense. The coding style should mostly follow
 the Python PEP-8, which includes the convention of 4 spaces for indentation.
 See http://www.python.org/dev/peps/pep-0008/ for details.
