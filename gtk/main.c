@@ -103,6 +103,8 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 	g_return_if_fail(data != NULL);
 
 	g_array_append_vals(data, filter_out, filter_out_len/unitsize);
+
+	g_free(filter_out);
 }
 
 void load_input_file(GtkWindow *parent, const gchar *file)
