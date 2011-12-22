@@ -419,8 +419,8 @@ static void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *pac
 		}
 	}
 
-	cleanup:
-	free(filter_out);
+cleanup:
+	g_free(filter_out);
 	received_samples += logic->length / sample_size;
 
 }
