@@ -55,6 +55,7 @@ static gchar *opt_device = NULL;
 static gchar *opt_probes = NULL;
 static gchar *opt_triggers = NULL;
 static gchar *opt_pds = NULL;
+static gchar *opt_input_format = NULL;
 static gchar *opt_format = NULL;
 static gchar *opt_time = NULL;
 static gchar *opt_samples = NULL;
@@ -71,6 +72,7 @@ static GOptionEntry optargs[] = {
 	{"triggers", 't', 0, G_OPTION_ARG_STRING, &opt_triggers, "Trigger configuration", NULL},
 	{"wait-trigger", 'w', 0, G_OPTION_ARG_NONE, &opt_wait_trigger, "Wait for trigger", NULL},
 	{"protocol-decoders", 'a', 0, G_OPTION_ARG_STRING, &opt_pds, "Protocol decoder sequence", NULL},
+	{"input-format", 'I', 0, G_OPTION_ARG_STRING, &opt_input_format, "Input format", NULL},
 	{"format", 'f', 0, G_OPTION_ARG_STRING, &opt_format, "Output format", NULL},
 	{"time", 0, 0, G_OPTION_ARG_STRING, &opt_time, "How long to sample (ms)", NULL},
 	{"samples", 0, 0, G_OPTION_ARG_STRING, &opt_samples, "Number of samples to acquire", NULL},
@@ -505,25 +507,76 @@ static int select_probes(struct sr_device *device)
 	return SR_OK;
 }
 
+/**
+ * Return the input file format which the CLI tool should use.
+ *
+ * If the user specified -I / --input-format, use that one. Otherwise, try to
+ * autodetect the format as good as possible. Failing that, return NULL.
+ *
+ * @param filename The filename of the input file. Must not be NULL.
+ * @param opt The -I / --input-file option the user specified (or NULL).
+ *
+ * @return A pointer to the 'struct sr_input_format' that should be used,
+ *         or NULL if no input format was selected or auto-detected.
+ */
+static struct sr_input_format *determine_input_file_format(
+			const char *filename, const char *opt)
+{
+	int i;
+	struct sr_input_format **inputs;
+
+	/* If there are no input formats, return NULL right away. */
+	inputs = sr_input_list();
+	if (!inputs) {
+		fprintf(stderr, "cli: %s: no supported input formats "
+			"available", __func__);
+		return NULL;
+	}
+
+	/* If the user specified -I / --input-format, use that one. */
+	if (opt) {
+		for (i = 0; inputs[i]; i++) {
+			if (strcasecmp(inputs[i]->id, opt_input_format))
+				continue;
+			printf("Using user-specified input file format"
+			       " '%s'.\n", inputs[i]->id);
+			return inputs[i];
+		}
+
+		/* The user specified an unknown input format, return NULL. */
+		fprintf(stderr, "Error: Specified input file format '%s' is "
+			"unknown.\n", inputs[i]->id);
+		return NULL;
+	}
+
+	/* Otherwise, try to find an input module that can handle this file. */
+	for (i = 0; inputs[i]; i++) {
+		if (inputs[i]->format_match(filename))
+			break;
+	}
+
+	/* Return NULL if no input module wanted to touch this. */
+	if (!inputs[i]) {
+		fprintf(stderr, "Error: No matching input module found.\n");
+		return NULL;
+	}
+		
+	printf("Using input file format '%s'.\n", inputs[i]->id);
+	return inputs[i];
+}
+
 static void load_input_file_format(void)
 {
 	struct stat st;
 	struct sr_input *in;
-	struct sr_input_format **inputs, *input_format;
-	int i;
+	struct sr_input_format *input_format;
 
-	/* Find an input module that can handle this file. */
-	inputs = sr_input_list();
-	for (i = 0; inputs[i]; i++) {
-		if (inputs[i]->format_match(opt_input_file))
-			break;
-	}
-
-	/* Abort if no input module wanted to touch this. */
-	if (!inputs[i])
+	input_format = determine_input_file_format(opt_input_file,
+						   opt_input_format);
+	if (!input_format) {
+		fprintf(stderr, "Error: Couldn't detect input file format.\n");
 		return;
-
-	input_format = inputs[i];
+	}
 
 	if (stat(opt_input_file, &st) == -1) {
 		printf("Failed to load %s: %s\n", opt_input_file,

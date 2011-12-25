@@ -2,7 +2,7 @@
 .SH "NAME"
 sigrok\-cli \- Command-line client for the sigrok logic analyzer software
 .SH "SYNOPSIS"
-.B sigrok\-cli \fR[\fB\-hVDiodptwaf\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] [\fB\-D\fR|\fB\-\-list\-devices\fR] [\fB\-i\fR|\fB\-\-input\-file\fR filename] [\fB\-o\fR|\fB\-\-output\-file\fR filename] [\fB\-d\fR|\fB\-\-device\fR device] [\fB\-p\fR|\fB\-\-probes\fR probelist] [\fB\-t\fR|\fB\-\-triggers\fR triggerlist] [\fB\-w\fR|\fB\-\-wait\-triggers\fR] [\fB\-a\fR|\fB\-\-protocol\-decoders\fR sequence] [\fB\-f\fR|\fB\-\-format\fR format] [\fB\-\-time\fR ms] [\fB\-\-samples\fR numsamples] [\fB\-\-continuous\fR]
+.B sigrok\-cli \fR[\fB\-hVDiIodptwaf\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] [\fB\-D\fR|\fB\-\-list\-devices\fR] [\fB\-i\fR|\fB\-\-input\-file\fR filename] [\fB\-I\fR|\fB\-\-input\-format\fR format] [\fB\-o\fR|\fB\-\-output\-file\fR filename] [\fB\-d\fR|\fB\-\-device\fR device] [\fB\-p\fR|\fB\-\-probes\fR probelist] [\fB\-t\fR|\fB\-\-triggers\fR triggerlist] [\fB\-w\fR|\fB\-\-wait\-triggers\fR] [\fB\-a\fR|\fB\-\-protocol\-decoders\fR sequence] [\fB\-f\fR|\fB\-\-format\fR format] [\fB\-\-time\fR ms] [\fB\-\-samples\fR numsamples] [\fB\-\-continuous\fR]
 .SH "DESCRIPTION"
 .B sigrok\-cli
 is a cross-platform command line utility for the
@@ -28,7 +28,16 @@ Show a help text and exit.
 List all logic analyzer devices found on the system.
 .TP
 .BR "\-i, \-\-input\-file " <filename>
-Load input from a file instead of a device.
+Load input from a file instead of a device. If the
+.B \-\-input\-format
+option is not supplied, sigrok-cli attempts to autodetect the file format of
+the input file.
+.TP
+.BR "\-I, \-\-input\-format " <format>
+When loading an input file, assume it's in the specified format. If this
+option is not supplied (in addition to
+.BR \-\-input\-file ),
+sigrok-cli attempts to autodetect the file format of the input file.
 .TP
 .BR "\-o, \-\-output\-file " <filename>
 Save output to a file instead of writing it to stdout. The default format
