@@ -230,19 +230,19 @@ LDFLAGS_PYTHON=""
 case "$build" in
 *linux* | *darwin*)
 	# We know that Linux and Darwin / Mac OS X have 'python-config'.
-	CPPFLAGS_PYTHON="$(python-config --includes)"
-	LDFLAGS_PYTHON="$(python-config --ldflags)"
+	CPPFLAGS_PYTHON="$(python3-config --includes)"
+	LDFLAGS_PYTHON="$(python3-config --ldflags)"
 	;;
 *mingw*)
 	# We currently hardcode the paths to the Python 2.6 default install
 	# location as there's no 'python-config' script on Windows, it seems.
-	CPPFLAGS_PYTHON="-I/c/Python26/include"
-	LDFLAGS_PYTHON="-L/c/Python26/libs -lpython26"
+	CPPFLAGS_PYTHON="-I/c/Python32/include"
+	LDFLAGS_PYTHON="-L/c/Python32/libs -lpython26"
 	;;
 *)
 	# Everything else is untested, we just hope 'python-config' works.
-	CPPFLAGS_PYTHON="$(python-config --includes)"
-	LDFLAGS_PYTHON="$(python-config --ldflags)"
+	CPPFLAGS_PYTHON="$(python3-config --includes)"
+	LDFLAGS_PYTHON="$(python3-config --ldflags)"
 	;;
 esac
 AC_SUBST(CPPFLAGS_PYTHON)
