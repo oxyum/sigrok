@@ -47,6 +47,13 @@ In order to get the sigrok source code and build it, run:
  $ ./configure
  $ make
 
+For building the command-line tool:
+
+ $ cd cli
+ $ ./autogen.sh
+ $ ./configure
+ $ make
+
 For building the Qt GUI:
 
  $ cd gui

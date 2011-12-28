@@ -37,8 +37,9 @@ AH_TOP([#ifndef SGIROK_CONFIG_H
 #define SIGROK_CONFIG_H    /* To stop multiple inclusions. */])
 AH_BOTTOM([#endif /* SIGROK_CONFIG_H */])
 
-# Checks for programs.
 CFLAGS="-g -Wall -Wextra"
+
+# Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
@@ -332,7 +333,6 @@ AC_CONFIG_FILES([Makefile
 		 libsigrokdecode/Makefile
 		 libsigrokdecode/libsigrokdecode.pc
 		 libsigrokdecode/decoders/Makefile
-		 cli/Makefile
 		])
 
 AC_OUTPUT
