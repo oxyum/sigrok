@@ -29,7 +29,6 @@
 #include <sigrok.h>
 #include "sigrok-cli.h"
 
-
 #ifdef _WIN32
 HANDLE stdin_handle;
 DWORD stdin_mode;

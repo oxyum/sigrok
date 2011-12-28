@@ -182,4 +182,3 @@ struct sr_device *parse_devicestring(const char *devicestring)
 
 	return device;
 }
-
