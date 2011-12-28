@@ -32,7 +32,7 @@ Requirements
  - zlib >= 1.2.3.1
  - libftdi >= 0.16 (for some logic analyzer hardware)
  - libudev >= 151 (for some logic analyzer hardware)
- - Python >= 2.5 (for protocol decoders)
+ - Python >= 3.x (for protocol decoders)
  - Qt + Qt Creator >= 4.5 (for building/editing the GUI) 
 
 
