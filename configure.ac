@@ -228,10 +228,24 @@ fi
 CPPFLAGS_PYTHON=""
 LDFLAGS_PYTHON=""
 case "$build" in
-*linux* | *darwin*)
-	# We know that Linux and Darwin / Mac OS X have 'python3-config'.
+*linux*)
+	# We know that Linux has 'python3-config'.
 	CPPFLAGS_PYTHON="$(python3-config --includes)"
 	LDFLAGS_PYTHON="$(python3-config --ldflags)"
+	;;
+*darwin*)
+	# On Darwin, Macports has python3.x-config, fink has python3-config.
+	# Mac OS X (Snow Leopard) ships with 'python-config' per default, but
+	# that's Python 2.x, so not useful for us.
+	if test -x python3-config; then
+		# python3-config exists, use it.
+		CPPFLAGS_PYTHON="$(python3-config --includes)"
+		LDFLAGS_PYTHON="$(python3-config --ldflags)"
+	else
+		# No python3-config found, so try hardcoded python3.2-config.
+		CPPFLAGS_PYTHON="$(python3.2-config --includes)"
+		LDFLAGS_PYTHON="$(python3.2-config --ldflags)"
+	fi
 	;;
 *mingw*)
 	# We currently hardcode the paths to the Python 3.2 default install
