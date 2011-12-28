@@ -546,7 +546,7 @@ static struct sr_input_format *determine_input_file_format(
 
 		/* The user specified an unknown input format, return NULL. */
 		fprintf(stderr, "Error: Specified input file format '%s' is "
-			"unknown.\n", inputs[i]->id);
+			"unknown.\n", opt_input_format);
 		return NULL;
 	}
 
