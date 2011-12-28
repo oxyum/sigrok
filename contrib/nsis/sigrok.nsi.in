@@ -66,10 +66,10 @@ RequestExecutionLevel user
 !define MUI_LICENSEPAGE_TEXT_BOTTOM "Click Next to continue."
 
 # File name of the Python installer MSI file.
-!define PY_INST "python-2.6.6.msi"
+!define PY_INST "python-3.2.msi"
 
 # Standard install path of the Python installer (do not change!).
-!define PY_BIN "c:\Python26"
+!define PY_BIN "c:\Python32"
 
 
 # --- MUI pages ---------------------------------------------------------------
@@ -283,7 +283,7 @@ SectionEnd
 # --- Component selection section descriptions --------------------------------
 
 LangString DESC_Section1 ${LANG_ENGLISH} "This installs the sigrok command-line tool, the protocol decoders, required libraries, and the sigrok GUI."
-LangString DESC_Section2 ${LANG_ENGLISH} "This installs Python 2.6 in its default location of c:\Python26. If you already have Python 2.6 installed, you don't need to re-install it."
+LangString DESC_Section2 ${LANG_ENGLISH} "This installs Python 3.2 in its default location of c:\Python32. If you already have Python 3.2 installed, you don't need to re-install it."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 !insertmacro MUI_DESCRIPTION_TEXT ${Section1} $(DESC_Section1)
