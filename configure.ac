@@ -329,6 +329,7 @@ AC_CONFIG_FILES([Makefile
 		 libsigrok/output/Makefile
 		 libsigrok/output/text/Makefile
 		 libsigrok/libsigrok.pc
+		 libsigrok/contrib/Makefile
 		 libsigrokdecode/Makefile
 		 libsigrokdecode/libsigrokdecode.pc
 		 libsigrokdecode/decoders/Makefile
