@@ -18,5 +18,5 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-dist_man_MANS = sigrok-cli.1 sigrok-gui.1
+dist_man_MANS = sigrok-cli.1
 

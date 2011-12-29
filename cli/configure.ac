@@ -81,7 +81,8 @@ AC_CHECK_FUNCS([strcasecmp strchr strerror strstr strtol])
 AC_SUBST(MAKEFLAGS, '--no-print-directory')
 AC_SUBST(AM_LIBTOOLFLAGS, '--silent')
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile
+		 doc/Makefile])
 
 AC_OUTPUT
 

@@ -312,7 +312,6 @@ AC_CONFIG_FILES([Makefile
 		 contrib/Makefile
 		 contrib/nsis/Makefile
 		 contrib/nsis/sigrok.nsi
-		 doc/Makefile
 		 libsigrok/Makefile
 		 libsigrok/sigrok.h
 		 libsigrok/firmware/Makefile

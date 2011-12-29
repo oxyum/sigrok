@@ -17,6 +17,8 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+SUBDIRS = doc
+
 bin_PROGRAMS = sigrok-cli
 
 sigrok_cli_SOURCES = sigrok-cli.c sigrok-cli.h parsers.c anykey.c

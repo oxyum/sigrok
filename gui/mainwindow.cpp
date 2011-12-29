@@ -241,6 +241,7 @@ void MainWindow::on_actionPreferences_triggered()
 void MainWindow::on_actionScan_triggered()
 {
 	QString s;
+	GSList *devices = NULL;
 	int num_devices, pos;
 	struct sr_device *device;
 	char *di_num_probes, *str;
@@ -532,6 +533,7 @@ void MainWindow::on_action_Get_samples_triggered()
 {
 	uint64_t samplerate;
 	QString s;
+	GSList *devices = NULL;
 	int opt_device;
 	struct sr_device *device;
 	QComboBox *n = ui->comboBoxNumSamples;
@@ -562,6 +564,8 @@ void MainWindow::on_action_Get_samples_triggered()
 
 	sr_session_new();
 	sr_session_datafeed_callback_add(datafeed_in);
+
+	devices = sr_device_list();
 
 	device = (struct sr_device *)g_slist_nth_data(devices, opt_device);
 
