@@ -18,10 +18,10 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-TARGET        = sigrok-gui
+TARGET        = sigrok-qt
 TEMPLATE      = app
 
-# The sigrok-gui version number. Define APP_VERSION macro for use in the code.
+# The sigrok-qt version number. Define APP_VERSION macro for use in the code.
 VERSION       = 0.2
 DEFINES      += APP_VERSION=\\\"$$VERSION\\\"
 
@@ -45,13 +45,13 @@ FORMS        += mainwindow.ui \
 	        channelform.ui \
 	        decodersform.ui
 
-TRANSLATIONS  = locale/sigrok-gui_de_DE.ts \
-                locale/sigrok-gui_nl_NL.ts \
-                locale/sigrok-gui_fr_FR.ts
+TRANSLATIONS  = locale/sigrok-qt_de_DE.ts \
+                locale/sigrok-qt_nl_NL.ts \
+                locale/sigrok-qt_fr_FR.ts
 
 CONFIG       += release warn_on
 
-RESOURCES    += sigrok-gui.qrc
+RESOURCES    += sigrok-qt.qrc
 
 # libsigrok and libsigrokdecode
 win32 {
@@ -72,16 +72,16 @@ win32 {
 target.path   = /usr/local/bin
 locale.path   = /usr/local/share/sigrok/translations
 locale.files  = locale/*.qm
-locale.extra  = lrelease sigrok-gui.pro
+locale.extra  = lrelease sigrok-qt.pro
 INSTALLS     += target locale
 
 win32 {
-	RC_FILE = sigrok-gui.rc
+	RC_FILE = sigrok-qt.rc
 }
 
 # TODO: This may need fixes.
 macx {
-	ICON = icons/sigrok-gui.icns
+	ICON = icons/sigrok-qt.icns
 	#FILETYPES.files = ../lib/libsigrok.dylib
 	#FILETYPES.path = Contents/Frameworks
 	#QMAKE_BUNDLE_DATA += FILETYPES

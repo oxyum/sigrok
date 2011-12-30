@@ -49,7 +49,7 @@ RequestExecutionLevel user
 # --- MUI interface configuration ---------------------------------------------
 
 # Use the following icon for the installer EXE file.
-!define MUI_ICON "..\..\gui\icons\sigrok-logo-notext.ico"
+!define MUI_ICON "..\..\sigrok-qt\icons\sigrok-logo-notext.ico"
 
 # Show a nice image at the top of each installer page.
 !define MUI_HEADERIMAGE
@@ -125,8 +125,8 @@ Section "sigrok (required)" Section1
 	# sigrok-cli
 	File "dist\bin\sigrok-cli.exe"
 
-	# sigrok-gui
-	File "..\..\gui\release\sigrok-gui.exe"
+	# sigrok-qt
+	File "..\..\sigrok-qt\release\sigrok-qt.exe"
 
 	# sigrok-gtk
 	File "..\..\gtk\.libs\sigrok-gtk.exe"
@@ -183,7 +183,7 @@ Section "sigrok (required)" Section1
 
 	# Create a shortcut for the Qt GUI application.
 	CreateShortCut "$SMPROGRAMS\@PACKAGE_NAME@\sigrok Qt GUI.lnk" \
-		"$INSTDIR\sigrok-gui.exe" "" "$INSTDIR\sigrok-gui.exe" \
+		"$INSTDIR\sigrok-qt.exe" "" "$INSTDIR\sigrok-qt.exe" \
 		0 SW_SHOWNORMAL \
 		"" "Open-source, portable logic analyzer software"
 
@@ -230,7 +230,7 @@ Section "Uninstall"
 	Delete "$INSTDIR\libsigrok.a"
 	Delete "$INSTDIR\libsigrokdecode.a"
 	Delete "$INSTDIR\sigrok-cli.exe"
-	Delete "$INSTDIR\sigrok-gui.exe"
+	Delete "$INSTDIR\sigrok-qt.exe"
 	Delete "$INSTDIR\sigrok-gtk.exe"
 	Delete "$INSTDIR\mingwm10.dll"
 	Delete "$INSTDIR\libgcc_s_dw2-1.dll"
@@ -282,7 +282,7 @@ SectionEnd
 
 # --- Component selection section descriptions --------------------------------
 
-LangString DESC_Section1 ${LANG_ENGLISH} "This installs the sigrok command-line tool, the protocol decoders, required libraries, the Qt GUI, and the GTK+ sigrok."
+LangString DESC_Section1 ${LANG_ENGLISH} "This installs the sigrok command-line tool, the protocol decoders, required libraries, the Qt GUI, and the GTK+ GUI."
 LangString DESC_Section2 ${LANG_ENGLISH} "This installs Python 3.2 in its default location of c:\Python32. If you already have Python 3.2 installed, you don't need to re-install it."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="nl_NL">
+<TS version="2.0" language="de_DE">
 <context>
     <name>ChannelForm</name>
     <message>
@@ -16,7 +16,7 @@
     <message>
         <location filename="../channelform.cpp" line="66"/>
         <source>Channel %1</source>
-        <translation type="unfinished">Kanaal %1</translation>
+        <translation type="unfinished">Kanal %1</translation>
     </message>
 </context>
 <context>
@@ -24,17 +24,17 @@
     <message>
         <location filename="../configform.ui" line="14"/>
         <source>Preferences</source>
-        <translation>Instellingen</translation>
+        <translation>Einstellungen</translation>
     </message>
     <message>
         <location filename="../configform.ui" line="35"/>
         <source>General</source>
-        <translation>Algemeen</translation>
+        <translation>Allgemein</translation>
     </message>
     <message>
         <location filename="../configform.ui" line="40"/>
         <source>User Interface</source>
-        <translation>Gebruikers Interface</translation>
+        <translation>Benutzerschnittstelle</translation>
     </message>
     <message>
         <location filename="../configform.ui" line="52"/>
@@ -44,27 +44,27 @@
     <message>
         <location filename="../configform.ui" line="76"/>
         <source>Channels</source>
-        <translation>Kanalen</translation>
+        <translation>Kanäle</translation>
     </message>
     <message>
         <location filename="../configform.ui" line="82"/>
         <source>Channel title bar:</source>
-        <translation>Kanaal titel balk:</translation>
+        <translation>Kanal-Titelleiste</translation>
     </message>
     <message>
         <location filename="../configform.ui" line="90"/>
         <source>Vertical</source>
-        <translation>Vertikaal</translation>
+        <translation>Vertikal</translation>
     </message>
     <message>
         <location filename="../configform.ui" line="95"/>
         <source>Horizontal</source>
-        <translation>Horizontaal</translation>
+        <translation>Horizontal</translation>
     </message>
     <message>
         <location filename="../configform.ui" line="140"/>
         <source>Close</source>
-        <translation>Sluiten</translation>
+        <translation>Schließen</translation>
     </message>
 </context>
 <context>
@@ -72,43 +72,43 @@
     <message>
         <location filename="../mainwindow.cpp" line="183"/>
         <source>About</source>
-        <translation>Over sigrok-gui</translation>
+        <translation>Über sigrok-qt</translation>
     </message>
     <message>
-        <source>sigrok-gui 0.1&lt;br /&gt;
+        <source>sigrok-qt 0.1&lt;br /&gt;
 Copyright (C) 2010 Uwe Hermann &amp;lt;uwe@hermann-uwe.de&amp;gt;&lt;br /&gt;
 GNU GPL, version 2 or later&lt;br /&gt;
 &lt;a href=&quot;http://www.sigrok.org&quot;&gt;http://www.sigrok.org&lt;/a&gt;</source>
-        <translation type="obsolete">sigrok-gui 0.1&lt;br /&gt;
+        <translation type="obsolete">sigrok-qt 0.1&lt;br /&gt;
 Copyright (C) 2010 Uwe Hermann &amp;lt;uwe@hermann-uwe.de&amp;gt;&lt;br /&gt;
-GNU GPL, Versie 2 of hoger&lt;br /&gt;
+GNU GPL, Version 2 oder größer&lt;br /&gt;
 &lt;a href=&quot;http://www.sigrok.org&quot;&gt;http://www.sigrok.org&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="188"/>
         <source>About Qt</source>
-        <translation>Over Qt</translation>
+        <translation>Über Qt</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="205"/>
         <source>Scanning for logic analyzers...</source>
-        <translation>Scannen naar logic analyzers...</translation>
+        <translation>Suche nach Logic Analyzern</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="218"/>
         <source>No supported logic analyzer found.</source>
-        <translation>Geen ondersteunde logic analyzer gevonden.</translation>
+        <translation>Keine unterstützten Logic Analyzer gefunden</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="222"/>
         <source>Found supported logic analyzer: </source>
-        <translation>Gevonden ondersteunde logic analyzers:</translation>
+        <translation>Unterstützter Logic Analyzer gefunden:</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="254"/>
         <location filename="../mainwindow.cpp" line="328"/>
         <source>Channels: %1</source>
-        <translation>Kanalen: %1</translation>
+        <translation>Kanäle: %1</translation>
     </message>
     <message>
         <source>%1 kHz</source>
@@ -121,34 +121,34 @@ GNU GPL, Versie 2 of hoger&lt;br /&gt;
     <message>
         <location filename="../mainwindow.cpp" line="295"/>
         <source>Open sample file</source>
-        <translation>Open sample bestand</translation>
+        <translation>Sample Datei öffnen</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="296"/>
         <source>Raw sample files (*.raw *.bin);;Gnuplot data files (*.dat);;VCD files (*.vcd);;All files (*)</source>
-        <translation>Binaire sample (*.raw *.bin);;Gnuplot data (*.dat);;VCD-Data (*.vcd);;Alle bestanden (*)</translation>
+        <translation>Binäre Sample-Datei (*.raw *.bin);;Gnuplot Eingabe-Datei (*.dat);;VCD-Datei (*.vcd);;Alle Dateien (*)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="325"/>
         <source>File</source>
-        <translation>Bestand</translation>
+        <translation>Datei</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="695"/>
         <source>Channels: </source>
-        <translation>Kanalen: </translation>
+        <translation>Kanäle: </translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="340"/>
         <location filename="../mainwindow.cpp" line="704"/>
         <source>Start sample: </source>
-        <translation>Start sample: </translation>
+        <translation>Erstes Sample</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="140"/>
         <location filename="../mainwindow.cpp" line="370"/>
         <source>Channel %1</source>
-        <translation>Kanaal %1</translation>
+        <translation>Kanal %1</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="176"/>
@@ -167,29 +167,29 @@ GNU GPL, version 2 or later&lt;br /&gt;&lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;
         <location filename="../mainwindow.cpp" line="343"/>
         <location filename="../mainwindow.cpp" line="707"/>
         <source>End sample: </source>
-        <translation>Sample einde: </translation>
+        <translation>Letztes Sample</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="346"/>
         <location filename="../mainwindow.cpp" line="710"/>
         <source>Zoom factor: </source>
-        <translation>Zoom factor: </translation>
+        <translation>Zoom-Faktor</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="385"/>
         <source>Save sample file</source>
-        <translation>Samples opslaan</translation>
+        <translation>Samples speichern</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="386"/>
         <source>Raw sample files (*.raw *.bin);;All files (*)</source>
-        <translation>Binaire sample (*.raw *.bin);;Alle bestanden (*)</translation>
+        <translation>Binäre Sample-Datein (*.raw *.bin);;Alle Dateien (*)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="56"/>
         <location filename="../mainwindow.cpp" line="693"/>
         <source>No LA detected</source>
-        <translation>Geen Logic Analyzer gevonden</translation>
+        <translation>Kein Logic Analyzer gefunden</translation>
     </message>
     <message>
         <source>sigrok</source>
@@ -198,107 +198,107 @@ GNU GPL, version 2 or later&lt;br /&gt;&lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;
     <message>
         <location filename="../mainwindow.ui" line="77"/>
         <source>Channels:</source>
-        <translation>Kanalen:</translation>
+        <translation>Kanäle:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="67"/>
         <source>Start sample:</source>
-        <translation>Start sample:</translation>
+        <translation>Erstes Sample:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="14"/>
-        <source>sigrok-gui</source>
+        <source>sigrok-qt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="101"/>
         <source>End sample:</source>
-        <translation>Einde sample:</translation>
+        <translation>Letztes Sample:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="111"/>
         <source>Zoom factor:</source>
-        <translation>Zoom factor:</translation>
+        <translation>Zoom-Faktor:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="130"/>
         <source>&amp;File</source>
-        <translation>&amp;Bestand</translation>
+        <translation>&amp;Datei</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="139"/>
         <source>&amp;Help</source>
-        <translation>&amp;Hulp</translation>
+        <translation>&amp;Hilfe</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="146"/>
         <source>&amp;Edit</source>
-        <translation>&amp;Bewerken</translation>
+        <translation>&amp;Bearbeiten</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="152"/>
         <source>Device</source>
-        <translation>&amp;Apparaat</translation>
+        <translation>&amp;Gerät</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="186"/>
         <source>E&amp;xit</source>
-        <translation>&amp;Afsluiten</translation>
+        <translation>&amp;Beenden</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="189"/>
         <source>Ctrl+Q</source>
-        <translation>Ctrl+Q</translation>
+        <translation>Ctrl+B</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="194"/>
         <source>&amp;About...</source>
-        <translation>Over sigrok...</translation>
+        <translation>Über sigrok...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="197"/>
         <source>Ctrl+A</source>
-        <translation>Ctrl+A</translation>
+        <translation>Ctrl+Ü</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="202"/>
         <source>About &amp;Qt...</source>
-        <translation>Over Qt...</translation>
+        <translation>Über Qt...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="211"/>
         <source>&amp;Preferences</source>
-        <translation>&amp;Instellingen</translation>
+        <translation>&amp;Einstellungen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="220"/>
         <source>&amp;Scan</source>
-        <translation>Zoeken</translation>
+        <translation>Suchen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="223"/>
         <source>Scan for supported logic analyzers</source>
-        <translation>Zoek naar ondersteunde logic analyzers</translation>
+        <translation>Nach unterstützten Logic Analyzern suchen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="232"/>
         <source>&amp;Open...</source>
-        <translation>&amp;Openen...</translation>
+        <translation>&amp;Öffnen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="241"/>
         <source>&amp;New...</source>
-        <translation>&amp;Nieuw...</translation>
+        <translation>&amp;Neu</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="253"/>
         <source>&amp;Save as...</source>
-        <translation>Op&amp;slaan als...</translation>
+        <translation>&amp;Speichern unter...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="265"/>
         <source>&amp;Get samples...</source>
-        <translation>Meting starten</translation>
+        <translation>Messung starten</translation>
     </message>
 </context>
 </TS>

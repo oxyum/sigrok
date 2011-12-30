@@ -40,16 +40,16 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 	QTranslator translator;
 
-	translator.load(QString("locale/sigrok-gui_") + locale);
+	translator.load(QString("locale/sigrok-qt_") + locale);
 	a.installTranslator(&translator);
 
 	/* Set some application metadata. */
 	QApplication::setApplicationVersion(APP_VERSION);
-	QApplication::setApplicationName("sigrok-gui");
+	QApplication::setApplicationName("sigrok-qt");
 	QApplication::setOrganizationDomain("http://www.sigrok.org");
 
-	/* Disable this to actually allow running the (pre-alpha!) GUI. */
-	qDebug() << "The GUI is not yet usable, aborting.";
+	/* Disable this to actually allow running the (pre-alpha!) Qt GUI. */
+	qDebug() << "The Qt GUI is not yet usable, aborting.";
 	// return 1;
 
 	if (sr_init() != SR_OK) {

@@ -1,4 +1,4 @@
-sigrok-gui
+sigrok-qt
 moc_*
 ui_*
 qrc_*

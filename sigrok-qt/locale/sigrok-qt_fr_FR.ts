@@ -72,14 +72,14 @@
     <message>
         <location filename="../mainwindow.cpp" line="182"/>
         <source>About</source>
-        <translation>A propos de sigrok-gui</translation>
+        <translation>A propos de sigrok-qt</translation>
     </message>
     <message>
-        <source>sigrok-gui 0.1&lt;br /&gt;
+        <source>sigrok-qt 0.1&lt;br /&gt;
 Copyright (C) 2010 Uwe Hermann &amp;lt;uwe@hermann-uwe.de&amp;gt;&lt;br /&gt;
 GNU GPL, version 2 or later&lt;br /&gt;
 &lt;a href=&quot;http://www.sigrok.org&quot;&gt;http://www.sigrok.org&lt;/a&gt;</source>
-        <translation type="obsolete">sigrok-gui 0.1&lt;br /&gt;
+        <translation type="obsolete">sigrok-qt 0.1&lt;br /&gt;
 Copyright (C) 2010 Uwe Hermann &amp;lt;uwe@hermann-uwe.de&amp;gt;&lt;br /&gt;
 GNU GPL, Version 2 ou postérieure&lt;br /&gt;
 &lt;a href=&quot;http://www.sigrok.org&quot;&gt;http://www.sigrok.org&lt;/a&gt;</translation>
@@ -207,7 +207,7 @@ GNU GPL, version 2 or later&lt;br /&gt;&lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;
     </message>
     <message>
         <location filename="../mainwindow.ui" line="14"/>
-        <source>sigrok-gui</source>
+        <source>sigrok-qt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
