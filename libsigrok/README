@@ -6,16 +6,17 @@ The sigrok project aims at creating a portable, cross-platform,
 Free/Libre/Open-Source logic analyzer software that supports various
 logic analyzer hardware products.
 
-There are two shared libraries with common code, a command line utility for
-basic usage and easy scriptability, as well as an intuitive GUI.
+libsigrok is a shared library written in C which provides the basic API
+for talking to logic analyzer hardware and reading/writing the acquired data
+into various input/output file formats.
 
 
 Status and API
 --------------
 
-The sigrok project is currently work in progress.
+libsigrok is currently work in progress.
 
-IMPORTANT: The API of the libraries is NOT yet considered stable! Please do
+IMPORTANT: The API of libsigrok is NOT yet considered stable! Please do
            not rely on it, yet! Changes to function names, macro names etc.
            can happen at any time without prior notice!
 
@@ -32,44 +33,20 @@ Requirements
  - zlib >= 1.2.3.1
  - libftdi >= 0.16 (for some logic analyzer hardware)
  - libudev >= 151 (for some logic analyzer hardware)
- - Python >= 3.x (for protocol decoders)
- - Qt + Qt Creator >= 4.5 (for building/editing the GUI) 
 
 
 Building and installing
 -----------------------
 
-In order to get the sigrok source code and build it, run:
+In order to get the libsigrok source code and build it, run:
 
  $ git clone git://sigrok.git.sourceforge.net/gitroot/sigrok/sigrok
- $ cd sigrok
+ $ cd sigrok/libsigrok
  $ ./autogen.sh
  $ ./configure
  $ make
 
-For building the command-line tool:
-
- $ cd cli
- $ ./autogen.sh
- $ ./configure
- $ make
-
-For building the Qt GUI:
-
- $ cd gui
- $ qmake
- $ make
-
-For building the GTK+ GUI:
-
- $ cd gtk
- $ ./autogen.sh
- $ ./configure
- $ make
-
-NOTE: The GUIs are not yet usable, they're both work-in-progress!
-
-For installing sigrok:
+For installing libsigrok:
 
  $ make install
 
@@ -84,7 +61,7 @@ Please see the following wiki pages for more detailed instructions:
 Mailing lists
 -------------
 
-There are two mailing lists for sigrok:
+There are two mailing lists for sigrok/libsigrok:
 
  https://lists.sourceforge.net/lists/listinfo/sigrok-devel
  https://lists.sourceforge.net/lists/listinfo/sigrok-commits

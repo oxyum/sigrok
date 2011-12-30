@@ -1,0 +1,72 @@
+-------------------------------------------------------------------------------
+README
+-------------------------------------------------------------------------------
+
+The sigrok project aims at creating a portable, cross-platform,
+Free/Libre/Open-Source logic analyzer software that supports various
+logic analyzer hardware products.
+
+sigrok-qt is a Qt-based GUI for sigrok.
+
+
+Status
+------
+
+The sigrok-qt project is currently work in progress. Some basic functionality
+is there, but it should still be considered alpha/beta stage software.
+
+
+Requirements
+------------
+
+ - git
+ - gcc, g++, make, ...
+ - autoconf, automake, libtool, pkg-config
+ - libglib >= 2.22.0
+ - Qt >= 4.5
+ - libsigrok
+ - libsigrokdecode
+
+
+Building and installing
+-----------------------
+
+In order to get the sigrok-qt source code and build it, run:
+
+ $ git clone git://sigrok.git.sourceforge.net/gitroot/sigrok/sigrok
+ $ cd sigrok/sigrok-qt
+ $ qmake
+ $ make
+
+For installing sigrok-qt:
+
+ $ make install
+
+Please see the following wiki pages for more detailed instructions:
+
+ http://sigrok.org/wiki/Linux
+ http://sigrok.org/wiki/Mac_OS_X
+ http://sigrok.org/wiki/Windows
+ http://sigrok.org/wiki/FreeBSD
+
+
+Mailing lists
+-------------
+
+There are two mailing lists for sigrok/sigrok-qt:
+
+ https://lists.sourceforge.net/lists/listinfo/sigrok-devel
+ https://lists.sourceforge.net/lists/listinfo/sigrok-commits
+
+
+IRC
+---
+
+You can find the sigrok developers in the #sigrok IRC channel on Freenode.
+
+
+Website
+-------
+
+http://sigrok.org
+
