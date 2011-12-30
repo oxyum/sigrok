@@ -3,3 +3,6 @@ moc_*
 ui_*
 qrc_*
 *.app
+Makefile.Debug
+Makefile.Release
+sigrok-qt.pro.user

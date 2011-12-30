@@ -1,7 +1,6 @@
 # autotools cruft
 aclocal.m4
-autom4te.cache
-autoscan.log
+autom4te.cache/
 compile
 config.guess
 config.h
@@ -33,9 +32,4 @@ Makefile.in
 *.la
 .libs/
 *.pc
-
-# GUI
-gui/Makefile.Debug
-gui/Makefile.Release
-gui/sigrok-gui.pro.user
 
