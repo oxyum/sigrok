@@ -34,13 +34,13 @@
 # --- Global stuff ------------------------------------------------------------
 
 # Installer/product name.
-Name "@PACKAGE_NAME@"
+Name "sigrok"
 
 # Filename of the installer executable.
-OutFile "@PACKAGE_NAME@-installer-@PACKAGE_VERSION@.exe"
+OutFile "sigrok-installer-0.2.exe"
 
 # Where to install the application.
-InstallDir "$PROGRAMFILES\@PACKAGE_NAME@"
+InstallDir "$PROGRAMFILES\sigrok"
 
 # Request application privileges for Windows Vista.
 RequestExecutionLevel user
@@ -78,7 +78,7 @@ RequestExecutionLevel user
 !insertmacro MUI_PAGE_WELCOME
 
 # Show the license text which the user has to accept.
-!insertmacro MUI_PAGE_LICENSE "..\..\COPYING"
+!insertmacro MUI_PAGE_LICENSE "..\..\libsigrok\COPYING"
 
 # Show a screen which allows the user to select which components to install.
 !insertmacro MUI_PAGE_COMPONENTS
@@ -116,7 +116,7 @@ Section "sigrok (required)" Section1
 	SetOutPath "$INSTDIR"
 
 	# License file
-	File "..\..\COPYING"
+	File "..\..\libsigrok\COPYING"
 
 	# sigrok libs
 	File "dist\lib\libsigrok.a"
@@ -179,24 +179,24 @@ Section "sigrok (required)" Section1
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
 
 	# Create a sub-directory in the start menu.
-	CreateDirectory "$SMPROGRAMS\@PACKAGE_NAME@"
+	CreateDirectory "$SMPROGRAMS\sigrok"
 
 	# Create a shortcut for the Qt GUI application.
-	CreateShortCut "$SMPROGRAMS\@PACKAGE_NAME@\sigrok Qt GUI.lnk" \
+	CreateShortCut "$SMPROGRAMS\sigrok\sigrok Qt GUI.lnk" \
 		"$INSTDIR\sigrok-qt.exe" "" "$INSTDIR\sigrok-qt.exe" \
 		0 SW_SHOWNORMAL \
 		"" "Open-source, portable logic analyzer software"
 
 	# Create a shortcut for the GTK+ GUI application.
-	CreateShortCut "$SMPROGRAMS\@PACKAGE_NAME@\sigrok GTK+ GUI.lnk" \
+	CreateShortCut "$SMPROGRAMS\sigrok\sigrok GTK+ GUI.lnk" \
 		"$INSTDIR\sigrok-gtk.exe" "" "$INSTDIR\sigrok-gtk.exe" \
 		0 SW_SHOWNORMAL \
 		"" "Open-source, portable logic analyzer software"
 
 	# Create a shortcut for the uninstaller.
-	CreateShortCut "$SMPROGRAMS\@PACKAGE_NAME@\Uninstall.lnk" \
+	CreateShortCut "$SMPROGRAMS\sigrok\Uninstall.lnk" \
 		"$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0 \
-		SW_SHOWNORMAL "" "Uninstall @PACKAGE_NAME@"
+		SW_SHOWNORMAL "" "Uninstall sigrok"
 
 SectionEnd
 
@@ -270,12 +270,12 @@ Section "Uninstall"
 	RMDir "$INSTDIR"
 
 	# Delete the links from the start menu.
-	Delete "$SMPROGRAMS\@PACKAGE_NAME@\sigrok Qt GUI.lnk"
-	Delete "$SMPROGRAMS\@PACKAGE_NAME@\sigrok GTK+ GUI.lnk"
-	Delete "$SMPROGRAMS\@PACKAGE_NAME@\Uninstall.lnk"
+	Delete "$SMPROGRAMS\sigrok\sigrok Qt GUI.lnk"
+	Delete "$SMPROGRAMS\sigrok\sigrok GTK+ GUI.lnk"
+	Delete "$SMPROGRAMS\sigrok\Uninstall.lnk"
 
 	# Delete the sub-directory in the start menu.
-	RMDir "$SMPROGRAMS\@PACKAGE_NAME@"
+	RMDir "$SMPROGRAMS\sigrok"
 
 SectionEnd
 
