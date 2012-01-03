@@ -21,7 +21,7 @@ Requirements
 
  - git
  - gcc, g++, make, ...
- - autoconf, automake, libtool, pkg-config
+ - libtool, pkg-config
  - libglib >= 2.22.0
  - Qt >= 4.5
  - libsigrok

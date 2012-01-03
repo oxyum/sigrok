@@ -69,8 +69,8 @@ private:
 	uint64_t sampleRate;
 	uint64_t numSamples;
 	int configChannelTitleBarLayout;
-
 	void updateScrollBar(void);
+
 public slots:
 	void configChannelTitleBarLayoutChanged(int index);
 

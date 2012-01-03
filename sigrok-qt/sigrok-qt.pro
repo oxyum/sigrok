@@ -70,7 +70,7 @@ win32 {
 
 # Installation
 target.path   = /usr/local/bin
-locale.path   = /usr/local/share/sigrok/translations
+locale.path   = /usr/local/share/sigrok-qt/translations
 locale.files  = locale/*.qm
 locale.extra  = lrelease sigrok-qt.pro
 INSTALLS     += target locale
