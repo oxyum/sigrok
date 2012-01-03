@@ -73,7 +73,9 @@ target.path   = /usr/local/bin
 locale.path   = /usr/local/share/sigrok-qt/translations
 locale.files  = locale/*.qm
 locale.extra  = lrelease sigrok-qt.pro
-INSTALLS     += target locale
+man.path      = /usr/local/man/man1
+man.files     = doc/sigrok-qt.1
+INSTALLS     += target locale man
 
 win32 {
 	RC_FILE = sigrok-qt.rc
