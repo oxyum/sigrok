@@ -3,6 +3,7 @@ moc_*
 ui_*
 qrc_*
 *.app
+*.qm
 Makefile.Debug
 Makefile.Release
 sigrok-qt.pro.user
