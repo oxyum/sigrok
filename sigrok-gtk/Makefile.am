@@ -17,6 +17,8 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+ACLOCAL_AMFLAGS = -I autostuff
+
 bin_PROGRAMS = sigrok-gtk
 
 sigrok_gtk_SOURCES = main.c log.c toolbar.c gtkcellrenderersignal.c \
