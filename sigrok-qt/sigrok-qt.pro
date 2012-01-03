@@ -72,8 +72,8 @@ win32 {
 PREFIX        = /usr/local
 target.path   = $$PREFIX/bin
 locale.path   = $$PREFIX/share/sigrok-qt/translations
-locale.files  = locale/*.qm
 locale.extra  = lrelease sigrok-qt.pro
+locale.files  = locale/*.qm
 man.path      = $$PREFIX/man/man1
 man.files     = doc/sigrok-qt.1
 INSTALLS     += target locale man
