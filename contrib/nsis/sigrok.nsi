@@ -119,17 +119,17 @@ Section "sigrok (required)" Section1
 	File "..\..\libsigrok\COPYING"
 
 	# sigrok libs
-	File "dist\lib\libsigrok.a"
-	File "dist\lib\libsigrokdecode.a"
+	File "c:\MinGW\msys\1.0\local\lib\libsigrok.a"
+	File "c:\MinGW\msys\1.0\local\lib\libsigrokdecode.a"
 
 	# sigrok-cli
-	File "dist\bin\sigrok-cli.exe"
+	File "c:\MinGW\msys\1.0\local\bin\sigrok-cli.exe"
 
 	# sigrok-qt
-	File "..\..\sigrok-qt\release\sigrok-qt.exe"
+	File "c:\MinGW\msys\1.0\local\bin\sigrok-qt.exe"
 
 	# sigrok-gtk
-	File "..\..\gtk\.libs\sigrok-gtk.exe"
+	File "c:\MinGW\msys\1.0\local\bin\sigrok-gtk.exe"
 
 	# MinGW libs
 	File "c:\MinGW\bin\mingwm10.dll"
@@ -173,7 +173,7 @@ Section "sigrok (required)" Section1
 	SetOutPath "$INSTDIR\decoders"
 
 	# Protocol decoders
-	File "dist\share\sigrok\decoders\*.py"
+	File "c:\MinGW\msys\1.0\local\share\libsigrokdecode\decoders\*.py"
 
 	# Generate the uninstaller executable.
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
