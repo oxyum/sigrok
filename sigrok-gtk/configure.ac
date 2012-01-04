@@ -51,5 +51,28 @@ PKG_CHECK_MODULES([libsigrok], [libsigrok],
 	LIBS="$LIBS $libsigrok_LIBS"])
 
 AC_CONFIG_FILES([Makefile])
+
 AC_OUTPUT
+
+echo
+echo "sigrok-gtk configuration summary:"
+echo
+echo "  - Package version: $VERSION"
+echo "  - Prefix: $prefix"
+echo
+echo "Detected libraries:"
+echo
+
+# Note: This only works for libs with pkg-config integration.
+for lib in "glib-2.0" "gmodule-2.0" "gtk+-2.0" "libsigrok"; do
+        if `$PKG_CONFIG --exists $lib`; then
+                ver=`$PKG_CONFIG --modversion $lib`
+                answer="yes ($ver)"
+        else
+                answer="no"
+        fi
+        echo "  - $lib: $answer"
+done
+
+echo
 
