@@ -207,7 +207,7 @@ Section "Python" Section2
 
 	# Copy the Python installer MSI file into the temporary directory.
 	SetOutPath "$TEMP"
-	File "dist\${PY_INST}"
+	File "c:\${PY_INST}"
 
 	# Run the Python installer MSI file from within our installer.
 	ExecWait '"msiexec" /i "$TEMP\${PY_INST}" /QB- /passive ALLUSERS=1'
