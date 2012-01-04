@@ -66,7 +66,7 @@ RequestExecutionLevel user
 !define MUI_LICENSEPAGE_TEXT_BOTTOM "Click Next to continue."
 
 # File name of the Python installer MSI file.
-!define PY_INST "python-3.2.msi"
+!define PY_INST "python-3.2.2.msi"
 
 # Standard install path of the Python installer (do not change!).
 !define PY_BIN "c:\Python32"
