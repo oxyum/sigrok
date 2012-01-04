@@ -17,19 +17,26 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-AC_INIT([sigrok-gtk], [0.1], [gareth@blacksphere.co.nz])
+AC_PREREQ([2.61])
+
+AC_INIT([sigrok-gtk], [0.1], [gareth@blacksphere.co.nz],
+        [sigrok-gtk], [http://www.sigrok.org])
+
 AC_CONFIG_SRCDIR([main.c])
-AC_PREREQ(2.57)
 AC_CONFIG_MACRO_DIR([autostuff])
 AC_CONFIG_AUX_DIR([autostuff])
+
 AM_INIT_AUTOMAKE([-Wall -Werror foreign std-options])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
+AH_TOP([#ifndef SIGROK_GTK_CONFIG_H
+#define SIGROK_GTK_CONFIG_H    /* To stop multiple inclusions. */])
+AH_BOTTOM([#endif /* SIGROK_GTK_CONFIG_H */])
+
 CFLAGS="-g -Wall -Wextra"
 
+# Checks for programs.
 AC_PROG_CC
-AM_PROG_AS
-AC_STDC_HEADERS
 AC_PROG_INSTALL
 
 # Initialize libtool.
@@ -42,6 +49,8 @@ PKG_PROG_PKG_CONFIG([0.22])
 AC_CHECK_TOOL([WINDRES], windres, [])
 AM_CONDITIONAL([WINDOWS], test x$WINDRES != x)
 
+# Checks for libraries.
+
 PKG_CHECK_MODULES([gtk], [gtk+-2.0 gmodule-2.0],
 	[CFLAGS="$CFLAGS $gtk_CFLAGS";
 	LIBS="$LIBS $gtk_LIBS"])
@@ -49,6 +58,25 @@ PKG_CHECK_MODULES([gtk], [gtk+-2.0 gmodule-2.0],
 PKG_CHECK_MODULES([libsigrok], [libsigrok],
 	[CFLAGS="$CFLAGS $libsigrok_CFLAGS";
 	LIBS="$LIBS $libsigrok_LIBS"])
+
+# Checks for header files.
+# These are already checked: inttypes.h stdint.h stdlib.h string.h unistd.h.
+# AC_CHECK_HEADERS([])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_INLINE
+AC_TYPE_INT8_T
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_INT64_T
+AC_TYPE_UINT8_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
+AC_TYPE_SIZE_T
+
+# Checks for library functions.
+AC_CHECK_FUNCS([memset strtoull])
 
 AC_CONFIG_FILES([Makefile])
 
