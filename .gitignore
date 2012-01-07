@@ -16,8 +16,6 @@ install-sh
 map
 missing
 stamp-h1
-m4/
-contrib/nsis/sigrok.nsi
 autostuff/
 
 # recursive autoconf leftovers
