@@ -17,6 +17,7 @@ map
 missing
 stamp-h1
 autostuff/
+*/m4/
 
 # recursive autoconf leftovers
 .deps
