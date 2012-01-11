@@ -18,9 +18,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "sigrokfile.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include "sigrokfile.h"
+#include "sigrokfile-internal.h"
 
 static int srf_loglevel = SRF_LOG_WARN; /* Show errors+warnings per default. */
 

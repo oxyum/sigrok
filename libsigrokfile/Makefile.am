@@ -36,6 +36,7 @@ libsigrokfile_la_LIBADD = \
 libsigrokfile_la_LDFLAGS = $(LIBSIGROKFILE_LT_LDFLAGS)
 
 include_HEADERS = sigrokfile.h
+noinst_HEADERS = sigrokfile-internal.h
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libsigrokfile.pc

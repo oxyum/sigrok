@@ -18,35 +18,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "sigrokfile.h"
-#include "sigrokfile-internal.h"
+#ifndef SIGROKFILE_SIGROKFILE_INTERNAL_H
+#define SIGROKFILE_SIGROKFILE_INTERNAL_H
 
-/**
- * Initialize libsigrokfile.
- *
- * The caller is responsible for calling the clean-up function srf_exit(),
- * which will properly shut down libsigrokfile and free its allocated memory.
- *
- * Multiple calls to srf_init(), without calling srf_exit() in between,
- * are not allowed.
- *
- * @return SRF_OK upon success, a (negative) error code otherwise.
- */
-int srd_init(void)
-{
-	return SRF_OK;
-}
+/*--- log.c -----------------------------------------------------------------*/
 
-/**
- * Shutdown libsigrokfile.
- *
- * This function should only be called if there was a (successful!) invocation
- * of srf_init() before. Calling this function multiple times in a row, without
- * any successful srf_init() calls in between, is not allowed.
- *
- * @return SRF_OK upon success, a (negative) error code otherwise.
- */
-int srf_exit(void)
-{
-	return SRF_OK;
-}
+int srf_log(int loglevel, const char *format, ...);
+int srf_spew(const char *format, ...);
+int srf_dbg(const char *format, ...);
+int srf_info(const char *format, ...);
+int srf_warn(const char *format, ...);
+int srf_err(const char *format, ...);
+
+#endif
