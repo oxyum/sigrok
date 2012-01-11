@@ -27,7 +27,8 @@ AM_CPPFLAGS = -I$(top_srcdir)
 lib_LTLIBRARIES = libsigrokfile.la
 
 libsigrokfile_la_SOURCES = \
-	main.c
+	main.c \
+	log.c
 
 libsigrokfile_la_LIBADD = \
 	$(LIBOBJS)

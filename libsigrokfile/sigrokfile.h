@@ -48,9 +48,23 @@ extern "C" {
 #define SRF_ERR_ARG           -3 /**< Function argument error */
 #define SRF_ERR_BUG           -4 /**< Errors hinting at internal bugs */
 
-/* main.c */
+/* libsigrokfile loglevels. */
+#define SRF_LOG_NONE   0 /**< Output no messages at all. */
+#define SRF_LOG_ERR    1 /**< Output error messages. */
+#define SRF_LOG_WARN   2 /**< Output warnings. */
+#define SRF_LOG_INFO   3 /**< Output informational messages. */
+#define SRF_LOG_DBG    4 /**< Output debug messages. */
+#define SRF_LOG_SPEW   5 /**< Output very noisy debug messages. */
+
+/*--- main.c ----------------------------------------------------------------*/
+
 int srd_init(void);
 int srf_exit(void);
+
+/*--- log.c -----------------------------------------------------------------*/
+
+int srf_set_loglevel(int loglevel);
+int srf_get_loglevel(void);
 
 #ifdef __cplusplus
 }
