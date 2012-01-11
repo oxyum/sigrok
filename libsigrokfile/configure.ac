@@ -123,7 +123,9 @@ AC_DEFINE(LIBSIGROKFILE_MICRO_VERSION, [libsigrokfile_micro_version],
 AC_DEFINE(LIBSIGROKFILE_VERSION, [libsigrokfile_version],
 	  [Define to the libsigrokfile package version])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile
+		 libsigrokfile.pc
+		])
 
 AC_OUTPUT
 

@@ -1,0 +1,15 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libsigrokfile
+Description: Input/output file format library of the sigrok logic analyzer software
+URL: http://www.sigrok.org
+Requires:
+Requires.private: glib-2.0
+Version: @VERSION@
+Libs: -L${libdir} -lsigrokfile
+Libs.private:
+Cflags: -I${includedir}
+
