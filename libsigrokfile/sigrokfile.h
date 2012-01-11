@@ -48,7 +48,9 @@ extern "C" {
 #define SRF_ERR_ARG           -3 /**< Function argument error */
 #define SRF_ERR_BUG           -4 /**< Errors hinting at internal bugs */
 
-/* TODO */
+/* main.c */
+int srd_init(void);
+int srf_exit(void);
 
 #ifdef __cplusplus
 }

@@ -18,5 +18,34 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-/* TODO */
+#include "sigrokfile.h"
 
+/**
+ * Initialize libsigrokfile.
+ *
+ * The caller is responsible for calling the clean-up function srf_exit(),
+ * which will properly shut down libsigrokfile and free its allocated memory.
+ *
+ * Multiple calls to srf_init(), without calling srf_exit() in between,
+ * are not allowed.
+ *
+ * @return SRF_OK upon success, a (negative) error code otherwise.
+ */
+int srd_init(void)
+{
+	return SRF_OK;
+}
+
+/**
+ * Shutdown libsigrokfile.
+ *
+ * This function should only be called if there was a (successful!) invocation
+ * of srf_init() before. Calling this function multiple times in a row, without
+ * any successful srf_init() calls in between, is not allowed.
+ *
+ * @return SRF_OK upon success, a (negative) error code otherwise.
+ */
+int srf_exit(void)
+{
+	return SRF_OK;
+}
