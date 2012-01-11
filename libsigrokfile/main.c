@@ -32,7 +32,7 @@
  *
  * @return SRF_OK upon success, a (negative) error code otherwise.
  */
-int srd_init(void)
+int srf_init(void)
 {
 	return SRF_OK;
 }
