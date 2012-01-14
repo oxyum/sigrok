@@ -18,29 +18,12 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-ACLOCAL_AMFLAGS = -I autostuff
+# Local lib, this is NOT meant to be installed!
+noinst_LTLIBRARIES = libsigrokfileoutput.la
 
-AM_CPPFLAGS = -I$(top_srcdir)
+libsigrokfileoutput_la_SOURCES = \
+	output.c
 
-SUBDIRS = output
-
-lib_LTLIBRARIES = libsigrokfile.la
-
-libsigrokfile_la_SOURCES = \
-	main.c \
-	log.c
-
-libsigrokfile_la_LIBADD = \
-	$(LIBOBJS) \
-	output/libsigrokfileoutput.la
-
-libsigrokfile_la_LDFLAGS = $(LIBSIGROKFILE_LT_LDFLAGS)
-
-include_HEADERS = sigrokfile.h
-noinst_HEADERS = sigrokfile-internal.h
-
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libsigrokfile.pc
-
-EXTRA_DIST = Doxyfile
+libsigrokfileoutput_la_CFLAGS = \
+	-I$(top_srcdir)
 

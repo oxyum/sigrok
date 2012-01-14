@@ -125,6 +125,7 @@ AC_DEFINE(LIBSIGROKFILE_VERSION, [libsigrokfile_version],
 
 AC_CONFIG_FILES([Makefile
 		 libsigrokfile.pc
+		 output/Makefile
 		])
 
 AC_OUTPUT
