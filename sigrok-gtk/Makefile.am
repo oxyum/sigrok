@@ -17,6 +17,8 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+SUBDIRS = doc
+
 ACLOCAL_AMFLAGS = -I autostuff
 
 bin_PROGRAMS = sigrok-gtk

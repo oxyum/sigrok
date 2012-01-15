@@ -78,7 +78,9 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_CHECK_FUNCS([memset strtoull])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile
+		 doc/Makefile
+		])
 
 AC_OUTPUT
 
