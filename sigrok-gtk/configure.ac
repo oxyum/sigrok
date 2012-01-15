@@ -55,7 +55,7 @@ PKG_CHECK_MODULES([gtk], [gtk+-2.0 gmodule-2.0],
 	[CFLAGS="$CFLAGS $gtk_CFLAGS";
 	LIBS="$LIBS $gtk_LIBS"])
 
-PKG_CHECK_MODULES([libsigrok], [libsigrok],
+PKG_CHECK_MODULES([libsigrok], [libsigrok >= 0.2],
 	[CFLAGS="$CFLAGS $libsigrok_CFLAGS";
 	LIBS="$LIBS $libsigrok_LIBS"])
 

@@ -54,6 +54,7 @@ CONFIG       += release warn_on
 RESOURCES    += sigrok-qt.qrc
 
 # libsigrok and libsigrokdecode
+# TODO: Check for the minimum versions of libsigrok/libsigrokdecode we need.
 win32 {
 	# On Windows/MinGW we need to use '--libs --static'.
 	# We also need to strip some stray '\n' characters here.
