@@ -32,9 +32,11 @@ DecodersForm::DecodersForm(QWidget *parent) :
     ui(new Ui::DecodersForm)
 {
 	int i;
-	GSList *ll;
+	GSList *ll, *ll2;
 	struct srd_decoder *dec;
 	QWidget *pages[MAX_NUM_DECODERS];
+	char **ann, *doc;
+	QString *s;
 
 	ui->setupUi(this);
 
@@ -52,8 +54,22 @@ DecodersForm::DecodersForm(QWidget *parent) :
 		l->addWidget(new QLabel("ID: " + QString(dec->id)));
 		l->addWidget(new QLabel("Name: " + QString(dec->name)));
 		l->addWidget(new QLabel("Long name: " + QString(dec->longname)));
-		l->addWidget(new QLabel("Desc: " + QString(dec->desc)));
+		l->addWidget(new QLabel("Description: " + QString(dec->desc)));
 		l->addWidget(new QLabel("License: " + QString(dec->license)));
+		s = new QString("Annotations:\n");
+		for (ll2 = dec->annotations; ll2; ll2 = ll2->next) {
+			ann = (char **)ll2->data;
+			s->append(QString(" - %1: %2\n").arg(ann[0]).arg(ann[1]));
+		}
+		l->addWidget(new QLabel(*s));
+		s = new QString("Protocol documentation:\n");
+		if (doc = srd_decoder_doc(dec)) {
+			s->append(QString("%1\n")
+			          .arg(doc[0] == '\n' ? doc + 1 : doc));
+			g_free(doc);
+		} /* else: Error. */
+		l->addWidget(new QLabel(*s));
+
 		l->insertStretch(-1);
 
 		pages[i]->setLayout(l);
