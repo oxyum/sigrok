@@ -220,7 +220,7 @@ void MainWindow::on_actionAbout_triggered()
 		dec = (struct srd_decoder *)l->data;
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			 .arg(QString(dec->id))
-			 .arg(QString(dec->desc)));
+			 .arg(QString(dec->longname)));
 	}
 	s.append("</table>");
 
