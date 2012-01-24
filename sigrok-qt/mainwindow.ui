@@ -28,7 +28,7 @@
        <item>
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="tabLA">
           <attribute name="title">
@@ -126,6 +126,16 @@
           <attribute name="title">
            <string>Log</string>
           </attribute>
+          <widget class="QPlainTextEdit" name="plainTextEdit">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>10</y>
+             <width>821</width>
+             <height>631</height>
+            </rect>
+           </property>
+          </widget>
          </widget>
         </widget>
        </item>
