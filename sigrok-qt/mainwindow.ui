@@ -150,7 +150,7 @@
      <x>0</x>
      <y>0</y>
      <width>862</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -186,6 +186,7 @@
     <property name="title">
      <string>Decoders</string>
     </property>
+    <addaction name="actionProtocol_decoder_stacks"/>
     <addaction name="actionConfigure"/>
    </widget>
    <addaction name="menuFile"/>
@@ -306,6 +307,11 @@
    </property>
    <property name="toolTip">
     <string>Configure</string>
+   </property>
+  </action>
+  <action name="actionProtocol_decoder_stacks">
+   <property name="text">
+    <string>Protocol decoder stacks</string>
    </property>
   </action>
  </widget>

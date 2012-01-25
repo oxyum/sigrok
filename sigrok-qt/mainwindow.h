@@ -86,6 +86,7 @@ private slots:
 	void on_actionAbout_Qt_triggered();
 	void on_actionAbout_triggered();
 	void updateScaleFactors(float value);
+	void on_actionProtocol_decoder_stacks_triggered();
 };
 
 extern MainWindow *w;

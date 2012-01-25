@@ -36,6 +36,8 @@ extern "C" {
 #include "ui_channelform.h"
 #include "decodersform.h"
 #include "ui_decodersform.h"
+#include "decoderstackform.h"
+#include "ui_decoderstackform.h"
 
 extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -783,5 +785,11 @@ void MainWindow::updateScaleFactors(float value)
 void MainWindow::on_actionConfigure_triggered()
 {
 	DecodersForm *form = new DecodersForm();
+	form->show();
+}
+
+void MainWindow::on_actionProtocol_decoder_stacks_triggered()
+{
+	DecoderStackForm *form = new DecoderStackForm();
 	form->show();
 }
