@@ -32,18 +32,21 @@ SOURCES      += main.cpp \
 	        configform.cpp \
 	        sampleiodevice.cpp \
 	        channelform.cpp \
-	        decodersform.cpp
+	        decodersform.cpp \
+	        decoderstackform.cpp
 
 HEADERS      += mainwindow.h \
 	        configform.h \
 	        sampleiodevice.h \
 	        channelform.h \
-	        decodersform.h
+	        decodersform.h \
+	        decoderstackform.h
 
 FORMS        += mainwindow.ui \
 	        configform.ui \
 	        channelform.ui \
-	        decodersform.ui
+	        decodersform.ui \
+	        decoderstackform.ui
 
 TRANSLATIONS  = locale/sigrok-qt_de_DE.ts \
                 locale/sigrok-qt_nl_NL.ts \
