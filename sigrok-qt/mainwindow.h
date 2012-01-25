@@ -43,6 +43,8 @@ public:
 	MainWindow(QWidget *parent = 0);
 	~MainWindow();
 
+	Ui::MainWindow *ui;
+
 	void setCurrentLA(int la);
 	int getCurrentLA(void);
 	void setNumChannels(int ch);
@@ -63,7 +65,6 @@ public:
 	void setupDockWidgets(void);
 
 private:
-	Ui::MainWindow *ui;
 	int currentLA;
 	int numChannels;
 	uint64_t sampleRate;

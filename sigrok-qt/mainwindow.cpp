@@ -42,6 +42,7 @@ extern "C" {
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <glib.h>
 #include <sigrok.h>
 }
@@ -52,6 +53,24 @@ extern "C" {
 uint64_t limit_samples = 0; /* FIXME */
 
 QProgressDialog *progress = NULL;
+
+/* TODO: Documentation. */
+extern "C" {
+static int logger(void *data, int loglevel, const char *format, va_list args)
+{
+	QString s;
+
+	if (loglevel > srd_get_loglevel())
+		return SRD_OK;
+
+	s.vsprintf(format, args);
+
+	MainWindow *mw = (MainWindow *)data;
+	mw->ui->plainTextEdit->appendPlainText(s);
+
+	return SRD_OK;
+}
+}
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow)
@@ -66,6 +85,14 @@ MainWindow::MainWindow(QWidget *parent)
 
 	/* FIXME */
 	QMainWindow::setCentralWidget(ui->mainWidget);
+
+	srd_set_loglevel(SRD_LOG_SPEW);
+
+	if (srd_log_set_handler(logger, (void *)this) != SRD_OK) {
+		qDebug() << "ERROR: srd_log_set_handler() failed.";
+		return; /* TODO? */
+	}
+	qDebug() << "srd_log_set_handler() call successful.";
 
 	// this->setDockOptions(QMainWindow::AllowNestedDocks);
 }
