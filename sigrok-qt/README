@@ -20,12 +20,14 @@ Requirements
 ------------
 
  - git
- - gcc, g++, make, ...
- - libtool, pkg-config
+ - g++
+ - make
+ - libtool
+ - pkg-config >= 0.22
  - libglib >= 2.22.0
  - Qt >= 4.5
- - libsigrok
- - libsigrokdecode
+ - libsigrok >= 0.2
+ - libsigrokdecode >= 0.2
 
 
 Building and installing
