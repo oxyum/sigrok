@@ -48,7 +48,7 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 
 	switch (packet->type) {
 	case SR_DF_HEADER:
-		g_message("cli: Received SR_DF_HEADER");
+		g_message("fe: Received SR_DF_HEADER");
 		header = packet->payload;
 		num_enabled_probes = 0;
 		gtk_list_store_clear(siglist);
@@ -73,19 +73,16 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 		break;
 	case SR_DF_END:
 		sigview_zoom(sigview, 1, 0);
-		g_message("cli: Received SR_DF_END");
+		g_message("fe: Received SR_DF_END");
 		sr_session_halt();
 		break;
 	case SR_DF_TRIGGER:
-		g_message("cli: received SR_DF_TRIGGER at %"PRIu64" ms",
-				packet->timeoffset / 1000000);
+		g_message("fe: received SR_DF_TRIGGER");
 		break;
 	case SR_DF_LOGIC:
 		logic = packet->payload;
 		sample_size = logic->unitsize;
-		g_message("cli: received SR_DF_LOGIC at %f ms duration %f ms, %"PRIu64" bytes",
-				packet->timeoffset / 1000000.0, packet->duration / 1000000.0,
-				logic->length);
+		g_message("fe: received SR_DF_LOGIC, %"PRIu64" bytes", logic->length);
 		break;
 	case SR_DF_ANALOG:
 		break;
