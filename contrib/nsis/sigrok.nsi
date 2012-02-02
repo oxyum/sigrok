@@ -37,7 +37,7 @@
 Name "sigrok"
 
 # Filename of the installer executable.
-OutFile "sigrok-installer-0.2.exe"
+OutFile "sigrok-installer-2012xxyy.exe"
 
 # Where to install the application.
 InstallDir "$PROGRAMFILES\sigrok"
@@ -173,7 +173,8 @@ Section "sigrok (required)" Section1
 	SetOutPath "$INSTDIR\decoders"
 
 	# Protocol decoders
-	File "c:\MinGW\msys\1.0\local\share\libsigrokdecode\decoders\*.py"
+	File /r /x "__pycache__" \
+		"c:\MinGW\msys\1.0\local\share\libsigrokdecode\decoders\*"
 
 	# Generate the uninstaller executable.
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -262,8 +263,10 @@ Section "Uninstall"
 	Delete "$INSTDIR\libpangowin32-*.dll"
 	Delete "$INSTDIR\libpng*.dll"
 	Delete "$INSTDIR\libexpat-*.dll"
-	Delete "$INSTDIR\decoders\*.py"
-	Delete "$INSTDIR\decoders\*.pyc"
+
+	# Delete all decoders and everything else in decoders/.
+	# There could be *.pyc files or __pycache__ subdirs and so on.
+	RMDir /r "$INSTDIR\decoders\*"
 
 	# Delete the install directory and its sub-directories.
 	RMDir "$INSTDIR\decoders"
