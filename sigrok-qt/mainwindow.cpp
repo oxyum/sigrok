@@ -47,6 +47,7 @@ extern "C" {
 #include <stdarg.h>
 #include <glib.h>
 #include <sigrok.h>
+#include <sigrokdecode.h>
 }
 
 #define DOCK_VERTICAL   0
@@ -68,7 +69,7 @@ static int logger(void *data, int loglevel, const char *format, va_list args)
 	s.vsprintf(format, args);
 
 	MainWindow *mw = (MainWindow *)data;
-	mw->ui->plainTextEdit->appendPlainText(s);
+	mw->ui->plainTextEdit->appendPlainText(QString("srd: ").append(s));
 
 	return SRD_OK;
 }
@@ -792,4 +793,68 @@ void MainWindow::on_actionProtocol_decoder_stacks_triggered()
 {
 	DecoderStackForm *form = new DecoderStackForm();
 	form->show();
+}
+
+extern "C" void show_pd_annotation(struct srd_proto_data *pdata)
+{
+	char **annotations;
+
+	annotations = (char **)pdata->data;
+
+	w->ui->plainTextEdit->appendPlainText(
+		QString("%1-%2: %3: %4").arg(pdata->start_sample)
+			.arg(pdata->end_sample).arg(pdata->pdo->proto_id)
+			.arg((char *)annotations[0]));
+}
+
+void MainWindow::on_actionQUICK_HACK_PD_TEST_triggered()
+{
+#define N 500000
+
+	struct srd_decoder_instance *di;
+	GHashTable *pd_opthash;
+	uint8_t *buf = (uint8_t *)malloc(N + 1);
+
+	pd_opthash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
+					   g_free);
+
+	/* Hardcode a specific I2C probe mapping. */
+	g_hash_table_insert(pd_opthash, g_strdup("scl"), g_strdup("5"));
+	g_hash_table_insert(pd_opthash, g_strdup("sda"), g_strdup("7"));
+
+	/*
+	 * Get data from a hardcoded binary file.
+	 * (converted to binary from melexis_mlx90614_5s_24deg.sr.
+	 */
+	QFile file("foo.bin");
+	int ret = file.open(QIODevice::ReadOnly);
+	ret = file.read((char *)buf, N);
+
+	// sr_set_loglevel(0);
+	// srd_set_loglevel(0);
+
+	if (!(di = srd_instance_new("i2c", pd_opthash))) {
+		ui->plainTextEdit->appendPlainText("ERROR: srd_instance_new");
+		return;
+	}
+
+	if (srd_instance_set_probes(di, pd_opthash) != SRD_OK) {
+		ui->plainTextEdit->appendPlainText("ERROR: srd_instance_set_probes");
+		return;
+	}
+
+	if (srd_register_callback(SRD_OUTPUT_ANN, (srd_pd_output_callback_t)show_pd_annotation) != SRD_OK) {
+		ui->plainTextEdit->appendPlainText("ERROR: srd_register_callback");
+		return;
+	}
+
+	if (srd_session_start(8, 1, 1000000) != SRD_OK) {
+		ui->plainTextEdit->appendPlainText("ERROR: srd_session_start");
+		return;
+	}
+
+	if (srd_session_feed(0, buf, N) != SRD_OK) {
+		ui->plainTextEdit->appendPlainText("ERROR: srd_session_feed");
+		return;
+	}
 }

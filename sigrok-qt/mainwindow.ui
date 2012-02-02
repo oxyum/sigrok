@@ -188,6 +188,7 @@
     </property>
     <addaction name="actionProtocol_decoder_stacks"/>
     <addaction name="actionConfigure"/>
+    <addaction name="actionQUICK_HACK_PD_TEST"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuHardware"/>
@@ -312,6 +313,11 @@
   <action name="actionProtocol_decoder_stacks">
    <property name="text">
     <string>Protocol decoder stacks</string>
+   </property>
+  </action>
+  <action name="actionQUICK_HACK_PD_TEST">
+   <property name="text">
+    <string>QUICK HACK PD TEST</string>
    </property>
   </action>
  </widget>

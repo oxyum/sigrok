@@ -87,6 +87,7 @@ private slots:
 	void on_actionAbout_triggered();
 	void updateScaleFactors(float value);
 	void on_actionProtocol_decoder_stacks_triggered();
+	void on_actionQUICK_HACK_PD_TEST_triggered();
 };
 
 extern MainWindow *w;
