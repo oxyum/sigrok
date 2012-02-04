@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GTK_CELL_RENDERER_SIGNAL_H__
-#define __GTK_CELL_RENDERER_SIGNAL_H__
+#ifndef SIGROK_GTK_GTKCELLRENDERERSIGNAL_H
+#define SIGROK_GTK_GTKCELLRENDERERSIGNAL_H
 
 #include <gtk/gtk.h>
 #include <glib-object.h>

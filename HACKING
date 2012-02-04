@@ -45,6 +45,12 @@ Random notes
    Only sr_err()/sr_warn()/sr_info()/sr_dbg() should be used (or their
    equivalents in the other libs such as srd_err() or srf_err()).
 
+ - Consistently use the same naming convention for #include guards in headers:
+   <PROJECTNAME>_<PATH_TO_FILE>_<FILE>
+   This ensures that all #include guards are always unique and consistent.
+   Examples: LIBSIGROK_SIGROK_H, LIBSIGROK_HARDWARE_ASIX_SIGMA_ASIX_SIGMA_H,
+             SIGROK_GTK_GTKCELLRENDERERSIGNAL_H, SIGROK_QT_MAINWINDOW_H
+
 
 Release engineering
 -------------------

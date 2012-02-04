@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef DECODERSFORM_H
-#define DECODERSFORM_H
+#ifndef SIGROK_QT_DECODERSFORM_H
+#define SIGROK_QT_DECODERSFORM_H
 
 #include <QDialog>
 #include <QListWidgetItem>

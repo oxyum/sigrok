@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SIGROK_GTK_H
-#define __SIGROK_GTK_H
+#ifndef SIGROK_GTK_SIGROK_GTK_H
+#define SIGROK_GTK_SIGROK_GTK_H
 
 #include <gtk/gtk.h>
 

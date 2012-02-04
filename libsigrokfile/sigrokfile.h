@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef SIGROKFILE_SIGROKFILE_H
-#define SIGROKFILE_SIGROKFILE_H
+#ifndef LIBSIGROKFILE_SIGROKFILE_H
+#define LIBSIGROKFILE_SIGROKFILE_H
 
 #ifdef __cplusplus
 extern "C" {

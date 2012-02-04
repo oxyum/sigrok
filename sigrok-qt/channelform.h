@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef SIGROK_CHANNELFORM_H
-#define SIGROK_CHANNELFORM_H
+#ifndef SIGROK_QT_CHANNELFORM_H
+#define SIGROK_QT_CHANNELFORM_H
 
 #include <QtGui/QWidget>
 #include <QPainter>
