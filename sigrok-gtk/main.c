@@ -84,8 +84,6 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 		sample_size = logic->unitsize;
 		g_message("fe: received SR_DF_LOGIC, %"PRIu64" bytes", logic->length);
 		break;
-	case SR_DF_ANALOG:
-		break;
 	}
 
 	if (!logic)
