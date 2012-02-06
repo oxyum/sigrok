@@ -1,4 +1,5 @@
 sigrok-qt
+sigrok-qt-installer*.exe
 moc_*
 ui_*
 qrc_*
@@ -7,3 +8,5 @@ qrc_*
 Makefile.Debug
 Makefile.Release
 sigrok-qt.pro.user
+object_script.sigrok-qt.*
+release/

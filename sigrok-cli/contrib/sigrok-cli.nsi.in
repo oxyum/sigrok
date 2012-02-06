@@ -1,7 +1,7 @@
 ##
 ## This file is part of the sigrok project.
 ##
-## Copyright (C) 2011 Uwe Hermann <uwe@hermann-uwe.de>
+## Copyright (C) 2011-2012 Uwe Hermann <uwe@hermann-uwe.de>
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 ##
 
 #
-# This file is used to create the official sigrok Windows installer via NSIS.
-# Read the HACKING file in the sigrok source tree for details.
+# This file is used to create the sigrok-cli Windows installer via NSIS.
 #
 # NSIS documentation:
 # http://nsis.sourceforge.net/Docs/
@@ -34,13 +33,13 @@
 # --- Global stuff ------------------------------------------------------------
 
 # Installer/product name.
-Name "sigrok"
+Name "@PACKAGE_NAME@"
 
 # Filename of the installer executable.
-OutFile "sigrok-installer-2012xxyy.exe"
+OutFile "@PACKAGE_NAME@-installer-@PACKAGE_VERSION@.exe"
 
 # Where to install the application.
-InstallDir "$PROGRAMFILES\sigrok"
+InstallDir "$PROGRAMFILES\sigrok\@PACKAGE_NAME@"
 
 # Request application privileges for Windows Vista.
 RequestExecutionLevel user
@@ -49,7 +48,7 @@ RequestExecutionLevel user
 # --- MUI interface configuration ---------------------------------------------
 
 # Use the following icon for the installer EXE file.
-!define MUI_ICON "..\..\sigrok-qt\icons\sigrok-logo-notext.ico"
+!define MUI_ICON "sigrok-logo-notext.ico"
 
 # Show a nice image at the top of each installer page.
 !define MUI_HEADERIMAGE
@@ -77,8 +76,8 @@ RequestExecutionLevel user
 # Show a nice "Welcome to the ... Setup Wizard" page.
 !insertmacro MUI_PAGE_WELCOME
 
-# Show the license text which the user has to accept.
-!insertmacro MUI_PAGE_LICENSE "..\..\libsigrok\COPYING"
+# Show the license of the project.
+!insertmacro MUI_PAGE_LICENSE "..\COPYING"
 
 # Show a screen which allows the user to select which components to install.
 !insertmacro MUI_PAGE_COMPONENTS
@@ -107,7 +106,7 @@ RequestExecutionLevel user
 
 # --- Default section ---------------------------------------------------------
 
-Section "sigrok (required)" Section1
+Section "@PACKAGE_NAME@ (required)" Section1
 
 	# This section is gray (can't be disabled) in the component list.
 	SectionIn RO
@@ -116,20 +115,14 @@ Section "sigrok (required)" Section1
 	SetOutPath "$INSTDIR"
 
 	# License file
-	File "..\..\libsigrok\COPYING"
+	File "..\COPYING"
 
 	# sigrok libs
 	File "c:\MinGW\msys\1.0\local\lib\libsigrok.a"
 	File "c:\MinGW\msys\1.0\local\lib\libsigrokdecode.a"
 
 	# sigrok-cli
-	File "c:\MinGW\msys\1.0\local\bin\sigrok-cli.exe"
-
-	# sigrok-qt
-	File "c:\MinGW\msys\1.0\local\bin\sigrok-qt.exe"
-
-	# sigrok-gtk
-	File "c:\MinGW\msys\1.0\local\bin\sigrok-gtk.exe"
+	File "c:\MinGW\msys\1.0\local\bin\@PACKAGE_NAME@.exe"
 
 	# MinGW libs
 	File "c:\MinGW\bin\mingwm10.dll"
@@ -147,28 +140,6 @@ Section "sigrok (required)" Section1
 	File "c:\MinGW\msys\1.0\local\bin\libusb0.dll"
 	File "c:\MinGW\msys\1.0\local\bin\libftdi.dll"
 
-	# Qt libs
-	File "c:\QtSDK\Desktop\Qt\4.7.4\mingw\bin\QtCore4.dll"
-	File "c:\QtSDK\Desktop\Qt\4.7.4\mingw\bin\QtGui4.dll"
-
-	# GTK+ libs
-	File "c:\MinGW\msys\1.0\local\bin\freetype6.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libatk-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libcairo-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libfontconfig-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libgdk_pixbuf-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libgdk-win32-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libgio-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libgmodule-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libgobject-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libgtk-win32-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libpango-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libpangocairo-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libpangoft2-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libpangowin32-*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libpng*.dll"
-	File "c:\MinGW\msys\1.0\local\bin\libexpat-*.dll"
-
 	# Install the file(s) specified below into the specified directory.
 	SetOutPath "$INSTDIR\decoders"
 
@@ -181,23 +152,14 @@ Section "sigrok (required)" Section1
 
 	# Create a sub-directory in the start menu.
 	CreateDirectory "$SMPROGRAMS\sigrok"
+	CreateDirectory "$SMPROGRAMS\sigrok\@PACKAGE_NAME@"
 
-	# Create a shortcut for the Qt GUI application.
-	CreateShortCut "$SMPROGRAMS\sigrok\sigrok Qt GUI.lnk" \
-		"$INSTDIR\sigrok-qt.exe" "" "$INSTDIR\sigrok-qt.exe" \
-		0 SW_SHOWNORMAL \
-		"" "Open-source, portable logic analyzer software"
-
-	# Create a shortcut for the GTK+ GUI application.
-	CreateShortCut "$SMPROGRAMS\sigrok\sigrok GTK+ GUI.lnk" \
-		"$INSTDIR\sigrok-gtk.exe" "" "$INSTDIR\sigrok-gtk.exe" \
-		0 SW_SHOWNORMAL \
-		"" "Open-source, portable logic analyzer software"
+	# TODO: Create a shortcut for sigrok-cli (DOS box? README only?).
 
 	# Create a shortcut for the uninstaller.
-	CreateShortCut "$SMPROGRAMS\sigrok\Uninstall.lnk" \
+	CreateShortCut "$SMPROGRAMS\sigrok\@PACKAGE_NAME@\Uninstall.lnk" \
 		"$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0 \
-		SW_SHOWNORMAL "" "Uninstall sigrok"
+		SW_SHOWNORMAL "" "Uninstall @PACKAGE_NAME@"
 
 SectionEnd
 
@@ -230,9 +192,7 @@ Section "Uninstall"
 	Delete "$INSTDIR\COPYING"
 	Delete "$INSTDIR\libsigrok.a"
 	Delete "$INSTDIR\libsigrokdecode.a"
-	Delete "$INSTDIR\sigrok-cli.exe"
-	Delete "$INSTDIR\sigrok-qt.exe"
-	Delete "$INSTDIR\sigrok-gtk.exe"
+	Delete "$INSTDIR\@PACKAGE_NAME@.exe"
 	Delete "$INSTDIR\mingwm10.dll"
 	Delete "$INSTDIR\libgcc_s_dw2-1.dll"
 	Delete "$INSTDIR\intl.dll"
@@ -245,24 +205,6 @@ Section "Uninstall"
 	Delete "$INSTDIR\libzip-2.dll"
 	Delete "$INSTDIR\libusb0.dll"
 	Delete "$INSTDIR\libftdi.dll"
-	Delete "$INSTDIR\QtCore4.dll"
-	Delete "$INSTDIR\QtGui4.dll"
-	Delete "$INSTDIR\freetype6.dll"
-	Delete "$INSTDIR\libatk-*.dll"
-	Delete "$INSTDIR\libcairo-*.dll"
-	Delete "$INSTDIR\libfontconfig-*.dll"
-	Delete "$INSTDIR\libgdk_pixbuf-*.dll"
-	Delete "$INSTDIR\libgdk-win32-*.dll"
-	Delete "$INSTDIR\libgio-*.dll"
-	Delete "$INSTDIR\libgmodule-*.dll"
-	Delete "$INSTDIR\libgobject-*.dll"
-	Delete "$INSTDIR\libgtk-win32-*.dll"
-	Delete "$INSTDIR\libpango-*.dll"
-	Delete "$INSTDIR\libpangocairo-*.dll"
-	Delete "$INSTDIR\libpangoft2-*.dll"
-	Delete "$INSTDIR\libpangowin32-*.dll"
-	Delete "$INSTDIR\libpng*.dll"
-	Delete "$INSTDIR\libexpat-*.dll"
 
 	# Delete all decoders and everything else in decoders/.
 	# There could be *.pyc files or __pycache__ subdirs and so on.
@@ -273,11 +215,10 @@ Section "Uninstall"
 	RMDir "$INSTDIR"
 
 	# Delete the links from the start menu.
-	Delete "$SMPROGRAMS\sigrok\sigrok Qt GUI.lnk"
-	Delete "$SMPROGRAMS\sigrok\sigrok GTK+ GUI.lnk"
-	Delete "$SMPROGRAMS\sigrok\Uninstall.lnk"
+	Delete "$SMPROGRAMS\sigrok\@PACKAGE_NAME@\Uninstall.lnk"
 
 	# Delete the sub-directory in the start menu.
+	RMDir "$SMPROGRAMS\sigrok\@PACKAGE_NAME@"
 	RMDir "$SMPROGRAMS\sigrok"
 
 SectionEnd
@@ -285,7 +226,7 @@ SectionEnd
 
 # --- Component selection section descriptions --------------------------------
 
-LangString DESC_Section1 ${LANG_ENGLISH} "This installs the sigrok command-line tool, the protocol decoders, required libraries, the Qt GUI, and the GTK+ GUI."
+LangString DESC_Section1 ${LANG_ENGLISH} "This installs the sigrok command-line tool, the protocol decoders, and all required libraries."
 LangString DESC_Section2 ${LANG_ENGLISH} "This installs Python 3.2 in its default location of c:\Python32. If you already have Python 3.2 installed, you don't need to re-install it."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN

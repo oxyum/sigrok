@@ -81,6 +81,8 @@ AC_TYPE_SIZE_T
 AC_CHECK_FUNCS([memset strtoull])
 
 AC_CONFIG_FILES([Makefile
+		 contrib/Makefile
+		 contrib/sigrok-gtk.nsi
 		 doc/Makefile
 		])
 
