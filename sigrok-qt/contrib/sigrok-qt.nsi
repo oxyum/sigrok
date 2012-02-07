@@ -49,7 +49,7 @@ RequestExecutionLevel admin
 # --- MUI interface configuration ---------------------------------------------
 
 # Use the following icon for the installer EXE file.
-!define MUI_ICON "sigrok-logo-notext.ico"
+!define MUI_ICON "..\icons\sigrok-logo-notext.ico"
 
 # Show a nice image at the top of each installer page.
 !define MUI_HEADERIMAGE
