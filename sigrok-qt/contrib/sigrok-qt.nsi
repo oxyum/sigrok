@@ -41,8 +41,9 @@ OutFile "sigrok-qt-installer-0.1.exe"
 # Where to install the application.
 InstallDir "$PROGRAMFILES\sigrok\sigrok-qt"
 
-# Request application privileges for Windows Vista.
-RequestExecutionLevel user
+# Request admin privileges for Windows Vista and Windows 7.
+# http://nsis.sourceforge.net/Docs/Chapter4.html
+RequestExecutionLevel admin
 
 
 # --- MUI interface configuration ---------------------------------------------
