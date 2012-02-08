@@ -51,6 +51,19 @@ Random notes
    Examples: LIBSIGROK_SIGROK_H, LIBSIGROK_HARDWARE_ASIX_SIGMA_ASIX_SIGMA_H,
              SIGROK_GTK_GTKCELLRENDERERSIGNAL_H, SIGROK_QT_MAINWINDOW_H
 
+ - Consistently use the same naming convention for API functions:
+   <libprefix>_<groupname>_<action>().
+
+   Examples:
+     srd_log_loglevel_set(), srd_log_loglevel_get(), srd_log_handler_set(),
+     srd_log_handler_set_default(), and so on.
+   Or:
+     sr_session_new(), sr_session_destroy(), sr_session_load(), and so on.
+
+   Getter/setter function names should usually end with "_get" or "_set".
+   Functions creating new "objects" should end with "_new".
+   Functions destroying "objects" should end with "_destroy".
+
 
 Release engineering
 -------------------
