@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(GTK_WIDGET(window));
 
-	sr_log_loglevel_set(1);
+	sr_log_loglevel_set(SR_LOG_ERR);
 
 	gtk_main();
 

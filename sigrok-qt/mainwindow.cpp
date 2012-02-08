@@ -830,8 +830,8 @@ void MainWindow::on_actionQUICK_HACK_PD_TEST_triggered()
 	int ret = file.open(QIODevice::ReadOnly);
 	ret = file.read((char *)buf, N);
 
-	// sr_log_loglevel_set(0);
-	// srd_log_loglevel_set(0);
+	// sr_log_loglevel_set(SR_LOG_NONE);
+	// srd_log_loglevel_set(SRD_LOG_NONE);
 
 	if (!(di = srd_instance_new("i2c", pd_opthash))) {
 		ui->plainTextEdit->appendPlainText("ERROR: srd_instance_new");
