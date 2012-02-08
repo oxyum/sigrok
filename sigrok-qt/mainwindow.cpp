@@ -63,7 +63,7 @@ static int logger(void *data, int loglevel, const char *format, va_list args)
 {
 	QString s;
 
-	if (loglevel > srd_get_loglevel())
+	if (loglevel > srd_log_loglevel_get())
 		return SRD_OK;
 
 	s.vsprintf(format, args);
@@ -89,13 +89,13 @@ MainWindow::MainWindow(QWidget *parent)
 	/* FIXME */
 	QMainWindow::setCentralWidget(ui->mainWidget);
 
-	srd_set_loglevel(SRD_LOG_SPEW);
+	srd_log_loglevel_set(SRD_LOG_SPEW);
 
-	if (srd_log_set_handler(logger, (void *)this) != SRD_OK) {
-		qDebug() << "ERROR: srd_log_set_handler() failed.";
+	if (srd_log_handler_set(logger, (void *)this) != SRD_OK) {
+		qDebug() << "ERROR: srd_log_handler_set() failed.";
 		return; /* TODO? */
 	}
-	qDebug() << "srd_log_set_handler() call successful.";
+	qDebug() << "srd_log_handler_set() call successful.";
 
 	// this->setDockOptions(QMainWindow::AllowNestedDocks);
 }
@@ -831,7 +831,7 @@ void MainWindow::on_actionQUICK_HACK_PD_TEST_triggered()
 	ret = file.read((char *)buf, N);
 
 	// sr_set_loglevel(0);
-	// srd_set_loglevel(0);
+	// srd_log_loglevel_set(0);
 
 	if (!(di = srd_instance_new("i2c", pd_opthash))) {
 		ui->plainTextEdit->appendPlainText("ERROR: srd_instance_new");
