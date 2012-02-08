@@ -830,7 +830,7 @@ void MainWindow::on_actionQUICK_HACK_PD_TEST_triggered()
 	int ret = file.open(QIODevice::ReadOnly);
 	ret = file.read((char *)buf, N);
 
-	// sr_set_loglevel(0);
+	// sr_log_loglevel_set(0);
 	// srd_log_loglevel_set(0);
 
 	if (!(di = srd_instance_new("i2c", pd_opthash))) {
