@@ -59,7 +59,7 @@ QProgressDialog *progress = NULL;
 
 /* TODO: Documentation. */
 extern "C" {
-static int logger(void *data, int loglevel, const char *format, va_list args)
+static int logger(void *user_data, int loglevel, const char *format, va_list args)
 {
 	QString s;
 
@@ -68,7 +68,7 @@ static int logger(void *data, int loglevel, const char *format, va_list args)
 
 	s.vsprintf(format, args);
 
-	MainWindow *mw = (MainWindow *)data;
+	MainWindow *mw = (MainWindow *)user_data;
 	mw->ui->plainTextEdit->appendPlainText(QString("srd: ").append(s));
 
 	return SRD_OK;
@@ -795,13 +795,13 @@ void MainWindow::on_actionProtocol_decoder_stacks_triggered()
 	form->show();
 }
 
-extern "C" void show_pd_annotation(struct srd_proto_data *pdata, void *data)
+extern "C" void show_pd_annotation(struct srd_proto_data *pdata, void *user_data)
 {
 	char **annotations;
 
 	annotations = (char **)pdata->data;
 
-	MainWindow *mw = (MainWindow *)data;
+	MainWindow *mw = (MainWindow *)user_data;
 
 	mw->ui->plainTextEdit->appendPlainText(
 		QString("%1-%2: %3: %4").arg(pdata->start_sample)
