@@ -811,7 +811,7 @@ void MainWindow::on_actionQUICK_HACK_PD_TEST_triggered()
 {
 #define N 500000
 
-	struct srd_decoder_instance *di;
+	struct srd_decoder_inst *di;
 	GHashTable *pd_opthash;
 	uint8_t *buf = (uint8_t *)malloc(N + 1);
 
@@ -833,12 +833,12 @@ void MainWindow::on_actionQUICK_HACK_PD_TEST_triggered()
 	// sr_log_loglevel_set(SR_LOG_NONE);
 	// srd_log_loglevel_set(SRD_LOG_NONE);
 
-	if (!(di = srd_instance_new("i2c", pd_opthash))) {
+	if (!(di = srd_inst_new("i2c", pd_opthash))) {
 		ui->plainTextEdit->appendPlainText("ERROR: srd_instance_new");
 		return;
 	}
 
-	if (srd_instance_set_probes(di, pd_opthash) != SRD_OK) {
+	if (srd_inst_set_probes(di, pd_opthash) != SRD_OK) {
 		ui->plainTextEdit->appendPlainText("ERROR: srd_instance_set_probes");
 		return;
 	}
