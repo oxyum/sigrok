@@ -795,13 +795,15 @@ void MainWindow::on_actionProtocol_decoder_stacks_triggered()
 	form->show();
 }
 
-extern "C" void show_pd_annotation(struct srd_proto_data *pdata)
+extern "C" void show_pd_annotation(struct srd_proto_data *pdata, void *data)
 {
 	char **annotations;
 
 	annotations = (char **)pdata->data;
 
-	w->ui->plainTextEdit->appendPlainText(
+	MainWindow *mw = (MainWindow *)data;
+
+	mw->ui->plainTextEdit->appendPlainText(
 		QString("%1-%2: %3: %4").arg(pdata->start_sample)
 			.arg(pdata->end_sample).arg(pdata->pdo->proto_id)
 			.arg((char *)annotations[0]));
@@ -843,7 +845,8 @@ void MainWindow::on_actionQUICK_HACK_PD_TEST_triggered()
 		return;
 	}
 
-	if (srd_register_callback(SRD_OUTPUT_ANN, (srd_pd_output_callback_t)show_pd_annotation) != SRD_OK) {
+	if (srd_register_callback(SRD_OUTPUT_ANN,
+	    (srd_pd_output_callback_t)show_pd_annotation, (void *)this) != SRD_OK) {
 		ui->plainTextEdit->appendPlainText("ERROR: srd_register_callback");
 		return;
 	}
