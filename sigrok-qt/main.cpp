@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	}
 	qDebug() << "libsigrok initialized successfully.";
 
-	if (srd_init() != SRD_OK) {
+	if (srd_init(NULL) != SRD_OK) {
 		qDebug() << "ERROR: libsigrokdecode init failed.";
 		return 1;
 	}
