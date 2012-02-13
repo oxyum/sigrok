@@ -219,7 +219,7 @@ void MainWindow::on_actionAbout_triggered()
 		.arg(QApplication::organizationDomain());
 
 	s.append("<b>" + tr("Supported hardware drivers:") + "</b><table>");
-	for (l = sr_list_hwplugins(); l; l = l->next) {
+	for (l = sr_hwplugins_list(); l; l = l->next) {
 		plugin = (struct sr_device_plugin *)l->data;
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			 .arg(QString(plugin->name))
