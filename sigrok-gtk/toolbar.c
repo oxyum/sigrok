@@ -355,7 +355,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 
 	if (time_msec) {
 		int *capabilities = device->plugin->get_capabilities();
-		if (sr_find_hwcap(capabilities, SR_HWCAP_LIMIT_MSEC)) {
+		if (sr_has_hwcap(capabilities, SR_HWCAP_LIMIT_MSEC)) {
 			if (device->plugin->set_configuration(device->plugin_index,
 							SR_HWCAP_LIMIT_MSEC,
 							&time_msec) != SR_OK) {
