@@ -214,7 +214,7 @@ static void probe_toggled(GtkCellRenderer *cel, gchar *path,
 	gtk_tree_model_get_iter_from_string(probes, &iter, path);
 	gtk_tree_model_get(probes, &iter, PROBE_NUMBER, &i, 
 					PROBE_ENABLED, &en, -1);
-	probe = sr_device_probe_find(device, i);
+	probe = sr_dev_probe_find(device, i);
 	probe->enabled = !en;
 	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, 
 					PROBE_ENABLED, probe->enabled, -1);
@@ -231,7 +231,7 @@ static void probe_named(GtkCellRendererText *cel, gchar *path, gchar *text,
 
 	gtk_tree_model_get_iter_from_string(probes, &iter, path);
 	gtk_tree_model_get(probes, &iter, PROBE_NUMBER, &i, -1);
-	sr_device_probe_name(device, i, text);
+	sr_dev_probe_name(device, i, text);
 	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, PROBE_NAME, text, -1);
 }
 
@@ -246,7 +246,7 @@ static void probe_trigger_set(GtkCellRendererText *cel, gchar *path,
 
 	gtk_tree_model_get_iter_from_string(probes, &iter, path);
 	gtk_tree_model_get(probes, &iter, PROBE_NUMBER, &i, -1);
-	sr_device_trigger_set(device, i, text);
+	sr_dev_trigger_set(device, i, text);
 	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, 
 					PROBE_TRIGGER, text, -1);
 }
@@ -368,7 +368,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 			 * convert to samples based on the samplerate.
 			 */
 			limit_samples = 0;
-			if (sr_device_has_hwcap(device, SR_HWCAP_SAMPLERATE)) {
+			if (sr_dev_has_hwcap(device, SR_HWCAP_SAMPLERATE)) {
 				guint64 tmp_u64;
 				tmp_u64 = *((uint64_t *) device->plugin->get_device_info(
 							device->plugin_index,

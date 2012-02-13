@@ -107,8 +107,8 @@ void dev_select_rescan(GtkAction *action, GtkWindow *parent)
 
 	/* Scan for new devices and update our list */
 	/* TODO: Fix this in libsigrok first. */
-	/*sr_device_scan();*/
-	devices = sr_device_list();
+	/*sr_dev_scan();*/
+	devices = sr_dev_list();
 	for (l = devices; l; l = l->next) {
 		device = l->data;
 		sdi = GET_DEVICE_INSTANCE(device);

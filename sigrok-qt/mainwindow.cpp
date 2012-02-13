@@ -280,8 +280,8 @@ void MainWindow::on_actionScan_triggered()
 
 	statusBar()->showMessage(tr("Scanning for logic analyzers..."), 2000);
 
-	sr_device_scan();
-	devices = sr_device_list();
+	sr_dev_scan();
+	devices = sr_dev_list();
 	num_devices = g_slist_length(devices);
 
 	ui->comboBoxLA->clear();
@@ -595,7 +595,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	sr_session_new();
 	sr_session_datafeed_callback_add(datafeed_in);
 
-	devices = sr_device_list();
+	devices = sr_dev_list();
 
 	device = (struct sr_device *)g_slist_nth_data(devices, opt_device);
 
