@@ -143,7 +143,7 @@ static void dev_set_options(GtkAction *action, GtkWindow *parent)
 	GtkTreeIter iter;
 	for (cap = 0; capabilities[cap]; cap++) {
 		struct sr_hwcap_option *hwo;
-		if (!(hwo = sr_find_hwcap_option(capabilities[cap])))
+		if (!(hwo = sr_hwplugins_hwcap_get(capabilities[cap])))
 			continue;
 		gtk_list_store_append(props, &iter);
 		gtk_list_store_set(props, &iter, 
@@ -354,8 +354,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 	}
 
 	if (time_msec) {
-		int *capabilities = device->plugin->get_capabilities();
-		if (sr_has_hwcap(capabilities, SR_HWCAP_LIMIT_MSEC)) {
+		if (sr_hwplugin_has_hwcap(device->plugin, SR_HWCAP_LIMIT_MSEC)) {
 			if (device->plugin->set_configuration(device->plugin_index,
 							SR_HWCAP_LIMIT_MSEC,
 							&time_msec) != SR_OK) {
