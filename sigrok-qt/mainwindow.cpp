@@ -246,7 +246,7 @@ void MainWindow::on_actionAbout_triggered()
 	s.append("</table><p>");
 
 	s.append("<b>" + tr("Supported protocol decoders:") + "</b><table>");
-	for (l = srd_list_decoders(); l; l = l->next) {
+	for (l = srd_decoders_list(); l; l = l->next) {
 		dec = (struct srd_decoder *)l->data;
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			 .arg(QString(dec->id))
@@ -840,7 +840,7 @@ void MainWindow::on_actionQUICK_HACK_PD_TEST_triggered()
 		return;
 	}
 
-	if (srd_inst_set_probes(di, pd_opthash) != SRD_OK) {
+	if (srd_inst_probes_set(di, pd_opthash) != SRD_OK) {
 		ui->plainTextEdit->appendPlainText("ERROR: srd_instance_set_probes");
 		return;
 	}
