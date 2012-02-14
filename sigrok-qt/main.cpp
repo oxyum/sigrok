@@ -67,5 +67,10 @@ int main(int argc, char *argv[])
 	w = new MainWindow;
 	w->show();
 
+	/* The GUI wants to show a list of all PDs before use, so we
+	 * might as well load them now.
+	 */
+	srd_load_all_decoders();
+
 	return a.exec();
 }
