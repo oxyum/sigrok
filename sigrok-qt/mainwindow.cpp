@@ -207,7 +207,7 @@ int MainWindow::getNumChannels(void)
 void MainWindow::on_actionAbout_triggered()
 {
 	GSList *l;
-	struct sr_device_plugin *plugin;
+	struct sr_dev_plugin *plugin;
 	struct sr_input_format **inputs;
 	struct sr_output_format **outputs;
 	struct srd_decoder *dec;
@@ -220,7 +220,7 @@ void MainWindow::on_actionAbout_triggered()
 
 	s.append("<b>" + tr("Supported hardware drivers:") + "</b><table>");
 	for (l = sr_hw_list(); l; l = l->next) {
-		plugin = (struct sr_device_plugin *)l->data;
+		plugin = (struct sr_dev_plugin *)l->data;
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			 .arg(QString(plugin->name))
 			 .arg(QString(plugin->longname)));
@@ -271,9 +271,9 @@ void MainWindow::on_actionPreferences_triggered()
 void MainWindow::on_actionScan_triggered()
 {
 	QString s;
-	GSList *devices = NULL;
-	int num_devices, pos;
-	struct sr_device *device;
+	GSList *devs = NULL;
+	int num_devs, pos;
+	struct sr_dev *dev;
 	char *di_num_probes, *str;
 	struct sr_samplerates *samplerates;
 	const static float mult[] = { 2.f, 2.5f, 2.f };
@@ -281,42 +281,42 @@ void MainWindow::on_actionScan_triggered()
 	statusBar()->showMessage(tr("Scanning for logic analyzers..."), 2000);
 
 	sr_dev_scan();
-	devices = sr_dev_list();
-	num_devices = g_slist_length(devices);
+	devs = sr_dev_list();
+	num_devs = g_slist_length(devs);
 
 	ui->comboBoxLA->clear();
-	for (int i = 0; i < num_devices; ++i) {
-		device = (struct sr_device *)g_slist_nth_data(devices, i);
-		ui->comboBoxLA->addItem(device->plugin->name); /* TODO: Full name */
+	for (int i = 0; i < num_devs; ++i) {
+		dev = (struct sr_dev *)g_slist_nth_data(devs, i);
+		ui->comboBoxLA->addItem(dev->plugin->name); /* TODO: Full name */
 	}
 
-	if (num_devices == 0) {
+	if (num_devs == 0) {
 		s = tr("No supported logic analyzer found.");
 		statusBar()->showMessage(s, 2000);
 		return;
-	} else if (num_devices == 1) {
+	} else if (num_devs == 1) {
 		s = tr("Found supported logic analyzer: ");
-		s.append(device->plugin->name);
+		s.append(dev->plugin->name);
 		statusBar()->showMessage(s, 2000);
 	} else {
 		/* TODO: Allow user to select one of the devices. */
 		s = tr("Found multiple logic analyzers: ");
-		for (int i = 0; i < num_devices; ++i) {
-			device = (struct sr_device *)g_slist_nth_data(devices, i);
-			s.append(device->plugin->name);
-			if (i != num_devices - 1)
+		for (int i = 0; i < num_devs; ++i) {
+			dev = (struct sr_dev *)g_slist_nth_data(devs, i);
+			s.append(dev->plugin->name);
+			if (i != num_devs - 1)
 				s.append(", ");
 		}
 		statusBar()->showMessage(s, 2000);
 		return;
 	}
 
-	device = (struct sr_device *)g_slist_nth_data(devices, 0 /* opt_device */);
+	dev = (struct sr_dev *)g_slist_nth_data(devs, 0 /* opt_dev */);
 
 	setCurrentLA(0 /* TODO */);
 
-	di_num_probes = (char *)device->plugin->get_device_info(
-			device->plugin_index, SR_DI_NUM_PROBES);
+	di_num_probes = (char *)dev->plugin->get_dev_info(
+			dev->plugin_index, SR_DI_NUM_PROBES);
 	if (di_num_probes != NULL) {
 		setNumChannels(GPOINTER_TO_INT(di_num_probes));
 	} else {
@@ -324,13 +324,13 @@ void MainWindow::on_actionScan_triggered()
 	}
 
 	ui->comboBoxLA->clear();
-	ui->comboBoxLA->addItem(device->plugin->name); /* TODO: Full name */
+	ui->comboBoxLA->addItem(dev->plugin->name); /* TODO: Full name */
 
 	s = QString(tr("Channels: %1")).arg(getNumChannels());
 	ui->labelChannels->setText(s);
 
-	samplerates = (struct sr_samplerates *)device->plugin->get_device_info(
-		      device->plugin_index, SR_DI_SAMPLERATES);
+	samplerates = (struct sr_samplerates *)dev->plugin->get_dev_info(
+		      dev->plugin_index, SR_DI_SAMPLERATES);
 	if (!samplerates) {
 		/* TODO: Error handling. */
 	}
@@ -470,7 +470,7 @@ void MainWindow::on_action_Save_as_triggered()
 	file.close();
 }
 
-void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
+void datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 {
 	static int num_probes = 0;
 	static int probelist[65] = {0};
@@ -500,7 +500,7 @@ void datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 		num_probes = header->num_logic_probes;
 		num_enabled_probes = 0;
 		for (int i = 0; i < header->num_logic_probes; ++i) {
-			probe = (struct sr_probe *)g_slist_nth_data(device->probes, i);
+			probe = (struct sr_probe *)g_slist_nth_data(dev->probes, i);
 			if (probe->enabled)
 				probelist[num_enabled_probes++] = probe->index;
 		}
@@ -563,12 +563,12 @@ void MainWindow::on_action_Get_samples_triggered()
 {
 	uint64_t samplerate;
 	QString s;
-	GSList *devices = NULL;
-	int opt_device;
-	struct sr_device *device;
+	GSList *devs = NULL;
+	int opt_dev;
+	struct sr_dev *dev;
 	QComboBox *n = ui->comboBoxNumSamples;
 
-	opt_device = 0; /* FIXME */
+	opt_dev = 0; /* FIXME */
 
 	/*
 	 * The number of samples to get is a drop-down list, but you can also
@@ -595,34 +595,34 @@ void MainWindow::on_action_Get_samples_triggered()
 	sr_session_new();
 	sr_session_datafeed_callback_add(datafeed_in);
 
-	devices = sr_dev_list();
+	devs = sr_dev_list();
 
-	device = (struct sr_device *)g_slist_nth_data(devices, opt_device);
+	dev = (struct sr_dev *)g_slist_nth_data(devs, opt_dev);
 
 	/* Set the number of samples we want to get from the device. */
-	if (device->plugin->set_configuration(device->plugin_index,
+	if (dev->plugin->set_configuration(dev->plugin_index,
 	    SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
 		qDebug("Failed to set sample limit.");
 		sr_session_destroy();
 		return;
 	}
 
-	if (sr_session_device_add(device) != SR_OK) {
+	if (sr_session_dev_add(dev) != SR_OK) {
 		qDebug("Failed to use device.");
 		sr_session_destroy();
 		return;
 	}
 
 	/* Set the samplerate. */
-	if (device->plugin->set_configuration(device->plugin_index,
+	if (dev->plugin->set_configuration(dev->plugin_index,
 	    SR_HWCAP_SAMPLERATE, &samplerate) != SR_OK) {
 		qDebug("Failed to set samplerate.");
 		sr_session_destroy();
 		return;
 	};
 
-	if (device->plugin->set_configuration(device->plugin_index,
-	    SR_HWCAP_PROBECONFIG, (char *)device->probes) != SR_OK) {
+	if (dev->plugin->set_configuration(dev->plugin_index,
+	    SR_HWCAP_PROBECONFIG, (char *)dev->probes) != SR_OK) {
 		qDebug("Failed to configure probes.");
 		sr_session_destroy();
 		return;
@@ -836,12 +836,12 @@ void MainWindow::on_actionQUICK_HACK_PD_TEST_triggered()
 	// srd_log_loglevel_set(SRD_LOG_NONE);
 
 	if (!(di = srd_inst_new("i2c", pd_opthash))) {
-		ui->plainTextEdit->appendPlainText("ERROR: srd_instance_new");
+		ui->plainTextEdit->appendPlainText("ERROR: srd_inst_new");
 		return;
 	}
 
 	if (srd_inst_probes_set(di, pd_opthash) != SRD_OK) {
-		ui->plainTextEdit->appendPlainText("ERROR: srd_instance_set_probes");
+		ui->plainTextEdit->appendPlainText("ERROR: srd_inst_set_probes");
 		return;
 	}
 

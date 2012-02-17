@@ -43,7 +43,7 @@ static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 {
 	(void)cel;
 
-	struct sr_device *device = g_object_get_data(G_OBJECT(props), "device");
+	struct sr_dev *dev = g_object_get_data(G_OBJECT(props), "dev");
 	GtkTreeIter iter;
 	int type, cap;
 	guint64 tmp_u64;
@@ -59,11 +59,11 @@ static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 		if (sr_parse_sizestring(text, &tmp_u64) != SR_OK)
 			return;
 
-		ret = device->plugin->set_configuration(device->plugin_index,
+		ret = dev->plugin->set_configuration(dev->plugin_index,
 				cap, &tmp_u64);
 		break;
 	case SR_T_CHAR:
-		ret = device->plugin-> set_configuration(device->plugin_index,
+		ret = dev->plugin->set_configuration(dev->plugin_index,
 				cap, text);
 		break;
 	/* SR_T_BOOL will be handled by prop_toggled */
@@ -76,7 +76,7 @@ static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 static void prop_toggled(GtkCellRendererToggle *cel, gchar *path,
 			GtkListStore *props)
 {
-	struct sr_device *device = g_object_get_data(G_OBJECT(props), "device");
+	struct sr_dev *dev = g_object_get_data(G_OBJECT(props), "dev");
 	GtkTreeIter iter;
 	int type, cap;
 	int ret;
@@ -87,7 +87,7 @@ static void prop_toggled(GtkCellRendererToggle *cel, gchar *path,
 					DEV_PROP_TYPE, &type, -1);
 
 	val = !gtk_cell_renderer_toggle_get_active(cel);
-	ret = device->plugin-> set_configuration(device->plugin_index, cap, 
+	ret = dev->plugin->set_configuration(dev->plugin_index, cap, 
 					GINT_TO_POINTER(val));
 
 	if (!ret)
@@ -114,8 +114,8 @@ static void dev_set_options(GtkAction *action, GtkWindow *parent)
 {
 	(void)action;
 
-	struct sr_device *device = g_object_get_data(G_OBJECT(parent), "device");
-	if (!device)
+	struct sr_dev *dev = g_object_get_data(G_OBJECT(parent), "dev");
+	if (!dev)
 		return;
 
 	GtkWidget *dialog = gtk_dialog_new_with_buttons("Device Properties",
@@ -138,7 +138,7 @@ static void dev_set_options(GtkAction *action, GtkWindow *parent)
 					G_TYPE_BOOLEAN, G_TYPE_STRING,
 					G_TYPE_BOOLEAN);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(tv), GTK_TREE_MODEL(props));
-	int *capabilities = device->plugin->get_capabilities();
+	int *capabilities = dev->plugin->get_capabilities();
 	int cap;
 	GtkTreeIter iter;
 	for (cap = 0; capabilities[cap]; cap++) {
@@ -161,7 +161,7 @@ static void dev_set_options(GtkAction *action, GtkWindow *parent)
 
 	/* Save device with list so that property can be set by edited
 	 * handler. */
-	g_object_set_data(G_OBJECT(props), "device", device);
+	g_object_set_data(G_OBJECT(props), "dev", dev);
 
 	/* Add columns to the tree view */
 	GtkTreeViewColumn *col;
@@ -203,7 +203,7 @@ enum {
 static void probe_toggled(GtkCellRenderer *cel, gchar *path,
 			GtkTreeModel *probes)
 {
-	struct sr_device *device = g_object_get_data(G_OBJECT(probes), "device");
+	struct sr_dev *dev = g_object_get_data(G_OBJECT(probes), "dev");
 	GtkTreeIter iter;
 	struct sr_probe *probe;
 	gint i;
@@ -214,7 +214,7 @@ static void probe_toggled(GtkCellRenderer *cel, gchar *path,
 	gtk_tree_model_get_iter_from_string(probes, &iter, path);
 	gtk_tree_model_get(probes, &iter, PROBE_NUMBER, &i, 
 					PROBE_ENABLED, &en, -1);
-	probe = sr_dev_probe_find(device, i);
+	probe = sr_dev_probe_find(dev, i);
 	probe->enabled = !en;
 	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, 
 					PROBE_ENABLED, probe->enabled, -1);
@@ -223,7 +223,7 @@ static void probe_toggled(GtkCellRenderer *cel, gchar *path,
 static void probe_named(GtkCellRendererText *cel, gchar *path, gchar *text,
 			GtkTreeModel *probes)
 {
-	struct sr_device *device = g_object_get_data(G_OBJECT(probes), "device");
+	struct sr_dev *dev = g_object_get_data(G_OBJECT(probes), "dev");
 	GtkTreeIter iter;
 	gint i;
 
@@ -231,14 +231,14 @@ static void probe_named(GtkCellRendererText *cel, gchar *path, gchar *text,
 
 	gtk_tree_model_get_iter_from_string(probes, &iter, path);
 	gtk_tree_model_get(probes, &iter, PROBE_NUMBER, &i, -1);
-	sr_dev_probe_name(device, i, text);
+	sr_dev_probe_name(dev, i, text);
 	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, PROBE_NAME, text, -1);
 }
 
 static void probe_trigger_set(GtkCellRendererText *cel, gchar *path, 
 			gchar *text, GtkTreeModel *probes)
 {
-	struct sr_device *device = g_object_get_data(G_OBJECT(probes), "device");
+	struct sr_dev *dev = g_object_get_data(G_OBJECT(probes), "dev");
 	GtkTreeIter iter;
 	gint i;
 
@@ -246,7 +246,7 @@ static void probe_trigger_set(GtkCellRendererText *cel, gchar *path,
 
 	gtk_tree_model_get_iter_from_string(probes, &iter, path);
 	gtk_tree_model_get(probes, &iter, PROBE_NUMBER, &i, -1);
-	sr_dev_trigger_set(device, i, text);
+	sr_dev_trigger_set(dev, i, text);
 	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, 
 					PROBE_TRIGGER, text, -1);
 }
@@ -255,8 +255,8 @@ static void dev_set_probes(GtkAction *action, GtkWindow *parent)
 {
 	(void)action;
 
-	struct sr_device *device = g_object_get_data(G_OBJECT(parent), "device");
-	if (!device)
+	struct sr_dev *dev = g_object_get_data(G_OBJECT(parent), "dev");
+	if (!dev)
 		return;
 
 	GtkWidget *dialog = gtk_dialog_new_with_buttons("Configure Probes",
@@ -280,7 +280,7 @@ static void dev_set_probes(GtkAction *action, GtkWindow *parent)
 	GtkTreeIter iter;
 	GSList *p;
 	int i;
-	for (p = device->probes, i = 1; p; p = g_slist_next(p), i++) {
+	for (p = dev->probes, i = 1; p; p = g_slist_next(p), i++) {
 		struct sr_probe *probe = p->data;
 		gtk_list_store_append(probes, &iter);
 		gtk_list_store_set(probes, &iter, PROBE_NUMBER, i,
@@ -292,7 +292,7 @@ static void dev_set_probes(GtkAction *action, GtkWindow *parent)
 
 	/* Save device with list so that property can be set by edited
 	 * handler. */
-	g_object_set_data(G_OBJECT(probes), "device", device);
+	g_object_set_data(G_OBJECT(probes), "dev", dev);
 
 	/* Add columns to the tree view */
 	GtkTreeViewColumn *col;
@@ -332,7 +332,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 {
 	(void)action;
 
-	struct sr_device *device = g_object_get_data(G_OBJECT(parent), "device");
+	struct sr_dev *dev = g_object_get_data(G_OBJECT(parent), "dev");
 	GtkEntry *timesamples = g_object_get_data(parent, "timesamples");
 	GtkComboBox *timeunit = g_object_get_data(parent, "timeunit");
 	gint i = gtk_combo_box_get_active(timeunit);
@@ -354,8 +354,8 @@ static void capture_run(GtkAction *action, GObject *parent)
 	}
 
 	if (time_msec) {
-		if (sr_hw_has_hwcap(device->plugin, SR_HWCAP_LIMIT_MSEC)) {
-			if (device->plugin->set_configuration(device->plugin_index,
+		if (sr_hw_has_hwcap(dev->plugin, SR_HWCAP_LIMIT_MSEC)) {
+			if (dev->plugin->set_configuration(dev->plugin_index,
 							SR_HWCAP_LIMIT_MSEC,
 							&time_msec) != SR_OK) {
 				g_critical("Failed to configure time limit.");
@@ -367,10 +367,10 @@ static void capture_run(GtkAction *action, GObject *parent)
 			 * convert to samples based on the samplerate.
 			 */
 			limit_samples = 0;
-			if (sr_dev_has_hwcap(device, SR_HWCAP_SAMPLERATE)) {
+			if (sr_dev_has_hwcap(dev, SR_HWCAP_SAMPLERATE)) {
 				guint64 tmp_u64;
-				tmp_u64 = *((uint64_t *) device->plugin->get_device_info(
-							device->plugin_index,
+				tmp_u64 = *((uint64_t *)dev->plugin->get_dev_info(
+							dev->plugin_index,
 							SR_DI_CUR_SAMPLERATE));
 				limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
 			}
@@ -379,7 +379,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 				return;
 			}
 
-			if (device->plugin->set_configuration(device->plugin_index,
+			if (dev->plugin->set_configuration(dev->plugin_index,
 						SR_HWCAP_LIMIT_SAMPLES,
 						&limit_samples) != SR_OK) {
 				g_critical("Failed to configure time-based sample limit.");
@@ -388,7 +388,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 		}
 	}
 	if (limit_samples) {
-		if (device->plugin->set_configuration(device->plugin_index,
+		if (dev->plugin->set_configuration(dev->plugin_index,
 						SR_HWCAP_LIMIT_SAMPLES,
 						&limit_samples) != SR_OK) {
 			g_critical("Failed to configure sample limit.");
@@ -396,8 +396,8 @@ static void capture_run(GtkAction *action, GObject *parent)
 		}
 	}
 
-	if (device->plugin->set_configuration(device->plugin_index,
-		  SR_HWCAP_PROBECONFIG, (char *)device->probes) != SR_OK) {
+	if (dev->plugin->set_configuration(dev->plugin_index,
+		  SR_HWCAP_PROBECONFIG, (char *)dev->probes) != SR_OK) {
 		printf("Failed to configure probes.\n");
 		sr_session_destroy();
 		return;

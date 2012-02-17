@@ -34,7 +34,7 @@ static const char *colours[8] = {
 };
 
 static void
-datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
+datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 {
 	static int probelist[65] = { 0 };
 	static int unitsize = 0;
@@ -53,7 +53,7 @@ datafeed_in(struct sr_device *device, struct sr_datafeed_packet *packet)
 		num_enabled_probes = 0;
 		gtk_list_store_clear(siglist);
 		for (i = 0; i < header->num_logic_probes; i++) {
-			probe = g_slist_nth_data(device->probes, i);
+			probe = g_slist_nth_data(dev->probes, i);
 			if (probe->enabled) {
 				GtkTreeIter iter;
 				probelist[num_enabled_probes++] = probe->index;
