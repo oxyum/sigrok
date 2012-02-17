@@ -28,7 +28,7 @@
 #include "sigrok-gtk.h"
 
 enum {
-	DEV_PROP_CAPABILITY,
+	DEV_PROP_HWCAP,
 	DEV_PROP_TYPE,
 	DEV_PROP_SHORTNAME,
 	DEV_PROP_DESCRIPTION,
@@ -51,7 +51,7 @@ static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 
 	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(props), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(props), &iter,
-					DEV_PROP_CAPABILITY, &cap, 
+					DEV_PROP_HWCAP, &cap, 
 					DEV_PROP_TYPE, &type, -1);
 
 	switch (type) {
@@ -83,7 +83,7 @@ static void prop_toggled(GtkCellRendererToggle *cel, gchar *path,
 	gboolean val;
 	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(props), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(props), &iter,
-					DEV_PROP_CAPABILITY, &cap, 
+					DEV_PROP_HWCAP, &cap, 
 					DEV_PROP_TYPE, &type, -1);
 
 	val = !gtk_cell_renderer_toggle_get_active(cel);
@@ -138,16 +138,16 @@ static void dev_set_options(GtkAction *action, GtkWindow *parent)
 					G_TYPE_BOOLEAN, G_TYPE_STRING,
 					G_TYPE_BOOLEAN);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(tv), GTK_TREE_MODEL(props));
-	int *capabilities = dev->plugin->get_capabilities();
+	int *hwcaps = dev->plugin->hwcap_get_all();
 	int cap;
 	GtkTreeIter iter;
-	for (cap = 0; capabilities[cap]; cap++) {
+	for (cap = 0; hwcaps[cap]; cap++) {
 		struct sr_hwcap_option *hwo;
-		if (!(hwo = sr_hw_hwcap_get(capabilities[cap])))
+		if (!(hwo = sr_hw_hwcap_get(hwcaps[cap])))
 			continue;
 		gtk_list_store_append(props, &iter);
 		gtk_list_store_set(props, &iter, 
-					DEV_PROP_CAPABILITY, capabilities[cap],
+					DEV_PROP_HWCAP, hwcaps[cap],
 					DEV_PROP_TYPE, hwo->type,
 					DEV_PROP_SHORTNAME, hwo->shortname,
 					DEV_PROP_DESCRIPTION, hwo->description,
