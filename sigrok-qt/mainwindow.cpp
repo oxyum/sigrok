@@ -600,7 +600,7 @@ void MainWindow::on_action_Get_samples_triggered()
 	dev = (struct sr_dev *)g_slist_nth_data(devs, opt_dev);
 
 	/* Set the number of samples we want to get from the device. */
-	if (dev->plugin->set_configuration(dev->plugin_index,
+	if (dev->plugin->config_set(dev->plugin_index,
 	    SR_HWCAP_LIMIT_SAMPLES, &limit_samples) != SR_OK) {
 		qDebug("Failed to set sample limit.");
 		sr_session_destroy();
@@ -614,14 +614,14 @@ void MainWindow::on_action_Get_samples_triggered()
 	}
 
 	/* Set the samplerate. */
-	if (dev->plugin->set_configuration(dev->plugin_index,
+	if (dev->plugin->config_set(dev->plugin_index,
 	    SR_HWCAP_SAMPLERATE, &samplerate) != SR_OK) {
 		qDebug("Failed to set samplerate.");
 		sr_session_destroy();
 		return;
 	};
 
-	if (dev->plugin->set_configuration(dev->plugin_index,
+	if (dev->plugin->config_set(dev->plugin_index,
 	    SR_HWCAP_PROBECONFIG, (char *)dev->probes) != SR_OK) {
 		qDebug("Failed to configure probes.");
 		sr_session_destroy();

@@ -59,12 +59,10 @@ static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 		if (sr_parse_sizestring(text, &tmp_u64) != SR_OK)
 			return;
 
-		ret = dev->plugin->set_configuration(dev->plugin_index,
-				cap, &tmp_u64);
+		ret = dev->plugin->config_set(dev->plugin_index, cap, &tmp_u64);
 		break;
 	case SR_T_CHAR:
-		ret = dev->plugin->set_configuration(dev->plugin_index,
-				cap, text);
+		ret = dev->plugin->config_set(dev->plugin_index, cap, text);
 		break;
 	/* SR_T_BOOL will be handled by prop_toggled */
 	}
@@ -87,8 +85,8 @@ static void prop_toggled(GtkCellRendererToggle *cel, gchar *path,
 					DEV_PROP_TYPE, &type, -1);
 
 	val = !gtk_cell_renderer_toggle_get_active(cel);
-	ret = dev->plugin->set_configuration(dev->plugin_index, cap, 
-					GINT_TO_POINTER(val));
+	ret = dev->plugin->config_set(dev->plugin_index, cap, 
+				      GINT_TO_POINTER(val));
 
 	if (!ret)
 		gtk_list_store_set(props, &iter, DEV_PROP_BOOLVALUE, val, -1);
@@ -355,9 +353,9 @@ static void capture_run(GtkAction *action, GObject *parent)
 
 	if (time_msec) {
 		if (sr_hw_has_hwcap(dev->plugin, SR_HWCAP_LIMIT_MSEC)) {
-			if (dev->plugin->set_configuration(dev->plugin_index,
-							SR_HWCAP_LIMIT_MSEC,
-							&time_msec) != SR_OK) {
+			if (dev->plugin->config_set(dev->plugin_index,
+						    SR_HWCAP_LIMIT_MSEC,
+						    &time_msec) != SR_OK) {
 				g_critical("Failed to configure time limit.");
 				sr_session_destroy();
 				return;
@@ -379,25 +377,25 @@ static void capture_run(GtkAction *action, GObject *parent)
 				return;
 			}
 
-			if (dev->plugin->set_configuration(dev->plugin_index,
-						SR_HWCAP_LIMIT_SAMPLES,
-						&limit_samples) != SR_OK) {
+			if (dev->plugin->config_set(dev->plugin_index,
+						    SR_HWCAP_LIMIT_SAMPLES,
+						    &limit_samples) != SR_OK) {
 				g_critical("Failed to configure time-based sample limit.");
 				return;
 			}
 		}
 	}
 	if (limit_samples) {
-		if (dev->plugin->set_configuration(dev->plugin_index,
-						SR_HWCAP_LIMIT_SAMPLES,
-						&limit_samples) != SR_OK) {
+		if (dev->plugin->config_set(dev->plugin_index,
+					    SR_HWCAP_LIMIT_SAMPLES,
+					    &limit_samples) != SR_OK) {
 			g_critical("Failed to configure sample limit.");
 			return;
 		}
 	}
 
-	if (dev->plugin->set_configuration(dev->plugin_index,
-		  SR_HWCAP_PROBECONFIG, (char *)dev->probes) != SR_OK) {
+	if (dev->plugin->config_set(dev->plugin_index,
+	    SR_HWCAP_PROBECONFIG, (char *)dev->probes) != SR_OK) {
 		printf("Failed to configure probes.\n");
 		sr_session_destroy();
 		return;
