@@ -64,6 +64,10 @@ Random notes
    Functions creating new "objects" should end with "_new".
    Functions destroying "objects" should end with "_destroy".
 
+ - In Doxygen comments, put an empty line between the block of @param lines
+   and the final @return line. The @param lines themselves (if there is more
+   than one) are not separated by empty lines.
+
 
 Release engineering
 -------------------
