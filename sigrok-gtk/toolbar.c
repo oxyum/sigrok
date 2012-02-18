@@ -367,7 +367,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 			limit_samples = 0;
 			if (sr_dev_has_hwcap(dev, SR_HWCAP_SAMPLERATE)) {
 				guint64 tmp_u64;
-				tmp_u64 = *((uint64_t *)dev->plugin->get_dev_info(
+				tmp_u64 = *((uint64_t *)dev->plugin->dev_info_get(
 							dev->plugin_index,
 							SR_DI_CUR_SAMPLERATE));
 				limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;

@@ -66,7 +66,7 @@ static void dev_menuitem_toggled(GtkMenuItem *item, GtkComboBox *combo)
 }
 
 #define GET_DEV_INST(dev) \
-	(dev)->plugin->get_dev_info((dev)->plugin_index, SR_DI_INST);
+	(dev)->plugin->dev_info_get((dev)->plugin_index, SR_DI_INST);
 
 void dev_select_rescan(GtkAction *action, GtkWindow *parent)
 {

@@ -315,7 +315,7 @@ void MainWindow::on_actionScan_triggered()
 
 	setCurrentLA(0 /* TODO */);
 
-	di_num_probes = (char *)dev->plugin->get_dev_info(
+	di_num_probes = (char *)dev->plugin->dev_info_get(
 			dev->plugin_index, SR_DI_NUM_PROBES);
 	if (di_num_probes != NULL) {
 		setNumChannels(GPOINTER_TO_INT(di_num_probes));
@@ -329,7 +329,7 @@ void MainWindow::on_actionScan_triggered()
 	s = QString(tr("Channels: %1")).arg(getNumChannels());
 	ui->labelChannels->setText(s);
 
-	samplerates = (struct sr_samplerates *)dev->plugin->get_dev_info(
+	samplerates = (struct sr_samplerates *)dev->plugin->dev_info_get(
 		      dev->plugin_index, SR_DI_SAMPLERATES);
 	if (!samplerates) {
 		/* TODO: Error handling. */
