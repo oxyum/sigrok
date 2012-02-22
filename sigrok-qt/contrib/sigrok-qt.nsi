@@ -36,7 +36,7 @@
 Name "sigrok-qt"
 
 # Filename of the installer executable.
-OutFile "sigrok-qt-installer-0.1.exe"
+OutFile "sigrok-qt-0.1-installer.exe"
 
 # Where to install the application.
 InstallDir "$PROGRAMFILES\sigrok\sigrok-qt"
