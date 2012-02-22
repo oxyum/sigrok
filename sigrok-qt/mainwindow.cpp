@@ -207,7 +207,7 @@ int MainWindow::getNumChannels(void)
 void MainWindow::on_actionAbout_triggered()
 {
 	GSList *l;
-	struct sr_dev_plugin *plugin;
+	struct sr_dev_plugin **plugins;
 	struct sr_input_format **inputs;
 	struct sr_output_format **outputs;
 	struct srd_decoder *dec;
@@ -219,11 +219,11 @@ void MainWindow::on_actionAbout_triggered()
 		.arg(QApplication::organizationDomain());
 
 	s.append("<b>" + tr("Supported hardware drivers:") + "</b><table>");
-	for (l = sr_hw_list(); l; l = l->next) {
-		plugin = (struct sr_dev_plugin *)l->data;
+	plugins = sr_hw_list();
+	for (int i = 0; plugins[i]; ++i) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			 .arg(QString(plugin->name))
-			 .arg(QString(plugin->longname)));
+			 .arg(QString(plugins[i]->name))
+			 .arg(QString(plugins[i]->longname)));
 	}
 	s.append("</table><p>");
 
