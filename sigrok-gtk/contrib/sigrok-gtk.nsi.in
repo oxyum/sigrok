@@ -45,6 +45,9 @@ InstallDir "$PROGRAMFILES\sigrok\@PACKAGE_NAME@"
 # http://nsis.sourceforge.net/Docs/Chapter4.html
 RequestExecutionLevel admin
 
+# Local helper definitions.
+!define REGSTR "Software\Microsoft\Windows\CurrentVersion\Uninstall\@PACKAGE_NAME@"
+
 
 # --- MUI interface configuration ---------------------------------------------
 
@@ -125,6 +128,9 @@ Section "@PACKAGE_NAME@ (required)" Section1
 	# sigrok-gtk
 	File "c:\MinGW\msys\1.0\local\bin\@PACKAGE_NAME@.exe"
 
+	# Icon
+	File "sigrok-logo-notext.ico"
+
 	# MinGW libs
 	File "c:\MinGW\bin\mingwm10.dll"
 	File "c:\MinGW\bin\libgcc_s_dw2-1.dll"
@@ -189,6 +195,29 @@ Section "@PACKAGE_NAME@ (required)" Section1
 		"$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0 \
 		SW_SHOWNORMAL "" "Uninstall @PACKAGE_NAME@"
 
+	# Create registry keys for "Add/remove programs" in the control panel.
+	WriteRegStr HKLM "${REGSTR}" "DisplayName" "@PACKAGE_STRING@"
+	WriteRegStr HKLM "${REGSTR}" "UninstallString" \
+		"$\"$INSTDIR\Uninstall.exe$\""
+	WriteRegStr HKLM "${REGSTR}" "InstallLocation" "$\"$INSTDIR$\""
+	WriteRegStr HKLM "${REGSTR}" "DisplayIcon" \
+		"$\"$INSTDIR\sigrok-logo-notext.ico$\""
+	WriteRegStr HKLM "${REGSTR}" "Publisher" "sigrok"
+	WriteRegStr HKLM "${REGSTR}" "HelpLink" \
+		"http://sigrok.org/wiki/Sigrok-gtk"
+	WriteRegStr HKLM "${REGSTR}" "URLUpdateInfo" \
+		"http://sigrok.org/wiki/Downloads"
+	WriteRegStr HKLM "${REGSTR}" "URLInfoAbout" "http://sigrok.org"
+	WriteRegStr HKLM "${REGSTR}" "DisplayVersion" "@PACKAGE_VERSION@"
+	WriteRegStr HKLM "${REGSTR}" "Contact" \
+		"sigrok-devel@lists.sourceforge.org"
+	WriteRegStr HKLM "${REGSTR}" "Comments" \
+		"This is the sigrok command-line application."
+
+	# Display "Remove" instead of "Modify/Remove" in the control panel.
+	WriteRegDWORD HKLM "${REGSTR}" "NoModify" 1
+	WriteRegDWORD HKLM "${REGSTR}" "NoRepair" 1
+
 SectionEnd
 
 
@@ -220,15 +249,16 @@ Section "Uninstall"
 	Delete "$INSTDIR\COPYING"
 	Delete "$INSTDIR\libsigrok.a"
 	Delete "$INSTDIR\libsigrokdecode.a"
-	Delete "$INSTDIR\sigrok-gtk.exe"
+	Delete "$INSTDIR\@PACKAGE_NAME@.exe"
+	Delete "$INSTDIR\sigrok-logo-notext.ico"
 	Delete "$INSTDIR\mingwm10.dll"
 	Delete "$INSTDIR\libgcc_s_dw2-1.dll"
 	Delete "$INSTDIR\intl.dll"
 	Delete "$INSTDIR\libiconv-2.dll"
 	Delete "$INSTDIR\libstdc++-6.dll"
-	Delete "$INSTDIR\libglib-2.0-0.dll"
 	Delete "$INSTDIR\msys-1.0.dll"
 	Delete "$INSTDIR\msys-z.dll"
+	Delete "$INSTDIR\libglib-2.0-0.dll"
 	Delete "$INSTDIR\libgthread-2.0-0.dll"
 	Delete "$INSTDIR\libusb-1.0.dll"
 	Delete "$INSTDIR\zlib1.dll"
@@ -267,6 +297,9 @@ Section "Uninstall"
 	# Delete the sub-directory in the start menu.
 	RMDir "$SMPROGRAMS\sigrok\@PACKAGE_NAME@"
 	RMDir "$SMPROGRAMS\sigrok"
+
+	# Delete the registry key(s).
+	DeleteRegKey HKLM "${REGSTR}"
 
 SectionEnd
 
