@@ -197,7 +197,7 @@ Section "sigrok-qt (required)" Section1
 	WriteRegStr HKLM "${REGSTR}" "Contact" \
 		"sigrok-devel@lists.sourceforge.org"
 	WriteRegStr HKLM "${REGSTR}" "Comments" \
-		"This is the sigrok command-line application."
+		"This is a Qt based sigrok GUI."
 
 	# Display "Remove" instead of "Modify/Remove" in the control panel.
 	WriteRegDWORD HKLM "${REGSTR}" "NoModify" 1
