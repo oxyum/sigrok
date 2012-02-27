@@ -45,6 +45,10 @@ Random notes
    Only sr_err()/sr_warn()/sr_info()/sr_dbg() should be used (or their
    equivalents in the other libs such as srd_err() or srf_err()).
 
+ - Use glib's gboolean / TRUE / FALSE for boolean types consistently.
+   Do not use <stdbool.h> and its true / false, and do not invent private
+   definitions for this either.
+
  - Consistently use the same naming convention for #include guards in headers:
    <PROJECTNAME>_<PATH_TO_FILE>_<FILE>
    This ensures that all #include guards are always unique and consistent.
