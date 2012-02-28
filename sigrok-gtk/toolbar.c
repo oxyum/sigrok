@@ -59,11 +59,11 @@ static void prop_edited(GtkCellRendererText *cel, gchar *path, gchar *text,
 		if (sr_parse_sizestring(text, &tmp_u64) != SR_OK)
 			return;
 
-		ret = dev->plugin->dev_config_set(dev->plugin_index,
+		ret = dev->driver->dev_config_set(dev->driver_index,
 						  cap, &tmp_u64);
 		break;
 	case SR_T_CHAR:
-		ret = dev->plugin->dev_config_set(dev->plugin_index, cap, text);
+		ret = dev->driver->dev_config_set(dev->driver_index, cap, text);
 		break;
 	/* SR_T_BOOL will be handled by prop_toggled */
 	}
@@ -86,7 +86,7 @@ static void prop_toggled(GtkCellRendererToggle *cel, gchar *path,
 					DEV_PROP_TYPE, &type, -1);
 
 	val = !gtk_cell_renderer_toggle_get_active(cel);
-	ret = dev->plugin->dev_config_set(dev->plugin_index, cap, 
+	ret = dev->driver->dev_config_set(dev->driver_index, cap, 
 					  GINT_TO_POINTER(val));
 
 	if (!ret)
@@ -137,7 +137,7 @@ static void dev_set_options(GtkAction *action, GtkWindow *parent)
 					G_TYPE_BOOLEAN, G_TYPE_STRING,
 					G_TYPE_BOOLEAN);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(tv), GTK_TREE_MODEL(props));
-	int *hwcaps = dev->plugin->hwcap_get_all();
+	int *hwcaps = dev->driver->hwcap_get_all();
 	int cap;
 	GtkTreeIter iter;
 	for (cap = 0; hwcaps[cap]; cap++) {
@@ -353,8 +353,8 @@ static void capture_run(GtkAction *action, GObject *parent)
 	}
 
 	if (time_msec) {
-		if (sr_hw_has_hwcap(dev->plugin, SR_HWCAP_LIMIT_MSEC)) {
-			if (dev->plugin->dev_config_set(dev->plugin_index,
+		if (sr_hw_has_hwcap(dev->driver, SR_HWCAP_LIMIT_MSEC)) {
+			if (dev->driver->dev_config_set(dev->driver_index,
 							SR_HWCAP_LIMIT_MSEC,
 							&time_msec) != SR_OK) {
 				g_critical("Failed to configure time limit.");
@@ -368,8 +368,8 @@ static void capture_run(GtkAction *action, GObject *parent)
 			limit_samples = 0;
 			if (sr_dev_has_hwcap(dev, SR_HWCAP_SAMPLERATE)) {
 				guint64 tmp_u64;
-				tmp_u64 = *((uint64_t *)dev->plugin->dev_info_get(
-							dev->plugin_index,
+				tmp_u64 = *((uint64_t *)dev->driver->dev_info_get(
+							dev->driver_index,
 							SR_DI_CUR_SAMPLERATE));
 				limit_samples = tmp_u64 * time_msec / (uint64_t) 1000;
 			}
@@ -378,7 +378,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 				return;
 			}
 
-			if (dev->plugin->dev_config_set(dev->plugin_index,
+			if (dev->driver->dev_config_set(dev->driver_index,
 						SR_HWCAP_LIMIT_SAMPLES,
 						&limit_samples) != SR_OK) {
 				g_critical("Failed to configure time-based sample limit.");
@@ -387,7 +387,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 		}
 	}
 	if (limit_samples) {
-		if (dev->plugin->dev_config_set(dev->plugin_index,
+		if (dev->driver->dev_config_set(dev->driver_index,
 						SR_HWCAP_LIMIT_SAMPLES,
 						&limit_samples) != SR_OK) {
 			g_critical("Failed to configure sample limit.");
@@ -395,7 +395,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 		}
 	}
 
-	if (dev->plugin->dev_config_set(dev->plugin_index,
+	if (dev->driver->dev_config_set(dev->driver_index,
 	    SR_HWCAP_PROBECONFIG, (char *)dev->probes) != SR_OK) {
 		printf("Failed to configure probes.\n");
 		sr_session_destroy();

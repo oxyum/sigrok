@@ -66,7 +66,7 @@ static void dev_menuitem_toggled(GtkMenuItem *item, GtkComboBox *combo)
 }
 
 #define GET_DEV_INST(dev) \
-	(dev)->plugin->dev_info_get((dev)->plugin_index, SR_DI_INST);
+	(dev)->driver->dev_info_get((dev)->driver_index, SR_DI_INST);
 
 void dev_select_rescan(GtkAction *action, GtkWindow *parent)
 {
@@ -91,8 +91,8 @@ void dev_select_rescan(GtkAction *action, GtkWindow *parent)
 	 */
 	if (gtk_combo_box_get_active_iter(devbox, &iter)) {
 		gtk_tree_model_get(GTK_TREE_MODEL(devlist), &iter, 1, &dev, -1);
-		/* FIXME: Use something other than dev->plugin->name */
-		sdevname = g_strdup(dev->plugin->name);
+		/* FIXME: Use something other than dev->driver->name */
+		sdevname = g_strdup(dev->driver->name);
 	}
 
 	/* Destroy the old menu items */
@@ -131,7 +131,7 @@ void dev_select_rescan(GtkAction *action, GtkWindow *parent)
 				2, menuitem,
 				-1);
 
-		if (sdevname && g_str_equal(sdevname, dev->plugin->name))
+		if (sdevname && g_str_equal(sdevname, dev->driver->name))
 			gtk_combo_box_set_active_iter(devbox, &iter);
 	}
 	if (sdevname)
