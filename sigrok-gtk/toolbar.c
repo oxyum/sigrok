@@ -230,7 +230,7 @@ static void probe_named(GtkCellRendererText *cel, gchar *path, gchar *text,
 
 	gtk_tree_model_get_iter_from_string(probes, &iter, path);
 	gtk_tree_model_get(probes, &iter, PROBE_NUMBER, &i, -1);
-	sr_dev_probe_name(dev, i, text);
+	sr_dev_probe_name_set(dev, i, text);
 	gtk_list_store_set(GTK_LIST_STORE(probes), &iter, PROBE_NAME, text, -1);
 }
 
