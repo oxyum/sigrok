@@ -30,14 +30,14 @@
 GtkListStore *siglist;
 
 static void format_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
-		GtkTreeModel *siglist, GtkTreeIter *iter, gpointer user_data)
+		GtkTreeModel *siglist, GtkTreeIter *iter, gpointer cb_data)
 {
 	int probe;
 	char *colour;
 	GArray *data;
 
 	(void)tree_column;
-	(void)user_data;
+	(void)cb_data;
 
 	/* TODO: In future we will get data here from tree model.
 	 * PD data streams will be kept in the list.  The logic stream

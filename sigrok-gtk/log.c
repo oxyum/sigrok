@@ -21,9 +21,9 @@
 #include "sigrok-gtk.h"
 
 static void logger(const gchar *log_domain, GLogLevelFlags log_level,
-		   const gchar *message, gpointer user_data)
+		   const gchar *message, gpointer cb_data)
 {
-	GtkTextView *tv = user_data;
+	GtkTextView *tv = cb_data;
 	g_return_if_fail(GTK_IS_TEXT_VIEW(tv));
 	GtkTextBuffer *tb = gtk_text_view_get_buffer(tv);
 	GtkTextIter iter;
