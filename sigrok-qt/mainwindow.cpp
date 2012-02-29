@@ -219,7 +219,7 @@ void MainWindow::on_actionAbout_triggered()
 		.arg(QApplication::organizationDomain());
 
 	s.append("<b>" + tr("Supported hardware drivers:") + "</b><table>");
-	drivers = sr_hw_list();
+	drivers = sr_driver_list();
 	for (int i = 0; drivers[i]; ++i) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			 .arg(QString(drivers[i]->name))

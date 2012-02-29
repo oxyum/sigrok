@@ -353,7 +353,7 @@ static void capture_run(GtkAction *action, GObject *parent)
 	}
 
 	if (time_msec) {
-		if (sr_hw_has_hwcap(dev->driver, SR_HWCAP_LIMIT_MSEC)) {
+		if (sr_driver_hwcap_exists(dev->driver, SR_HWCAP_LIMIT_MSEC)) {
 			if (dev->driver->dev_config_set(dev->driver_index,
 							SR_HWCAP_LIMIT_MSEC,
 							&time_msec) != SR_OK) {
