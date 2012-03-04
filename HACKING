@@ -73,6 +73,42 @@ Random notes
    than one) are not separated by empty lines.
 
 
+Protocol decoder guidelines
+---------------------------
+
+ - Generally use strings for states (of the PD state machine), not integers.
+   This avoids having to keep a list of state definitions at the top of file.
+   The performance overhead for this is negligible in practice.
+
+   Recommended:
+     self.state = 'IDLE'
+     self.state = 'GET STOP BIT'
+   Not recommended:
+     self.state = IDLE
+     self.state = GET_STOP_BIT
+     (where IDLE = 0 and GET_STOP_BIT = 1, for example)
+
+ - Generally use strings for commands/IDs in generated protocol packets.
+   This avoids having to know magic numbers of the PD in higher-level PDs.
+   The performance overhead for this is negligible in practice.
+
+   Recommended:
+     self.put(x, y, p, ['STOPBIT', 0, 0])
+     self.put(x, y, p, ['ADDRESS READ', 0x51])
+   Not recommended:
+     self.put(x, y, p, [STOPBIT, 0, 0])
+     self.put(x, y, p, [ADDRESS_READ, 0x51])
+     (with STOPBIT = 3 and ADDRESS_READ = 7, for example)
+
+ - Use ALL-CAPS names for PD states and protocol packet commands/ID.
+   Words should be separated by spaces (not underscores or the like).
+
+   Recommended:
+     'FIND ADDRESS', 'GET TEMPERATURE', 'START'
+   Not recommended:
+     'FIND_ADDRESS', 'Get Temperature', 'start'
+
+
 Release engineering
 -------------------
 
