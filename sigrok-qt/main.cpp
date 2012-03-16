@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	/* The GUI wants to show a list of all PDs before use, so we
 	 * might as well load them now.
 	 */
-	srd_decoders_load_all();
+	srd_decoder_load_all();
 
 	return a.exec();
 }

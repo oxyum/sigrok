@@ -246,7 +246,7 @@ void MainWindow::on_actionAbout_triggered()
 	s.append("</table><p>");
 
 	s.append("<b>" + tr("Supported protocol decoders:") + "</b><table>");
-	for (l = srd_decoders_list(); l; l = l->next) {
+	for (l = srd_decoder_list(); l; l = l->next) {
 		dec = (struct srd_decoder *)l->data;
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			 .arg(QString(dec->id))

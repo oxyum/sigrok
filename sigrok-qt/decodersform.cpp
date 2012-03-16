@@ -40,7 +40,7 @@ DecodersForm::DecodersForm(QWidget *parent) :
 
 	ui->setupUi(this);
 
-	for (ll = srd_decoders_list(), i = 0; ll; ll = ll->next, ++i) {
+	for (ll = srd_decoder_list(), i = 0; ll; ll = ll->next, ++i) {
 		dec = (struct srd_decoder *)ll->data;
 
 		/* Add the decoder to the list. */
