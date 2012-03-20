@@ -856,8 +856,8 @@ void MainWindow::on_actionQUICK_HACK_PD_TEST_triggered()
 		return;
 	}
 
-	if (srd_session_feed(0, buf, N) != SRD_OK) {
-		ui->plainTextEdit->appendPlainText("ERROR: srd_session_feed");
+	if (srd_session_send(0, buf, N) != SRD_OK) {
+		ui->plainTextEdit->appendPlainText("ERROR: srd_session_send");
 		return;
 	}
 }
