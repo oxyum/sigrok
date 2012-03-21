@@ -91,7 +91,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	srd_log_loglevel_set(SRD_LOG_SPEW);
 
-	if (srd_log_handler_set(logger, (void *)this) != SRD_OK) {
+	if (srd_log_callback_set(logger, (void *)this) != SRD_OK) {
 		qDebug() << "ERROR: srd_log_handler_set() failed.";
 		return; /* TODO? */
 	}
