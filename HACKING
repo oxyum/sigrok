@@ -42,8 +42,8 @@ Random notes
 
  - libsigrok* should never print any messages (neither to stdout nor stderr nor
    elsewhere) "manually" via e.g. printf() or g_log() or similar functions.
-   Only sr_err()/sr_warn()/sr_info()/sr_dbg() should be used (or their
-   equivalents in the other libs such as srd_err() or srf_err()).
+   Only sr_err()/sr_warn()/sr_info()/sr_dbg()/sr_spew() should be used (or
+   their equivalents in the other libs such as srd_err() or srf_err()).
 
  - Use glib's gboolean / TRUE / FALSE for boolean types consistently.
    Do not use <stdbool.h> and its true / false, and do not invent private
