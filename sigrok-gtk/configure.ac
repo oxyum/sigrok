@@ -20,7 +20,7 @@
 # We require at least autoconf 2.63 (AC_INIT format changed there).
 AC_PREREQ([2.63])
 
-AC_INIT([sigrok-gtk], [0.1], [gareth@blacksphere.co.nz],
+AC_INIT([sigrok-gtk], [0.1.0], [gareth@blacksphere.co.nz],
         [sigrok-gtk], [http://www.sigrok.org])
 
 AC_CONFIG_SRCDIR([main.c])
@@ -57,7 +57,7 @@ PKG_CHECK_MODULES([gtk], [gtk+-2.0 gmodule-2.0],
 	[CFLAGS="$CFLAGS $gtk_CFLAGS";
 	LIBS="$LIBS $gtk_LIBS"])
 
-PKG_CHECK_MODULES([libsigrok], [libsigrok >= 0.2],
+PKG_CHECK_MODULES([libsigrok], [libsigrok >= 0.1.0],
 	[CFLAGS="$CFLAGS $libsigrok_CFLAGS";
 	LIBS="$LIBS $libsigrok_LIBS"])
 

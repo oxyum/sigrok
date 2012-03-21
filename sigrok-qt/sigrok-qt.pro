@@ -22,7 +22,7 @@ TARGET        = sigrok-qt
 TEMPLATE      = app
 
 # The sigrok-qt version number. Define APP_VERSION macro for use in the code.
-VERSION       = 0.2
+VERSION       = 0.1.0
 DEFINES      += APP_VERSION=\\\"$$VERSION\\\"
 
 UNAME         = $$system(uname -s)
