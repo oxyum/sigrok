@@ -63,7 +63,7 @@ DecodersForm::DecodersForm(QWidget *parent) :
 		}
 		l->addWidget(new QLabel(*s));
 		s = new QString("Protocol documentation:\n");
-		if (doc = srd_decoder_doc(dec)) {
+		if (doc = srd_decoder_doc_get(dec)) {
 			s->append(QString("%1\n")
 			          .arg(doc[0] == '\n' ? doc + 1 : doc));
 			g_free(doc);

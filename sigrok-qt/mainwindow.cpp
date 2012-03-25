@@ -840,14 +840,14 @@ void MainWindow::on_actionQUICK_HACK_PD_TEST_triggered()
 		return;
 	}
 
-	if (srd_inst_probes_set(di, pd_opthash) != SRD_OK) {
+	if (srd_inst_probe_set_all(di, pd_opthash) != SRD_OK) {
 		ui->plainTextEdit->appendPlainText("ERROR: srd_inst_set_probes");
 		return;
 	}
 
-	if (srd_register_callback(SRD_OUTPUT_ANN,
+	if (srd_pd_output_callback_add(SRD_OUTPUT_ANN,
 	    (srd_pd_output_callback_t)show_pd_annotation, (void *)this) != SRD_OK) {
-		ui->plainTextEdit->appendPlainText("ERROR: srd_register_callback");
+		ui->plainTextEdit->appendPlainText("ERROR: srd_pd_output_callback_add");
 		return;
 	}
 
