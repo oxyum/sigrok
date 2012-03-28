@@ -43,7 +43,7 @@ datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 	struct sr_datafeed_logic *logic = NULL;
 	int num_enabled_probes, sample_size, i;
 	uint64_t filter_out_len;
-	char *filter_out;
+	uint8_t *filter_out;
 	GArray *data;
 
 	switch (packet->type) {
