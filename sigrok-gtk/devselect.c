@@ -38,7 +38,7 @@ static void dev_selected(GtkComboBox *devbox, GObject *parent)
 
 	gtk_check_menu_item_set_active(menuitem, TRUE);
 
-	sr_session_dev_clear();
+	sr_session_dev_remove_all();
 	if (sr_session_dev_add(dev) != SR_OK) {
 		g_critical("Failed to use device.");
 		sr_session_destroy();

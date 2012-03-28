@@ -71,6 +71,7 @@ Random notes
    either "_add" or "_remove".
    Functions operating on all items from a list (not on only one of them),
    should end with "_all", e.g. "_remove_all", "_get_all", and so on.
+   Use "_remove_all" in favor of "_clear" for consistency.
 
  - In Doxygen comments, put an empty line between the block of @param lines
    and the final @return line. The @param lines themselves (if there is more
