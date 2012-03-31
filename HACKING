@@ -123,25 +123,3 @@ See
 
 for a list of items that need to be done when releasing a new tarball.
 
-
-Creating a Windows installer
-----------------------------
-
-In order to create a self-contained Windows installer EXE file for sigrok,
-you can do the following (currently must be done on a Windows/MinGW system):
-
-Build and install libsigrok, libsigrokdecode, sigrok-cli, sigrok-gtk, and
-sigrok-qt into /usr/local.
-
-Download the Windows Python 3.2 installer into c:\:
-
- $ cd /c
- $ wget http://www.python.org/ftp/python/3.2/python-3.2.msi
-
-Create the installer (assumes all required libs in certain directories) via:
-
- $ cd contrib/nsis
- $ makensis sigrok.nsi
-
-This will create a sigrok-installer-$VERSION.exe self-extracting installer.
-
