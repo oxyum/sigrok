@@ -45,3 +45,11 @@ endif
 .rc.o:
 	$(WINDRES) -o $@ $^
 
+DISTCLEANFILES = ChangeLog
+
+.PHONY: ChangeLog
+ChangeLog:
+	git --git-dir $(top_srcdir)/../.git log > ChangeLog || touch ChangeLog
+
+dist-hook: ChangeLog
+

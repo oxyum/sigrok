@@ -2,3 +2,4 @@ sigrok-gtk
 sigrok-gtk.exe
 contrib/sigrok-gtk.nsi
 contrib/sigrok-gtk-installer*.exe
+ChangeLog
