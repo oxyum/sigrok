@@ -36,7 +36,7 @@ static const char *colours[8] = {
 static void
 datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 {
-	static int probelist[65] = { 0 };
+	static int probelist[SR_MAX_NUM_PROBES + 1] = { 0 };
 	static int unitsize = 0;
 	struct sr_probe *probe;
 	struct sr_datafeed_header *header;

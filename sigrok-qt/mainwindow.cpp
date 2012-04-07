@@ -473,7 +473,7 @@ void MainWindow::on_action_Save_as_triggered()
 void datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 {
 	static int num_probes = 0;
-	static int probelist[65] = {0};
+	static int probelist[SR_MAX_NUM_PROBES + 1] = { 0 };
 	static uint64_t received_samples = 0;
 	static int triggered = 0;
 	struct sr_probe *probe;
