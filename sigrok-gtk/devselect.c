@@ -24,6 +24,7 @@
 static void dev_selected(GtkComboBox *devbox, GObject *parent)
 {
 	GtkTreeModel *devlist = gtk_combo_box_get_model(devbox);
+	GtkComboBox *timeunit = g_object_get_data(parent, "timeunit");
 	GtkTreeIter iter;
 	const gchar *name;
 	GtkCheckMenuItem *menuitem;
@@ -45,6 +46,12 @@ static void dev_selected(GtkComboBox *devbox, GObject *parent)
 		dev = NULL;
 	}
 	g_object_set_data(parent, "dev", dev);
+
+	/* Update timeunit depending on device capabilities. */
+	if (sr_driver_hwcap_exists(dev->driver, SR_HWCAP_LIMIT_SAMPLES))
+		gtk_combo_box_set_active(timeunit, 0);
+	else
+		gtk_combo_box_set_active(timeunit, 1);
 }
 
 static void dev_menuitem_toggled(GtkMenuItem *item, GtkComboBox *combo)

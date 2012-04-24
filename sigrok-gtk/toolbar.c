@@ -578,17 +578,8 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 	toolbar = GTK_TOOLBAR(gtk_ui_manager_get_widget(ui, "/toolbar"));
 	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(toolbar), FALSE, TRUE, 0);
 
-	/* Device selection GtkComboBox */
-	GtkToolItem *toolitem = gtk_tool_item_new();
-	GtkWidget *align = gtk_alignment_new(0.5, 0.5, 2, 0);
-	GtkWidget *dev = dev_select_combo_box_new(parent);
-
-	gtk_container_add(GTK_CONTAINER(align), dev);
-	gtk_container_add(GTK_CONTAINER(toolitem), align);
-	gtk_toolbar_insert(toolbar, toolitem, 0);
-
 	/* Time/Samples entry */
-	toolitem = gtk_tool_item_new();
+	GtkToolItem *toolitem = gtk_tool_item_new();
 	GtkWidget *timesamples = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(timesamples), "100");
 	gtk_entry_set_alignment(GTK_ENTRY(timesamples), 1.0);
@@ -598,7 +589,7 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 
 	/* Time unit combo box */
 	toolitem = gtk_tool_item_new();
-	align = gtk_alignment_new(0.5, 0.5, 2, 0);
+	GtkWidget *align = gtk_alignment_new(0.5, 0.5, 2, 0);
 	GtkWidget *timeunit = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(timeunit), "samples");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(timeunit), "ms");
@@ -610,6 +601,16 @@ GtkWidget *toolbar_init(GtkWindow *parent)
 
 	g_object_set_data(G_OBJECT(parent), "timesamples", timesamples);
 	g_object_set_data(G_OBJECT(parent), "timeunit", timeunit);
+
+	/* Device selection GtkComboBox */
+	toolitem = gtk_tool_item_new();
+	align = gtk_alignment_new(0.5, 0.5, 2, 0);
+	GtkWidget *dev = dev_select_combo_box_new(parent);
+
+	gtk_container_add(GTK_CONTAINER(align), dev);
+	gtk_container_add(GTK_CONTAINER(toolitem), align);
+	gtk_toolbar_insert(toolbar, toolitem, 0);
+
 
 	return GTK_WIDGET(vbox);
 }
