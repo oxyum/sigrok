@@ -485,9 +485,9 @@ static const GtkActionEntry action_items[] = {
 		"Exit the program", G_CALLBACK(gtk_main_quit) },
 
 	{"ViewMenu", NULL, "_View", NULL, NULL, NULL},
-	{"ViewZoomIn", GTK_STOCK_ZOOM_IN, "Zoom _In", "<control>z", NULL,
+	{"ViewZoomIn", GTK_STOCK_ZOOM_IN, "Zoom _In", "plus", NULL,
 		G_CALLBACK(zoom_in)},
-	{"ViewZoomOut", GTK_STOCK_ZOOM_OUT, "Zoom _Out", "<control><shift>Z",
+	{"ViewZoomOut", GTK_STOCK_ZOOM_OUT, "Zoom _Out", "minus",
 		NULL, G_CALLBACK(zoom_out)},
 	{"ViewZoomFit", GTK_STOCK_ZOOM_FIT, NULL, NULL,
 		NULL, G_CALLBACK(zoom_fit)},
