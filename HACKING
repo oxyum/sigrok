@@ -26,6 +26,7 @@ See http://www.python.org/dev/peps/pep-0008/ for details.
 
 Random notes
 ------------
+ - Patches should be sent to the devel mailinglist
 
  - Consistently use g_try_malloc() / g_try_malloc0() in libsigrok. Do not use
    standard malloc()/calloc() if it can be avoided (sometimes other libs such
