@@ -94,6 +94,17 @@ Random notes
 Protocol decoder guidelines
 ---------------------------
 
+ - The 'desc' metadata field for a protocol decoder, which contains a
+   short, one-line description of the protocol/bus, should be at most 55
+   characters long, and end with a full stop. This short description can be
+   displayed on the command-line using "sigrok-cli -V -l 3", or in various
+   different places in GUIs.
+
+ - Longer, multi-line descriptions should be placed in the protocol
+   decoder's __init__.py file as docstring. It can be viewed (for a specific
+   protocol decoder, e.g., UART) via "sigrok-cli -a uart", or in various
+   other places in GUIs.
+
  - Generally use strings for states (of the PD state machine), not integers.
    This avoids having to keep a list of state definitions at the top of file.
    The performance overhead for this is negligible in practice.
