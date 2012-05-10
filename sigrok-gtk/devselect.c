@@ -24,6 +24,7 @@
 static void dev_selected(GtkComboBox *devbox, GObject *parent)
 {
 	GtkTreeModel *devlist = gtk_combo_box_get_model(devbox);
+	GtkEntry *timesamples = g_object_get_data(parent, "timesamples");
 	GtkComboBox *timeunit = g_object_get_data(parent, "timeunit");
 	GtkTreeIter iter;
 	const gchar *name;
@@ -47,11 +48,15 @@ static void dev_selected(GtkComboBox *devbox, GObject *parent)
 	}
 	g_object_set_data(parent, "dev", dev);
 
-	/* Update timeunit depending on device capabilities. */
-	if (sr_driver_hwcap_exists(dev->driver, SR_HWCAP_LIMIT_SAMPLES))
-		gtk_combo_box_set_active(timeunit, 0);
-	else
-		gtk_combo_box_set_active(timeunit, 1);
+	/*
+	 * Grey out the time unless the device is valid,
+	 * and it supports sample limiting
+	 */
+	const gboolean limit_samples = dev &&
+		sr_driver_hwcap_exists(dev->driver,
+		SR_HWCAP_LIMIT_SAMPLES);
+	gtk_widget_set_sensitive((GtkWidget*)timesamples, limit_samples);
+	gtk_widget_set_sensitive((GtkWidget*)timeunit, limit_samples);
 }
 
 static void dev_menuitem_toggled(GtkMenuItem *item, GtkComboBox *combo)
