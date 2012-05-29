@@ -30,7 +30,7 @@ void help_about(GtkAction *action, GtkWindow *parent)
 	(void)action;
 
 	gtk_show_about_dialog(parent,
-		"program_name", "Sigrok-GTK",
+		"program_name", "sigrok-gtk",
 		"version", "0.1",
 		"logo-icon-name", "sigrok-logo",
 		"comments", "Portable, cross-platform, "

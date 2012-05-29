@@ -493,7 +493,7 @@ static const GtkActionEntry action_items[] = {
 		NULL, G_CALLBACK(zoom_fit)},
 
 	{"HelpMenu", NULL, "_Help", NULL, NULL, NULL},
-	{"HelpWiki", GTK_STOCK_ABOUT, "Sigrok _Wiki", NULL, NULL,
+	{"HelpWiki", GTK_STOCK_ABOUT, "sigrok _Wiki", NULL, NULL,
 		G_CALLBACK(help_wiki)},
 	{"HelpAbout", GTK_STOCK_ABOUT, "_About", NULL, NULL,
 		G_CALLBACK(help_about)},
