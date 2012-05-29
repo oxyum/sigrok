@@ -45,7 +45,7 @@ endif
 .rc.o:
 	$(WINDRES) -o $@ $^
 
-DISTCLEANFILES = ChangeLog
+MAINTAINERCLEANFILES = ChangeLog
 
 .PHONY: ChangeLog
 ChangeLog:
