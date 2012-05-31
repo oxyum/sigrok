@@ -26,7 +26,7 @@ Requirements
  - pkg-config >= 0.22
  - libglib >= 2.22.0
  - Qt >= 4.5
- - libsigrok >= 0.1.0
+ - libsigrok >= 0.2.0
  - libsigrokdecode >= 0.1.0
 
 
