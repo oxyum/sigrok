@@ -87,7 +87,7 @@ void dev_select_rescan(GtkAction *action, GtkWindow *parent)
 	GtkListStore *devlist = GTK_LIST_STORE(gtk_combo_box_get_model(devbox));
 	GtkTreeIter iter;
 	struct sr_dev *dev;
-	struct sr_dev_inst *sdi;
+	const struct sr_dev_inst *sdi;
 	gchar *sdevname = NULL;
 	GSList *devs, *l;
 	GtkUIManager *ui = g_object_get_data(G_OBJECT(parent), "ui_manager");

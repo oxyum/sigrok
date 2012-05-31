@@ -36,11 +36,11 @@ static const char *colours[8] = {
 static void
 datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 {
-	static int probelist[SR_MAX_NUM_PROBES + 1] = { 0 };
+	static int logic_probelist[SR_MAX_NUM_PROBES + 1] = { 0 };
 	static int unitsize = 0;
 	struct sr_probe *probe;
-	struct sr_datafeed_header *header;
 	struct sr_datafeed_logic *logic = NULL;
+	struct sr_datafeed_meta_logic *meta_logic;
 	int num_enabled_probes, sample_size, i;
 	uint64_t filter_out_len;
 	uint8_t *filter_out;
@@ -49,14 +49,25 @@ datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 	switch (packet->type) {
 	case SR_DF_HEADER:
 		g_message("fe: Received SR_DF_HEADER");
-		header = packet->payload;
+		break;
+	case SR_DF_END:
+		sigview_zoom(sigview, 1, 0);
+		g_message("fe: Received SR_DF_END");
+		sr_session_halt();
+		break;
+	case SR_DF_TRIGGER:
+		g_message("fe: received SR_DF_TRIGGER");
+		break;
+	case SR_DF_META_LOGIC:
+		g_message("fe: received SR_DF_META_LOGIC");
+		meta_logic = packet->payload;
 		num_enabled_probes = 0;
 		gtk_list_store_clear(siglist);
-		for (i = 0; i < header->num_logic_probes; i++) {
+		for (i = 0; i < meta_logic->num_probes; i++) {
 			probe = g_slist_nth_data(dev->probes, i);
 			if (probe->enabled) {
 				GtkTreeIter iter;
-				probelist[num_enabled_probes++] = probe->index;
+				logic_probelist[num_enabled_probes++] = probe->index;
 				gtk_list_store_append(siglist, &iter);
 				gtk_list_store_set(siglist, &iter,
 						0, probe->name,
@@ -69,37 +80,31 @@ datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 		unitsize = (num_enabled_probes + 7) / 8;
 		data = g_array_new(FALSE, FALSE, unitsize);
 		g_object_set_data(G_OBJECT(siglist), "sampledata", data);
-
-		break;
-	case SR_DF_END:
-		sigview_zoom(sigview, 1, 0);
-		g_message("fe: Received SR_DF_END");
-		sr_session_halt();
-		break;
-	case SR_DF_TRIGGER:
-		g_message("fe: received SR_DF_TRIGGER");
 		break;
 	case SR_DF_LOGIC:
 		logic = packet->payload;
 		sample_size = logic->unitsize;
 		g_message("fe: received SR_DF_LOGIC, %"PRIu64" bytes", logic->length);
+
+		if (!logic)
+			break;
+
+		if (sr_filter_probes(sample_size, unitsize, logic_probelist,
+					   logic->data, logic->length,
+					   &filter_out, &filter_out_len) != SR_OK)
+			break;
+
+		data = g_object_get_data(G_OBJECT(siglist), "sampledata");
+		g_return_if_fail(data != NULL);
+
+		g_array_append_vals(data, filter_out, filter_out_len/unitsize);
+
+		g_free(filter_out);
+		break;
+	default:
+		g_message("fw: received unknown packet type %d", packet->type);
 		break;
 	}
-
-	if (!logic)
-		return;
-
-	if (sr_filter_probes(sample_size, unitsize, probelist,
-				   logic->data, logic->length,
-				   &filter_out, &filter_out_len) != SR_OK)
-		return;
-
-	data = g_object_get_data(G_OBJECT(siglist), "sampledata");
-	g_return_if_fail(data != NULL);
-
-	g_array_append_vals(data, filter_out, filter_out_len/unitsize);
-
-	g_free(filter_out);
 }
 
 void load_input_file(GtkWindow *parent, const gchar *file)
