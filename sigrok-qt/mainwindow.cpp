@@ -473,11 +473,12 @@ void MainWindow::on_action_Save_as_triggered()
 void datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 {
 	static int num_probes = 0;
-	static int probelist[SR_MAX_NUM_PROBES + 1] = { 0 };
+	static int logic_probelist[SR_MAX_NUM_PROBES + 1] = { 0 };
 	static uint64_t received_samples = 0;
 	static int triggered = 0;
 	struct sr_probe *probe;
 	struct sr_datafeed_header *header;
+	struct sr_datafeed_meta_logic *meta_logic;
 	struct sr_datafeed_logic *logic;
 	int num_enabled_probes, sample_size;
 	uint64_t sample;
@@ -497,22 +498,6 @@ void datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 	case SR_DF_HEADER:
 		qDebug("SR_DF_HEADER");
 		header = (struct sr_datafeed_header *)packet->payload;
-		num_probes = header->num_logic_probes;
-		num_enabled_probes = 0;
-		for (int i = 0; i < header->num_logic_probes; ++i) {
-			probe = (struct sr_probe *)g_slist_nth_data(dev->probes, i);
-			if (probe->enabled)
-				probelist[num_enabled_probes++] = probe->index;
-		}
-
-		qDebug() << "Acquisition with" << num_enabled_probes << "/"
-			 << num_probes << "probes at"
-			 << sr_samplerate_string(header->samplerate)
-			 << "starting at" << ctime(&header->starttime.tv_sec)
-			 << "(" << limit_samples << "samples)";
-
-		/* TODO: realloc() */
-		break;
 	case SR_DF_END:
 		qDebug("SR_DF_END");
 		/* TODO: o */
@@ -524,39 +509,58 @@ void datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 		/* TODO */
 		triggered = 1;
 		break;
+	case SR_DF_META_LOGIC:
+		qDebug("SR_DF_META_LOGIC");
+		meta_logic = (struct sr_datafeed_meta_logic *)packet->payload;
+		num_probes = meta_logic->num_probes;
+		num_enabled_probes = 0;
+		for (int i = 0; i < meta_logic->num_probes; ++i) {
+			probe = (struct sr_probe *)g_slist_nth_data(dev->probes, i);
+			if (probe->enabled)
+				logic_probelist[num_enabled_probes++] = probe->index;
+		}
+
+		qDebug() << "Acquisition with" << num_enabled_probes << "/"
+			 << num_probes << "probes at"
+			 << sr_samplerate_string(meta_logic->samplerate)
+			 << "starting at" << ctime(&header->starttime.tv_sec)
+			 << "(" << limit_samples << "samples)";
+
+		/* TODO: realloc() */
+		break;
 	case SR_DF_LOGIC:
-		logic = (sr_datafeed_logic*)packet->payload;
+		logic = (sr_datafeed_logic *)packet->payload;
 		qDebug() << "SR_DF_LOGIC (length =" << logic->length
 			 << ", unitsize = " << logic->unitsize << ")";
 		sample_size = logic->unitsize;
+
+		if (sample_size == -1)
+			break;
+		
+		/* Don't store any samples until triggered. */
+		// if (opt_wait_trigger && !triggered)
+		// 	return;
+	
+		if (received_samples >= limit_samples)
+			break;
+	
+		/* TODO */
+	
+		for (uint64_t i = 0; received_samples < limit_samples
+				     && i < logic->length; i += sample_size) {
+			sample = 0;
+			memcpy(&sample, (char *)packet->payload + i, sample_size);
+			sample_buffer[i] = (uint8_t)(sample & 0xff); /* FIXME */
+			// qDebug("Sample %" PRIu64 ": 0x%x", i, sample);
+			received_samples++;
+		}
+	
+		progress->setValue(received_samples);
 		break;
 	default:
 		qDebug("SR_DF_XXXX, not yet handled");
 		break;
 	}
-
-	if (sample_size == -1)
-		return;
-	
-	/* Don't store any samples until triggered. */
-	// if (opt_wait_trigger && !triggered)
-	// 	return;
-
-	if (received_samples >= limit_samples)
-		return;
-
-	/* TODO */
-
-	for (uint64_t i = 0; received_samples < limit_samples
-			     && i < logic->length; i += sample_size) {
-		sample = 0;
-		memcpy(&sample, (char *)packet->payload + i, sample_size);
-		sample_buffer[i] = (uint8_t)(sample & 0xff); /* FIXME */
-		// qDebug("Sample %" PRIu64 ": 0x%x", i, sample);
-		received_samples++;
-	}
-
-	progress->setValue(received_samples);
 }
 
 void MainWindow::on_action_Get_samples_triggered()
