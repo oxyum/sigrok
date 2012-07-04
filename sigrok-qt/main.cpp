@@ -21,7 +21,7 @@
 extern "C" {
 #include <sigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
 #include <stdint.h>
-#include <sigrok.h>
+#include <libsigrok/libsigrok.h>
 }
 
 #include <iostream>

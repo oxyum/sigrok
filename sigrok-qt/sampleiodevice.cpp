@@ -22,7 +22,7 @@
 #include <QIODevice>
 
 extern "C" {
-#include <sigrok.h>
+#include <libsigrok/libsigrok.h>
 #include <glib.h>
 }
 

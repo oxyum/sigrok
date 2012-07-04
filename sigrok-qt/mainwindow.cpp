@@ -46,7 +46,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdarg.h>
 #include <glib.h>
-#include <sigrok.h>
+#include <libsigrok/libsigrok.h>
 #include <sigrokdecode.h>
 }
 
