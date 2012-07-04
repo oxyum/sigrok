@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sigrok.h>
+#include <libsigrok/libsigrok.h>
 #include <gtk/gtk.h>
 
 #include <errno.h>

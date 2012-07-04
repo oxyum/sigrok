@@ -19,7 +19,7 @@
 
 #include <stdlib.h>
 
-#include <sigrok.h>
+#include <libsigrok/libsigrok.h>
 
 #include <gtk/gtk.h>
 
