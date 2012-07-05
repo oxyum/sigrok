@@ -501,7 +501,7 @@ void datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 	case SR_DF_END:
 		qDebug("SR_DF_END");
 		/* TODO: o */
-		sr_session_halt();
+		sr_session_stop();
 		progress->setValue(received_samples); /* FIXME */
 		break;
 	case SR_DF_TRIGGER:
@@ -645,7 +645,7 @@ void MainWindow::on_action_Get_samples_triggered()
 
 	sr_session_run();
 
-	sr_session_halt();
+	sr_session_stop();
 	sr_session_destroy();
 
 	for (int i = 0; i < getNumChannels(); ++i) {
