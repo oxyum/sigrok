@@ -53,7 +53,7 @@ datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 	case SR_DF_END:
 		sigview_zoom(sigview, 1, 0);
 		g_message("fe: Received SR_DF_END");
-		sr_session_halt();
+		sr_session_stop();
 		break;
 	case SR_DF_TRIGGER:
 		g_message("fe: received SR_DF_TRIGGER");
