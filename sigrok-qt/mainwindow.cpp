@@ -308,7 +308,7 @@ void MainWindow::on_actionScan_triggered()
 				s.append(", ");
 		}
 		statusBar()->showMessage(s, 2000);
-		return;
+		// return;
 	}
 
 	dev = (struct sr_dev *)g_slist_nth_data(devs, 0 /* opt_dev */);
@@ -476,12 +476,15 @@ void datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 	static int logic_probelist[SR_MAX_NUM_PROBES + 1] = { 0 };
 	static uint64_t received_samples = 0;
 	static int triggered = 0;
+	static int unitsize = 0;
 	struct sr_probe *probe;
 	static struct sr_datafeed_header *header;
 	struct sr_datafeed_meta_logic *meta_logic;
 	struct sr_datafeed_logic *logic;
-	int num_enabled_probes, sample_size;
+	int num_enabled_probes, sample_size, ret;
 	uint64_t sample;
+	uint64_t filter_out_len;
+	uint8_t *filter_out;
 
 	/* If the first packet to come in isn't a header, don't even try. */
 	// if (packet->type != SR_DF_HEADER && o == NULL)
@@ -502,7 +505,7 @@ void datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 		qDebug("SR_DF_END");
 		/* TODO: o */
 		sr_session_stop();
-		progress->setValue(received_samples); /* FIXME */
+		// progress->setValue(received_samples); /* FIXME */
 		break;
 	case SR_DF_TRIGGER:
 		qDebug("SR_DF_TRIGGER");
@@ -540,21 +543,24 @@ void datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 		/* Don't store any samples until triggered. */
 		// if (opt_wait_trigger && !triggered)
 		// 	return;
-	
+
 		if (received_samples >= limit_samples)
 			break;
-	
+
 		/* TODO */
-	
-		for (uint64_t i = 0; received_samples < limit_samples
-				     && i < logic->length; i += sample_size) {
-			sample = 0;
-			memcpy(&sample, (char *)packet->payload + i, sample_size);
+		ret = sr_filter_probes(sample_size, 1 /* unitsize */, logic_probelist,
+				       (uint8_t *)logic->data, logic->length,
+				       &filter_out, &filter_out_len);
+		if (ret != SR_OK)
+			break;
+
+		for (uint64_t i = 0; i < filter_out_len; ++i) {
+			sample = filter_out[i];
 			sample_buffer[i] = (uint8_t)(sample & 0xff); /* FIXME */
 			// qDebug("Sample %" PRIu64 ": 0x%x", i, sample);
-			received_samples++;
 		}
-	
+		received_samples += logic->length / sample_size;
+
 		progress->setValue(received_samples);
 		break;
 	default:
