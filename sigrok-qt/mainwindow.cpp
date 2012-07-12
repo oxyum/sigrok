@@ -477,7 +477,7 @@ void datafeed_in(struct sr_dev *dev, struct sr_datafeed_packet *packet)
 	static uint64_t received_samples = 0;
 	static int triggered = 0;
 	struct sr_probe *probe;
-	struct sr_datafeed_header *header;
+	static struct sr_datafeed_header *header;
 	struct sr_datafeed_meta_logic *meta_logic;
 	struct sr_datafeed_logic *logic;
 	int num_enabled_probes, sample_size;
